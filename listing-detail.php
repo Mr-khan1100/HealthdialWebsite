@@ -2,13 +2,40 @@
 $currentPage = 'listings';
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
+require_once 'includes/seo.php';
+require_once 'includes/listing-data.php';
 
 $listingId = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$requestedSlug = isset($_GET['slug']) ? hd_slugify($_GET['slug'], '') : '';
 $listing = null;
+$listingMeta = null;
 $images = [];
 $reviews = [];
+$conn = getDbConnection();
+
+if ($listingId <= 0 && $requestedSlug !== '' && $conn) {
+    $listingId = hd_get_listing_id_by_slug($conn, $requestedSlug);
+}
 
 if ($listingId > 0) {
+    if ($conn) {
+        $listingMeta = hd_get_listing_meta_by_id($conn, $listingId);
+        if (!$listingMeta || ($listingMeta['status'] ?? '') !== 'approved') {
+            $listingId = 0;
+        }
+    }
+}
+
+if ($listingId > 0 && $conn) {
+    $dbDetail = hd_fetch_listing_detail_from_db($conn, $listingId);
+    if ($dbDetail) {
+        $listing = $dbDetail['listing'];
+        $images = $dbDetail['images'];
+        $reviews = $dbDetail['reviews'];
+    }
+}
+
+if ($listingId > 0 && !$listing) {
     $apiUrl = API_BASE . 'get_listing_detail.php?id=' . $listingId;
     
     $data = fetch_api_data($apiUrl);
@@ -20,11 +47,16 @@ if ($listingId > 0) {
             // Map API response to our template variables
             $listing = [
                 'id' => $apiData['id'] ?? $listingId,
+                'category_id' => $listingMeta['category_id'] ?? null,
                 'name' => $apiData['name'],
                 'category_name' => $apiData['category'],
                 'description' => $apiData['description'],
                 'address' => $apiData['address'],
-                'city' => '',
+                'city' => $listingMeta['city'] ?? '',
+                'slug' => $listingMeta['slug'] ?? null,
+                'city_slug' => $listingMeta['city_slug'] ?? null,
+                'category_slug' => $listingMeta['category_slug'] ?? null,
+                'updated_at' => $listingMeta['updated_at'] ?? ($apiData['updatedAt'] ?? null),
                 'avg_rating' => $apiData['rating'],
                 'review_count' => $apiData['reviewCount'],
                 'mobile' => $apiData['mobile'],
@@ -71,8 +103,35 @@ if ($listingId > 0) {
     }
 }
 
-$pageTitle = $listing ? htmlspecialchars($listing['name']) : 'Listing Not Found';
-$pageDesc = $listing ? htmlspecialchars(substr($listing['description'], 0, 160)) : 'Listing not found on HealthDial.';
+$canonicalUrl = null;
+$structuredData = [];
+$hoursInfo = null;
+$similarListings = [];
+
+if ($listing) {
+    $hoursInfo = hd_listing_hours_info($listing);
+    if ($conn) {
+        $similarListings = hd_fetch_similar_listings($conn, $listing, 6);
+    }
+
+    $canonicalUrl = hd_listing_url($listing, true);
+
+    if (hd_should_redirect_to_canonical($canonicalUrl)) {
+        header('Location: ' . $canonicalUrl, true, 301);
+        exit;
+    }
+
+    $cityLabel = hd_city_label($listing['city']);
+    $pageTitle = $listing['name'] . ' - ' . $listing['category_name'] . ' in ' . $cityLabel;
+    $pageDesc = hd_listing_meta_description($listing);
+    $structuredData = [
+        hd_listing_structured_data($listing, $images, $canonicalUrl),
+        hd_listing_breadcrumb_structured_data($listing, $canonicalUrl),
+    ];
+} else {
+    $pageTitle = 'Listing Not Found';
+    $pageDesc = 'Listing not found on HealthDial.';
+}
 
 require_once 'includes/header.php';
 
@@ -162,8 +221,14 @@ elseif (strpos($catLower, 'dental') !== false) $catIcon = '🦷';
             <div class="detail-main">
                 <div class="detail-header">
                     <span class="detail-category-badge"><?= htmlspecialchars($listing['category_name']) ?></span>
-                    <?php if ($listing['is_24x7']): ?>
+                    <?php if (false): ?>
                         <span class="detail-badge-24x7">24×7</span>
+                    <?php endif; ?>
+                    <?php if ($listing['is_24x7']): ?>
+                        <span class="detail-badge-24x7">24x7</span>
+                    <?php endif; ?>
+                    <?php if (!empty($hoursInfo['status'])): ?>
+                        <span class="detail-status-badge <?= !empty($hoursInfo['is_open']) ? 'open' : 'closed' ?>"><?= htmlspecialchars($hoursInfo['status']) ?></span>
                     <?php endif; ?>
                 </div>
                 <h1 class="detail-title"><?= htmlspecialchars($listing['name']) ?></h1>
@@ -185,7 +250,19 @@ elseif (strpos($catLower, 'dental') !== false) $catIcon = '🦷';
                             <div class="detail-info-value"><?= htmlspecialchars($listing['address']) ?><?= $listing['city'] ? ', ' . htmlspecialchars($listing['city']) : '' ?></div>
                         </div>
                     </div>
-                    <?php if ($listing['open_time'] && $listing['close_time'] && !$listing['is_24x7']): ?>
+                    <div class="detail-info-item">
+                        <span class="detail-info-icon"><?= icon('clock') ?></span>
+                        <div>
+                            <div class="detail-info-label">Hours</div>
+                            <div class="detail-info-value">
+                                <?= htmlspecialchars($hoursInfo['label'] ?? 'Timings not available') ?>
+                                <?php if (!empty($hoursInfo['status'])): ?>
+                                    <span class="hours-inline-status <?= !empty($hoursInfo['is_open']) ? 'open' : 'closed' ?>"><?= htmlspecialchars($hoursInfo['status']) ?></span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </div>
+                    <?php if (false): ?>
                     <div class="detail-info-item">
                         <span class="detail-info-icon"><?= icon('clock') ?></span>
                         <div>
@@ -297,6 +374,60 @@ elseif (strpos($catLower, 'dental') !== false) $catIcon = '🦷';
                 </div>
             </div>
         </div>
+
+        <?php if (!empty($similarListings)): ?>
+        <section class="similar-listings-section" aria-labelledby="similarListingsTitle">
+            <div class="similar-listings-header">
+                <div>
+                    <span class="section-label"><i class="fas fa-hospital"></i> Similar Facilities</span>
+                    <h2 id="similarListingsTitle">More <?= htmlspecialchars(strtolower($listing['category_name'] ?? 'medical facilities')) ?> in <?= htmlspecialchars(hd_city_label($listing['city'] ?? '')) ?></h2>
+                </div>
+                <a href="<?= $assetBase ?>/looking.php?cat=<?= intval($listing['category_id'] ?? 0) ?>&name=<?= urlencode($listing['category_name'] ?? '') ?>&city=<?= urlencode(hd_city_label($listing['city'] ?? '')) ?>" class="similar-view-all">View all</a>
+            </div>
+            <div class="listing-grid similar-listings-grid">
+                <?php foreach ($similarListings as $similar): ?>
+                    <?php
+                        $similarUrl = hd_listing_url([
+                            'id' => $similar['id'],
+                            'name' => $similar['name'],
+                            'address' => $similar['address'],
+                            'city' => $similar['city'],
+                            'slug' => $similar['slug'] ?? null,
+                        ], false);
+                        $similarRating = round(floatval($similar['avg_rating'] ?? 0), 1);
+                        $similarReviews = intval($similar['review_count'] ?? 0);
+                    ?>
+                    <article class="listing-card similar-listing-card">
+                        <a href="<?= htmlspecialchars($similarUrl) ?>" class="listing-card-image">
+                            <?php if (!empty($similar['image'])): ?>
+                                <img src="<?= htmlspecialchars($similar['image']) ?>" alt="<?= htmlspecialchars($similar['name']) ?>" loading="lazy" />
+                            <?php else: ?>
+                                <div class="listing-placeholder-modern" style="background:<?= $catGrad ?>">
+                                    <div class="placeholder-icon-ring"><span style="font-size:28px"><?= $catIcon ?></span></div>
+                                    <div class="placeholder-name"><?= htmlspecialchars(substr($similar['name'], 0, 30)) ?></div>
+                                    <div class="placeholder-cat"><?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?></div>
+                                </div>
+                            <?php endif; ?>
+                        </a>
+                        <div class="listing-card-body">
+                            <div class="listing-card-top">
+                                <span class="listing-category-badge"><?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?></span>
+                                <span class="listing-rating">
+                                    <i class="fas fa-star"></i>
+                                    <small><?= $similarRating ?> (<?= $similarReviews ?>)</small>
+                                </span>
+                            </div>
+                            <a href="<?= htmlspecialchars($similarUrl) ?>" class="listing-card-name"><?= htmlspecialchars($similar['name']) ?></a>
+                            <p class="listing-card-address"><i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($similar['address'] ?? '') ?><?= !empty($similar['city']) ? ', ' . htmlspecialchars($similar['city']) : '' ?></p>
+                            <?php if (!empty($similar['distance'])): ?>
+                                <span class="listing-distance"><i class="fas fa-location-arrow"></i> <?= htmlspecialchars($similar['distance']) ?> km away</span>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </section>
+        <?php endif; ?>
 
         <!-- ===== WEB REVIEW FORM ===== -->
         <div class="review-form-section" id="reviewFormSection">

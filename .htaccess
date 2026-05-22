@@ -4,10 +4,16 @@
 # Enable rewrite engine
 RewriteEngine On
 
+# Serve the dynamic sitemap index even though an older static sitemap.xml exists
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
 # IMPORTANT: Do NOT rewrite actual files and directories
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
+
+# SEO-friendly listing detail URLs, e.g. /latur/the-spine-hospital
+RewriteRule ^([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/?$ listing-detail.php?city_slug=$1&slug=$2 [L,QSA]
 
 # Set correct MIME types for assets (in case server defaults are wrong)
 <IfModule mod_mime.c>

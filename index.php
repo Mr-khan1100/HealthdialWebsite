@@ -1,4 +1,12 @@
 <?php
+$requestPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if (preg_match('#^/([A-Za-z0-9-]+)/([A-Za-z0-9-]+)/?$#', $requestPath, $matches)) {
+    $_GET['city_slug'] = $matches[1];
+    $_GET['slug'] = $matches[2];
+    require __DIR__ . '/listing-detail.php';
+    exit;
+}
+
 $currentPage = 'home';
 $pageTitle = 'Digital Healthcare Management Portal | Medicine Store Near Me | Health Dial';
 $pageDesc = 'Health DIAL is your One Stop Source for finding , Doctors, Pharmacies, medical labs, Hospitals, Medical Diagnostic Tests and clinics, all at your fingertips.';

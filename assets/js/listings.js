@@ -294,10 +294,78 @@ function changeSortAndReload() {
     loadListings();
 }
 
+function slugifyUrlPart(value, fallback = 'listing') {
+    const slug = String(value || '')
+        .normalize('NFKD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .replace(/-+/g, '-');
+
+    return slug || fallback;
+}
+
+function citySlugFromListing(listing) {
+    const city = String(listing.city || '').split(',')[0].trim();
+    return slugifyUrlPart(city, 'india');
+}
+
+function addressSlugFromListing(listing) {
+    const citySlug = citySlugFromListing(listing);
+    const skipped = new Set([
+        citySlug,
+        'india',
+        'maharashtra',
+        'delhi',
+        'uttar-pradesh',
+        'haryana',
+        'gujarat',
+        'karnataka',
+        'tamil-nadu',
+        'telangana',
+        'west-bengal',
+        'rajasthan',
+        'madhya-pradesh',
+        'punjab',
+        'bihar',
+        'ho'
+    ]);
+    const parts = String(listing.address || '')
+        .replace(/\b\d{6}\b/g, '')
+        .split(',')
+        .map(part => slugifyUrlPart(part, ''))
+        .filter(part => part && !skipped.has(part))
+        .slice(0, 2);
+
+    return parts.join('-');
+}
+
+function listingDetailUrl(listing) {
+    if (listing.url && (/^\/[a-z0-9/-]+$/i.test(listing.url) || /^https:\/\/(www\.)?healthdial\.com\/[a-z0-9/-]+$/i.test(listing.url))) {
+        return listing.url;
+    }
+
+    const city = citySlugFromListing(listing);
+    let slug = listing.slug ? slugifyUrlPart(listing.slug) : slugifyUrlPart(listing.name);
+    const area = addressSlugFromListing(listing);
+
+    if (!listing.slug && area && !slug.includes(area)) {
+        slug += `-${area}`;
+    }
+
+    if (!listing.slug && listing.id) {
+        slug += `-${listing.id}`;
+    }
+
+    return `/${city}/${slug}`;
+}
+
 // ===== RENDER LISTING CARD =====
 function renderListingCard(listing, isSponsored = false) {
     const catLower = (listing.category || '').toLowerCase();
     const placeholderData = getCategoryPlaceholder(catLower);
+    const detailUrl = listingDetailUrl(listing);
     
     const placeholderHtml = `<div class="listing-placeholder-modern" style="background:${placeholderData.gradient}"><div class="placeholder-icon-ring">${placeholderData.svg}</div><div class="placeholder-name">${escHtml(listing.name).substring(0,30)}</div><div class="placeholder-cat">${escHtml(listing.category || 'Medical')}</div></div>`;
     
@@ -326,7 +394,7 @@ function renderListingCard(listing, isSponsored = false) {
 
     return `
     <div class="listing-card reveal">
-        <a href="listing-detail.php?id=${listing.id}" class="listing-card-image">
+        <a href="${escHtml(detailUrl)}" class="listing-card-image">
             ${image}
             ${sponsoredBadge}
             <button class="${bookmarkClass}" onclick="event.preventDefault();event.stopPropagation();toggleBookmark(${listing.id},this)" title="Save">
@@ -338,7 +406,7 @@ function renderListingCard(listing, isSponsored = false) {
                 <span class="listing-category-badge">${escHtml(listing.category || '')}</span>
                 <span class="listing-rating">${stars} <small>${listing.rating || 0} (${listing.reviewCount || 0})</small></span>
             </div>
-            <a href="listing-detail.php?id=${listing.id}" class="listing-card-name">${escHtml(listing.name)}</a>
+            <a href="${escHtml(detailUrl)}" class="listing-card-name">${escHtml(listing.name)}</a>
             <p class="listing-card-address"><i class="fas fa-map-marker-alt"></i> ${escHtml(listing.address || '')}${listing.city ? ', ' + escHtml(listing.city) : ''}</p>
             ${distance}
             <div class="listing-card-actions">
@@ -452,7 +520,7 @@ function addToCompare(listing) {
 
 // ===== SHARE =====
 function shareListing(name, id) {
-    const url = window.location.origin + '/listing-detail.php?id=' + id;
+    const url = window.location.origin + listingDetailUrl({ name, id });
     const text = 'Check out ' + name + ' on HealthDial';
     if (navigator.share) {
         navigator.share({ title: name, text: text, url: url });
@@ -777,11 +845,12 @@ async function triggerSearch(query) {
             const total = data.data.pagination?.total || data.data.listings.length;
             html += `<div class="sd-section"><span class="sd-section-title"><i class="fas fa-list"></i> Listings (${total} found)</span></div>`;
             data.data.listings.forEach(listing => {
+                const detailUrl = listingDetailUrl(listing);
                 const imgHtml = listing.image
                     ? `<img src="${listing.image}" alt="" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-hospital\\'></i>'" />`
                     : `<i class="fas fa-hospital"></i>`;
                 html += `
-                    <a href="listing-detail.php?id=${listing.id}" class="sd-item" onclick="addSearchHistory('${escHtml(query)}')">
+                    <a href="${escHtml(detailUrl)}" class="sd-item" onclick="addSearchHistory('${escHtml(query)}')">
                         <div class="sd-item-icon listing">${imgHtml}</div>
                         <div class="sd-item-text">
                             <div class="sd-item-title">${highlightMatch(listing.name, query)}</div>
