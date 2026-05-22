@@ -1,0 +1,16 @@
+{
+  "name": "HealthDial",
+  "short_name": "HealthDial",
+  "description": "Find Hospitals, Clinics, Labs & Doctors Near You – Instantly",
+  "start_url": "/index.php",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2B7DE9",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "assets/images/icon.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/images/icon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["health", "medical"],
+  "lang": "en"
+}

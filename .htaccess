@@ -1,0 +1,55 @@
+# HealthDial .htaccess
+# Ensure static assets are served directly (not redirected)
+
+# Enable rewrite engine
+RewriteEngine On
+
+# IMPORTANT: Do NOT rewrite actual files and directories
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Set correct MIME types for assets (in case server defaults are wrong)
+<IfModule mod_mime.c>
+    AddType text/css .css
+    AddType application/javascript .js
+    AddType application/json .json
+    AddType image/png .png
+    AddType image/jpeg .jpg .jpeg
+    AddType image/gif .gif
+    AddType image/svg+xml .svg
+    AddType image/webp .webp
+    AddType image/x-icon .ico
+    AddType application/x-font-woff .woff
+    AddType application/x-font-woff2 .woff2
+    AddType font/ttf .ttf
+    AddType font/otf .otf
+    AddType application/manifest+json .webmanifest
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Security: Block access to sensitive files
+<FilesMatch "\.(env|htpasswd|ini|log|bak|sql)$">
+    Require all denied
+</FilesMatch>
+
+# Enable GZIP compression for better performance
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>
+
+# Browser caching for static assets
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType application/x-font-woff "access plus 1 year"
+    ExpiresByType application/x-font-woff2 "access plus 1 year"
+</IfModule>
