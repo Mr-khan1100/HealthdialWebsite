@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://healthdial.com/sitemap.php
+Sitemap: https://healthdial.com/sitemap-listings.php
