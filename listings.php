@@ -41,11 +41,12 @@ $catIcons = [
             <span class="section-label"><?= icon('search') ?> Find Medical Help</span>
             <h1>Browse <span class="gradient-text">Medical Listings</span></h1>
             <p class="hero-subtitle">Search verified hospitals, clinics, labs & more across 500+ cities in India.</p>
-            
+
             <form class="search-hero" id="listingsSearchForm" onsubmit="handleSearch(event)">
                 <div class="search-bar">
                     <span class="search-bar-icon"><?= icon('search') ?></span>
-                    <input type="text" id="searchInput" placeholder="Search hospitals, clinics, doctors..." autocomplete="off" />
+                    <input type="text" id="searchInput" placeholder="Search hospitals, clinics, doctors..."
+                        autocomplete="off" />
                     <input type="text" id="cityInput" placeholder="City or area" autocomplete="off" />
                     <button type="submit" class="btn btn-primary search-btn">
                         <?= icon('search') ?> Search
@@ -80,21 +81,22 @@ $catIcons = [
         </div>
         <div class="categories-grid categories-grid-listings">
             <?php if (!empty($categories)): ?>
-                <?php foreach ($categories as $i => $cat): 
+            <?php foreach ($categories as $i => $cat):
                     $iconKey = $catIcons[$cat['name']] ?? 'hospital';
-                ?>
-                <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?>" class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
-                    <div class="category-icon">
-                        <?= icon($iconKey) ?>
-                    </div>
-                    <div class="category-name"><?= htmlspecialchars($cat['name']) ?></div>
-                    <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span>
-                </a>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <div class="card" style="text-align:center; padding:48px; grid-column: 1/-1;">
-                    <p class="card-text">Unable to load categories. Please try again later.</p>
+                    ?>
+            <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?>"
+                class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
+                <div class="category-icon">
+                    <?= icon($iconKey) ?>
                 </div>
+                <div class="category-name"><?= htmlspecialchars($cat['name']) ?></div>
+                <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span>
+            </a>
+            <?php endforeach; ?>
+            <?php else: ?>
+            <div class="card" style="text-align:center; padding:48px; grid-column: 1/-1;">
+                <p class="card-text">Unable to load categories. Please try again later.</p>
+            </div>
             <?php endif; ?>
         </div>
     </div>
@@ -133,5 +135,5 @@ $catIcons = [
     </div>
 </section>
 
-<script src="assets/js/listings.js"></script>
+<script src="assets/js/listings.js?v=1.0"></script>
 <?php require_once 'includes/footer.php'; ?>

@@ -265,6 +265,6 @@ function setCategory(id, name) {
     loadListings();
 }
 </script>
-<script src="assets/js/listings.js"></script>
+<script src="assets/js/listings.js?v=1.0"></script>
 
 <?php require_once 'includes/footer.php'; ?>

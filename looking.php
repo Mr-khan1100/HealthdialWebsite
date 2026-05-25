@@ -28,7 +28,8 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
             <form class="looking-search" id="lookingSearchForm" onsubmit="searchListings(event)">
                 <div class="looking-search-bar">
                     <span class="search-bar-icon"><?= icon('search') ?></span>
-                    <input type="text" id="lookingSearchInput" placeholder="Search <?= $catName ?>..." value="" autocomplete="off" />
+                    <input type="text" id="lookingSearchInput" placeholder="Search <?= $catName ?>..." value=""
+                        autocomplete="off" />
                     <button type="submit" class="btn btn-primary search-btn-sm"><?= icon('search') ?></button>
                 </div>
             </form>
@@ -38,10 +39,10 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
         <div class="category-pills" id="categoryPills">
             <a href="looking.php" class="pill <?= $activeCat === 0 ? 'active' : '' ?>">All</a>
             <?php foreach ($categories as $cat): ?>
-                <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?><?= $activeCity ? '&city=' . urlencode($activeCity) : '' ?>" 
-                   class="pill <?= $activeCat === intval($cat['id']) ? 'active' : '' ?>">
-                    <?= htmlspecialchars($cat['name']) ?>
-                </a>
+            <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?><?= $activeCity ? '&city=' . urlencode($activeCity) : '' ?>"
+                class="pill <?= $activeCat === intval($cat['id']) ? 'active' : '' ?>">
+                <?= htmlspecialchars($cat['name']) ?>
+            </a>
             <?php endforeach; ?>
         </div>
     </div>
@@ -76,9 +77,30 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
     <div class="container">
         <div class="listing-grid" id="listingsGrid">
             <!-- Skeleton loaders -->
-            <div class="listing-card skeleton"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div></div></div>
-            <div class="listing-card skeleton"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div></div></div>
-            <div class="listing-card skeleton"><div class="skeleton-image"></div><div class="skeleton-body"><div class="skeleton-line w70"></div><div class="skeleton-line w50"></div><div class="skeleton-line w90"></div></div></div>
+            <div class="listing-card skeleton">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line w70"></div>
+                    <div class="skeleton-line w50"></div>
+                    <div class="skeleton-line w90"></div>
+                </div>
+            </div>
+            <div class="listing-card skeleton">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line w70"></div>
+                    <div class="skeleton-line w50"></div>
+                    <div class="skeleton-line w90"></div>
+                </div>
+            </div>
+            <div class="listing-card skeleton">
+                <div class="skeleton-image"></div>
+                <div class="skeleton-body">
+                    <div class="skeleton-line w70"></div>
+                    <div class="skeleton-line w50"></div>
+                    <div class="skeleton-line w90"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Empty state -->
@@ -108,19 +130,21 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
         <h2>Better Experience on the <span class="gradient-text">App</span></h2>
         <p class="cta-subtitle">GPS navigation, one-tap calling and medicine reminders — download now.</p>
         <div class="cta-buttons">
-            <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"><img src="assets/images/google-play.svg" alt="Get it on Google Play" class="store-badge" /></a>
-            <a href="https://apps.apple.com/app/healthdial" target="_blank"><img src="assets/images/app-store.svg" alt="Download on App Store" class="store-badge" /></a>
+            <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"><img
+                    src="assets/images/google-play.svg" alt="Get it on Google Play" class="store-badge" /></a>
+            <a href="https://apps.apple.com/app/healthdial" target="_blank"><img src="assets/images/app-store.svg"
+                    alt="Download on App Store" class="store-badge" /></a>
         </div>
     </div>
 </section>
 
 <script>
-    // Pass PHP values to JS
-    window.LOOKING_CONFIG = {
-        activeCat: <?= $activeCat ?>,
-        activeCity: '<?= addslashes($activeCity) ?>',
-        apiBase: '<?= API_BASE ?>'
-    };
+// Pass PHP values to JS
+window.LOOKING_CONFIG = {
+    activeCat: <?= $activeCat ?>,
+    activeCity: '<?= addslashes($activeCity) ?>',
+    apiBase: '<?= API_BASE ?>'
+};
 </script>
-<script src="assets/js/listings.js"></script>
+<script src="assets/js/listings.js?v=1.0"></script>
 <?php require_once 'includes/footer.php'; ?>
