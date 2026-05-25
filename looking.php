@@ -29,7 +29,6 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
                 <div class="looking-search-bar">
                     <span class="search-bar-icon"><?= icon('search') ?></span>
                     <input type="text" id="lookingSearchInput" placeholder="Search <?= $catName ?>..." value="" autocomplete="off" />
-                    <input type="text" id="lookingCityInput" placeholder="City" value="<?= $activeCity ?>" autocomplete="off" />
                     <button type="submit" class="btn btn-primary search-btn-sm"><?= icon('search') ?></button>
                 </div>
             </form>

@@ -13,8 +13,15 @@ $images = [];
 $reviews = [];
 $conn = getDbConnection();
 
-if ($listingId <= 0 && $requestedSlug !== '' && $conn) {
-    $listingId = hd_get_listing_id_by_slug($conn, $requestedSlug);
+if ($listingId <= 0 && $requestedSlug !== '') {
+    if ($conn) {
+        $listingId = hd_get_listing_id_by_slug($conn, $requestedSlug);
+    }
+    // Fallback: extract trailing numeric ID from slug (e.g. "apollo-hospital-123" -> 123)
+    // Works even when DB is unavailable, allowing the API fetch below to proceed.
+    if ($listingId <= 0 && preg_match('/-(\d+)$/', $requestedSlug, $idMatch)) {
+        $listingId = intval($idMatch[1]);
+    }
 }
 
 if ($listingId > 0) {

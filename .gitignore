@@ -1,1 +1,5 @@
-Backend/
+HealthDial/Backend/tmp/
+HealthDial/Backend/config.php
+HealthDial/Backend/uploads/
+HealthDial/uploads/
+HealthDial/Backend/*.log

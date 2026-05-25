@@ -195,13 +195,39 @@ async function loadListings(append = false) {
     const config = window.LOOKING_CONFIG || {};
     const catId = config.activeCat || 0;
     const city = document.getElementById('lookingCityInput')?.value || config.activeCity || '';
-    const search = document.getElementById('lookingSearchInput')?.value || '';
+    const search = (document.getElementById('lookingSearchInput')?.value || '').trim();
     const sort = document.getElementById('sortSelect')?.value || 'rating';
+
+    // For text search, use search.php (live API supports it); skip on append (no pagination there)
+    if (search && !append) {
+        try {
+            const searchUrl = `${API_BASE}search.php?q=${encodeURIComponent(search)}`;
+            const searchResp = await fetch(searchUrl);
+            let searchText = await searchResp.text();
+            if (searchText.includes('}{')) {
+                searchText = searchText.substr(searchText.lastIndexOf('}{') + 1);
+            }
+            const searchData = JSON.parse(searchText);
+
+            if (searchData.success) {
+                const results = searchData.data.results || [];
+                const total = searchData.data.total || results.length;
+                grid.innerHTML = results.map(l => renderListingCard(l)).join('');
+                if (countEl) countEl.textContent = `${total} result${total !== 1 ? 's' : ''} found`;
+                if (emptyState) emptyState.style.display = results.length === 0 ? 'block' : 'none';
+                if (loadMoreWrap) loadMoreWrap.style.display = 'none';
+                initRevealForNew();
+            }
+        } catch (e) {
+            console.error('Search failed:', e);
+        }
+        isLoading = false;
+        return;
+    }
 
     let url = `${API_BASE}get_filtered_listings.php?page=${currentPage}&limit=12`;
     if (catId) url += `&category_id=${catId}`;
     if (city) url += `&city=${encodeURIComponent(city)}`;
-    if (search) url += `&search=${encodeURIComponent(search)}`;
     if (userLat && userLng) url += `&lat=${userLat}&lng=${userLng}`;
     if (sort === 'nearest' && userLat) url += `&radius=100`;
 
@@ -354,7 +380,8 @@ function listingDetailUrl(listing) {
         slug += `-${area}`;
     }
 
-    if (!listing.slug && listing.id) {
+    // Always append ID so PHP can reliably find the listing via trailing-ID extraction
+    if (listing.id) {
         slug += `-${listing.id}`;
     }
 
@@ -588,30 +615,12 @@ function initSearchAutocomplete() {
     if (!input) return;
 
     const form = input.closest('form') || input.parentElement;
-    const searchBar = input.closest('.home-search-bar') || input.closest('.looking-search-bar');
 
     // Create search dropdown
     searchDropdown = document.createElement('div');
     searchDropdown.className = 'search-dropdown';
     searchDropdown.id = 'searchDropdown';
     form.appendChild(searchDropdown);
-
-    // City autocomplete
-    const cityInput = document.getElementById('lookingCityInput');
-    if (cityInput) {
-        cityDropdown = document.createElement('div');
-        cityDropdown.className = 'city-dropdown';
-        cityDropdown.id = 'cityDropdown';
-        form.appendChild(cityDropdown);
-
-        cityInput.addEventListener('focus', () => showCityDropdown(cityInput));
-        cityInput.addEventListener('input', () => showCityDropdown(cityInput));
-        cityInput.addEventListener('blur', () => {
-            setTimeout(() => {
-                cityDropdown.classList.remove('visible');
-            }, 200);
-        });
-    }
 
     // Show default dropdown on focus (history + categories)
     input.addEventListener('focus', () => {
@@ -686,15 +695,19 @@ function updateHighlight(items) {
 function showDropdown() {
     if (!searchDropdown) return;
     searchDropdown.classList.add('visible');
-    const bar = document.querySelector('.home-search-bar');
+    const bar = document.querySelector('.home-search-bar, .looking-search-bar');
     if (bar) bar.classList.add('dropdown-open');
+    const stats = document.querySelector('.home-hero-stats');
+    if (stats) stats.style.display = 'none';
 }
 
 function hideDropdown() {
     if (!searchDropdown) return;
     searchDropdown.classList.remove('visible');
-    const bar = document.querySelector('.home-search-bar');
+    const bar = document.querySelector('.home-search-bar, .looking-search-bar');
     if (bar) bar.classList.remove('dropdown-open');
+    const stats = document.querySelector('.home-hero-stats');
+    if (stats) stats.style.display = '';
     highlightedIndex = -1;
 }
 
@@ -736,22 +749,22 @@ function showDefaultDropdown() {
     }
 
     // Popular categories
-    html += `
-        <div class="sd-section">
-            <span class="sd-section-title"><i class="fas fa-fire"></i> Popular Categories</span>
-        </div>`;
-    CATEGORY_SUGGESTIONS.forEach(cat => {
-        html += `
-            <div class="sd-item" onclick="document.getElementById('lookingSearchInput').value='${cat.text}';addSearchHistory('${cat.text}');hideDropdown();searchListings(new Event('submit'))">
-                <div class="sd-item-icon cat" style="background:${cat.color}10;color:${cat.color}">
-                    <i class="fas ${cat.icon}"></i>
-                </div>
-                <div class="sd-item-text">
-                    <div class="sd-item-title">${cat.text}</div>
-                </div>
-                <span class="sd-item-badge cat-badge">Category</span>
-            </div>`;
-    });
+    // html += `
+    //     <div class="sd-section">
+    //         <span class="sd-section-title"><i class="fas fa-fire"></i> Popular Categories</span>
+    //     </div>`;
+    // CATEGORY_SUGGESTIONS.forEach(cat => {
+    //     html += `
+    //         <div class="sd-item" onclick="document.getElementById('lookingSearchInput').value='${cat.text}';addSearchHistory('${cat.text}');hideDropdown();searchListings(new Event('submit'))">
+    //             <div class="sd-item-icon cat" style="background:${cat.color}10;color:${cat.color}">
+    //                 <i class="fas ${cat.icon}"></i>
+    //             </div>
+    //             <div class="sd-item-text">
+    //                 <div class="sd-item-title">${cat.text}</div>
+    //             </div>
+    //             <span class="sd-item-badge cat-badge">Category</span>
+    //         </div>`;
+    // });
 
     // Keyboard hint footer
     html += `
@@ -769,9 +782,8 @@ function showFilteredSuggestions(query) {
     if (!searchDropdown) return;
     const q = query.toLowerCase();
     const matches = CATEGORY_SUGGESTIONS.filter(c => c.text.toLowerCase().includes(q));
-    const cityMatches = INDIAN_CITIES.filter(c => c.toLowerCase().includes(q)).slice(0, 3);
 
-    if (matches.length === 0 && cityMatches.length === 0) {
+    if (matches.length === 0) {
         searchDropdown.innerHTML = `
             <div class="sd-empty">
                 <i class="fas fa-search"></i>
@@ -795,17 +807,6 @@ function showFilteredSuggestions(query) {
                 </div>`;
         });
     }
-    if (cityMatches.length > 0) {
-        html += `<div class="sd-section"><span class="sd-section-title">Cities</span></div>`;
-        cityMatches.forEach(city => {
-            html += `
-                <div class="sd-item" onclick="document.getElementById('lookingCityInput').value='${city}';document.getElementById('lookingSearchInput').focus();">
-                    <div class="sd-item-icon city"><i class="fas fa-map-marker-alt"></i></div>
-                    <div class="sd-item-text"><div class="sd-item-title">${highlightMatch(city, query)}</div></div>
-                    <span class="sd-item-badge city-badge">City</span>
-                </div>`;
-        });
-    }
     searchDropdown.innerHTML = html;
     showDropdown();
 }
@@ -814,7 +815,8 @@ async function triggerSearch(query) {
     if (!searchDropdown || !query || query.length < 2) return;
 
     try {
-        const url = `${API_BASE}get_filtered_listings.php?search=${encodeURIComponent(query)}&limit=5`;
+        // search.php uses ?q= and actually filters by name/address/description
+        const url = `${API_BASE}search.php?q=${encodeURIComponent(query)}`;
         const resp = await fetch(url);
         let text = await resp.text();
         if (text.includes('}{')) {
@@ -840,11 +842,12 @@ async function triggerSearch(query) {
             html += '<div class="sd-divider"></div>';
         }
 
-        // Live listing results
-        if (data.success && data.data.listings && data.data.listings.length > 0) {
-            const total = data.data.pagination?.total || data.data.listings.length;
+        // search.php returns data.results (not data.listings) and data.total
+        if (data.success && data.data.results && data.data.results.length > 0) {
+            const total = data.data.total || data.data.results.length;
+            const displayResults = data.data.results.slice(0, 5);
             html += `<div class="sd-section"><span class="sd-section-title"><i class="fas fa-list"></i> Listings (${total} found)</span></div>`;
-            data.data.listings.forEach(listing => {
+            displayResults.forEach(listing => {
                 const detailUrl = listingDetailUrl(listing);
                 const imgHtml = listing.image
                     ? `<img src="${listing.image}" alt="" onerror="this.style.display='none';this.parentElement.innerHTML='<i class=\\'fas fa-hospital\\'></i>'" />`
@@ -854,7 +857,6 @@ async function triggerSearch(query) {
                         <div class="sd-item-icon listing">${imgHtml}</div>
                         <div class="sd-item-text">
                             <div class="sd-item-title">${highlightMatch(listing.name, query)}</div>
-                            <div class="sd-item-sub">${escHtml(listing.category || '')} · ${escHtml(listing.address || listing.city || '')}</div>
                         </div>
                         ${listing.rating > 0 ? `<span class="sd-item-badge cat-badge">★ ${listing.rating}</span>` : ''}
                     </a>`;

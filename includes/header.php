@@ -88,7 +88,8 @@ if (!empty($structuredData)) {
         <button class="dark-mode-toggle" id="darkModeToggle" onClick="toggleDarkMode()" aria-label="Toggle dark mode">
           <i class="fas fa-moon"></i>
         </button>
-        <a href="<?= $assetBase ?>/download.php" class="btn btn-primary nav-cta"><i class="fas fa-download"></i> Get App</a>
+        <a href="<?= $assetBase ?>/add-listing.php" class="btn nav-cta <?= $currentPage == 'add-listing' ? 'btn-primary' : '' ?>" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;border:none;"><i class="fas fa-plus"></i> Add Listing</a>
+        <a href="<?= $assetBase ?>/download.php" class="btn btn-primary nav-cta" style="margin-left:4px;"><i class="fas fa-download"></i> Get App</a>
       </div>
       <div class="nav-right-mobile">
         <button class="dark-mode-toggle" id="darkModeToggleMobile" onClick="toggleDarkMode()"
@@ -112,6 +113,7 @@ if (!empty($structuredData)) {
     <a href="<?= $assetBase ?>/news.php">News</a>
     <a href="<?= $assetBase ?>/contact.php">Contact</a>
     <a href="<?= $assetBase ?>/promote.php" style="color:#f59e0b;font-weight:600;"><i class="fas fa-bolt"></i> Promote Listing</a>
+    <a href="<?= $assetBase ?>/add-listing.php" style="color:#059669;font-weight:600;"><i class="fas fa-plus-circle"></i> Add Your Listing</a>
     <a href="<?= $assetBase ?>/download.php" class="btn btn-primary" style="margin-top:12px;"><i class="fas fa-download"></i> Download
       App</a>
   </div>
@@ -127,8 +129,8 @@ if (!empty($structuredData)) {
     <a href="<?= $assetBase ?>/promote.php" class="bottom-nav-item <?= $currentPage == 'promote' ? 'active' : '' ?>" style="<?= $currentPage == 'promote' ? '' : 'color:#f59e0b;' ?>">
       <i class="fas fa-bolt"></i><span>Promote</span>
     </a>
-    <a href="<?= $assetBase ?>/blog.php" class="bottom-nav-item <?= $currentPage == 'blog' ? 'active' : '' ?>">
-      <i class="fas fa-heartbeat"></i><span>Health</span>
+    <a href="<?= $assetBase ?>/add-listing.php" class="bottom-nav-item <?= $currentPage == 'add-listing' ? 'active' : '' ?>" style="<?= $currentPage == 'add-listing' ? '' : 'color:#059669;' ?>">
+      <i class="fas fa-plus-circle"></i><span>Add</span>
     </a>
     <a href="<?= $assetBase ?>/download.php" class="bottom-nav-item <?= $currentPage == 'download' ? 'active' : '' ?>">
       <i class="fas fa-mobile-alt"></i><span>Get App</span>
