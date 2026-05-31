@@ -505,12 +505,12 @@ if (!$listing): ?>
                 .detail-qr-btn-pay {
                     background: linear-gradient(135deg, #2563eb, #059669);
                     color: #fff;
-                    box-shadow: 0 4px 15px rgba(37,99,235,.25);
+                    box-shadow: 0 4px 15px rgba(37, 99, 235, .25);
                 }
 
                 .detail-qr-btn-pay:hover {
                     background: linear-gradient(135deg, #1d4ed8, #047857);
-                    box-shadow: 0 6px 20px rgba(37,99,235,.35);
+                    box-shadow: 0 6px 20px rgba(37, 99, 235, .35);
                 }
 
                 .detail-qr-btn-pay:disabled {
@@ -529,12 +529,14 @@ if (!$listing): ?>
                         <div class="detail-qr-info">
                             <div class="detail-qr-badge"><i class="fas fa-qrcode"></i> Scan to Review</div>
                             <h4><?= htmlspecialchars($listing['name']) ?></h4>
-                            <p>Scan this QR code with any phone camera to open this listing and drop a review instantly — no app needed.</p>
+                            <p>Scan this QR code with any phone camera to open this listing and drop a review instantly
+                                — no app needed.</p>
                             <div class="detail-qr-actions">
                                 <button class="detail-qr-btn detail-qr-btn-primary" onclick="downloadQR()">
                                     <i class="fas fa-download"></i> Download QR
                                 </button>
-                                <button class="detail-qr-btn detail-qr-btn-secondary" id="qrCopyBtn" onclick="copyReviewLink()">
+                                <button class="detail-qr-btn detail-qr-btn-secondary" id="qrCopyBtn"
+                                    onclick="copyReviewLink()">
                                     <i class="fas fa-link"></i> Copy Link
                                 </button>
                             </div>
@@ -549,9 +551,11 @@ if (!$listing): ?>
                         <div class="detail-qr-info">
                             <div class="detail-qr-badge-locked"><i class="fas fa-star"></i> One-Time Unlock</div>
                             <h4>Get Your Review QR Code</h4>
-                            <p>Share a scannable QR with patients — they scan once and land directly on your review section. No app needed. One-time payment, valid forever.</p>
+                            <p>Share a scannable QR with patients — they scan once and land directly on your review
+                                section. No app needed. One-time payment, valid forever.</p>
                             <div class="detail-qr-actions">
-                                <button class="detail-qr-btn detail-qr-btn-pay" id="qrPayBtn" onclick="initiateQrPayment()">
+                                <button class="detail-qr-btn detail-qr-btn-pay" id="qrPayBtn"
+                                    onclick="initiateQrPayment()">
                                     <i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR
                                 </button>
                             </div>
@@ -845,19 +849,25 @@ if (!$listing): ?>
 
 <script>
 // QR Code
-const HD_QR_PAID     = <?= $qrPaid ? 'true' : 'false' ?>;
-const HD_LISTING_ID  = <?= intval($listing['id']) ?>;
-const HD_REVIEW_URL  = '<?= addslashes($canonicalUrl) ?>#reviewFormSection';
+const HD_QR_PAID = <?= $qrPaid ? 'true' : 'false' ?>;
+const HD_LISTING_ID = <?= intval($listing['id']) ?>;
+const HD_REVIEW_URL = '<?= addslashes($canonicalUrl) ?>#reviewFormSection';
 const HD_LISTING_NAME_SLUG = '<?= addslashes(preg_replace('/[^a-z0-9]+/i', '-', $listing['name'])) ?>';
 
 function renderQRCode(container) {
     if (!container) return;
+
     function initQR() {
-        if (typeof QRCode === 'undefined') { setTimeout(initQR, 80); return; }
+        if (typeof QRCode === 'undefined') {
+            setTimeout(initQR, 80);
+            return;
+        }
         new QRCode(container, {
             text: HD_REVIEW_URL,
-            width: 124, height: 124,
-            colorDark: '#1e3a8a', colorLight: '#ffffff',
+            width: 124,
+            height: 124,
+            colorDark: '#1e3a8a',
+            colorLight: '#ffffff',
             correctLevel: QRCode.CorrectLevel.M
         });
     }
@@ -886,30 +896,47 @@ function copyReviewLink() {
             btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
             btn.style.background = '#dcfce7';
             btn.style.color = '#15803d';
-            setTimeout(function() { btn.innerHTML = orig; btn.style.background = ''; btn.style.color = ''; }, 2000);
+            setTimeout(function() {
+                btn.innerHTML = orig;
+                btn.style.background = '';
+                btn.style.color = '';
+            }, 2000);
         }
     });
 }
 
 function initiateQrPayment() {
     const btn = document.getElementById('qrPayBtn');
-    if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order...'; btn.disabled = true; }
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order...';
+        btn.disabled = true;
+    }
 
     fetch('qr_create_order.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ listing_id: HD_LISTING_ID })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (!data.success) throw new Error(data.message || 'Could not create order');
-        if (data.already_paid) { location.reload(); return; }
-        openRazorpayCheckout(data.razorpay_order_id, data.razorpay_key_id, data.amount_paise);
-    })
-    .catch(err => {
-        if (btn) { btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR'; btn.disabled = false; }
-        alert('Could not initiate payment. Please try again.\n' + err.message);
-    });
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                listing_id: HD_LISTING_ID
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) throw new Error(data.message || 'Could not create order');
+            if (data.already_paid) {
+                location.reload();
+                return;
+            }
+            openRazorpayCheckout(data.razorpay_order_id, data.razorpay_key_id, data.amount_paise);
+        })
+        .catch(err => {
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
+                btn.disabled = false;
+            }
+            alert('Could not initiate payment. Please try again.\n' + err.message);
+        });
 }
 
 function openRazorpayCheckout(orderId, keyId, amountPaise) {
@@ -919,7 +946,10 @@ function openRazorpayCheckout(orderId, keyId, amountPaise) {
         s.onload = () => openRazorpayCheckout(orderId, keyId, amountPaise);
         s.onerror = () => {
             const btn = document.getElementById('qrPayBtn');
-            if (btn) { btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR'; btn.disabled = false; }
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
+                btn.disabled = false;
+            }
             alert('Could not load payment gateway. Please check your connection.');
         };
         document.head.appendChild(s);
@@ -933,13 +963,19 @@ function openRazorpayCheckout(orderId, keyId, amountPaise) {
         description: 'QR Code Unlock',
         order_id: orderId,
         handler: function(response) {
-            verifyQrPayment(response.razorpay_order_id, response.razorpay_payment_id, response.razorpay_signature);
+            verifyQrPayment(response.razorpay_order_id, response.razorpay_payment_id, response
+                .razorpay_signature);
         },
-        theme: { color: '#2563eb' },
+        theme: {
+            color: '#2563eb'
+        },
         modal: {
             ondismiss: function() {
                 const btn = document.getElementById('qrPayBtn');
-                if (btn) { btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR'; btn.disabled = false; }
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
+                    btn.disabled = false;
+                }
             }
         }
     }).open();
@@ -947,24 +983,26 @@ function openRazorpayCheckout(orderId, keyId, amountPaise) {
 
 function verifyQrPayment(rzpOrderId, rzpPaymentId, rzpSignature) {
     fetch('qr_verify_payment.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            listing_id: HD_LISTING_ID,
-            razorpay_order_id: rzpOrderId,
-            razorpay_payment_id: rzpPaymentId,
-            razorpay_signature: rzpSignature
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                listing_id: HD_LISTING_ID,
+                razorpay_order_id: rzpOrderId,
+                razorpay_payment_id: rzpPaymentId,
+                razorpay_signature: rzpSignature
+            })
         })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            showQrUnlocked();
-        } else {
-            alert('Payment verification failed. Please contact support with payment ID: ' + rzpPaymentId);
-        }
-    })
-    .catch(() => alert('Verification error. Please contact support.'));
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showQrUnlocked();
+            } else {
+                alert('Payment verification failed. Please contact support with payment ID: ' + rzpPaymentId);
+            }
+        })
+        .catch(() => alert('Verification error. Please contact support.'));
 }
 
 function showQrUnlocked() {
@@ -1172,6 +1210,576 @@ function submitDetailAppointment() {
 }
 window.submitDetailAppointment = submitDetailAppointment;
 </script>
-<script src="assets/js/listings.js?v=1.0"></script>
+<script src="assets/js/listings.js?v=2.4.0"></script>
+
+<?php if (!$qrPaid): ?>
+<!-- ===== QR UPSELL INTERSTITIAL ===== -->
+<div id="qr-interstitial" class="qri-overlay" aria-modal="true" role="dialog" aria-label="Unlock QR Code">
+    <div class="qri-card">
+        <button class="qri-close" onclick="closeQrInterstitial()" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Visual -->
+        <div class="qri-visual">
+            <div class="qri-blob qri-blob1"></div>
+            <div class="qri-blob qri-blob2"></div>
+
+            <!-- Simulated QR + phone scan animation -->
+            <div class="qri-scene">
+                <div class="qri-qr-mock">
+                    <div class="qri-qr-corner qri-qr-tl"></div>
+                    <div class="qri-qr-corner qri-qr-tr"></div>
+                    <div class="qri-qr-corner qri-qr-bl"></div>
+                    <div class="qri-qr-dots">
+                        <?php
+                                $pattern = [1, 0, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 1, 0];
+                                foreach ($pattern as $bit)
+                                    echo '<span class="' . ($bit ? 'on' : '') . '"></span>';
+                                ?>
+                    </div>
+                    <div class="qri-scanline"></div>
+                </div>
+                <div class="qri-phone-icon"><i class="fas fa-mobile-screen-button"></i></div>
+                <div class="qri-pulse-ring qri-pulse1"></div>
+                <div class="qri-pulse-ring qri-pulse2"></div>
+            </div>
+
+            <div class="qri-badge-tag">
+                <i class="fas fa-lock-open"></i> One-Time ₹200 Unlock
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="qri-body">
+            <h2 class="qri-title">Let Patients <span class="gradient-text">Review You</span> in One Scan</h2>
+            <p class="qri-sub">Get a personal QR code for <strong><?= htmlspecialchars($listing['name']) ?></strong>.
+                Patients scan once → land on your review page. No app needed. Reviews build trust, trust brings more
+                patients.</p>
+
+            <div class="qri-benefits">
+                <div class="qri-benefit"><i class="fas fa-bolt"></i> Instant review access — one scan</div>
+                <div class="qri-benefit"><i class="fas fa-infinity"></i> Valid forever — pay once</div>
+                <div class="qri-benefit"><i class="fas fa-download"></i> Download & print for your reception</div>
+                <div class="qri-benefit"><i class="fas fa-star"></i> More reviews = higher ranking</div>
+            </div>
+
+            <div class="qri-price-row">
+                <div class="qri-price">
+                    <span class="qri-price-old">₹999</span>
+                    <span class="qri-price-current">₹200</span>
+                    <span class="qri-price-tag">Launch Offer</span>
+                </div>
+            </div>
+
+            <div class="qri-ctas">
+                <button class="qri-btn-primary" onclick="closeQrInterstitial(); initiateQrPayment();">
+                    <i class="fas fa-qrcode"></i> Unlock My QR Code — ₹200
+                </button>
+                <button class="qri-btn-skip" onclick="closeQrInterstitial()">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ===== QR UPSELL INTERSTITIAL ===== */
+.qri-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 16px;
+    animation: qriFadeIn 0.35s ease both;
+}
+
+.qri-overlay.hiding {
+    animation: qriFadeOut 0.28s ease both;
+}
+
+@keyframes qriFadeIn {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@keyframes qriFadeOut {
+    from {
+        opacity: 1
+    }
+
+    to {
+        opacity: 0
+    }
+}
+
+.qri-card {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--glass, rgba(8, 16, 40, 0.97));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    animation: qriSlideUp 0.4s cubic-bezier(.22, 1, .36, 1) both;
+}
+
+[data-theme="light"] .qri-card {
+    background: rgba(255, 255, 255, 0.98);
+}
+
+@keyframes qriSlideUp {
+    from {
+        transform: translateY(40px);
+        opacity: 0
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1
+    }
+}
+
+.qri-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 10;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.qri-close:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+}
+
+/* Visual header */
+.qri-visual {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.18) 0%, rgba(37, 99, 235, 0.15) 50%, rgba(16, 185, 129, 0.14) 100%);
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qri-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(55px);
+    opacity: 0.4;
+}
+
+.qri-blob1 {
+    width: 200px;
+    height: 200px;
+    background: #7c3aed;
+    top: -60px;
+    right: -20px;
+    animation: blobFloat 8s ease-in-out infinite;
+}
+
+.qri-blob2 {
+    width: 160px;
+    height: 160px;
+    background: #10b981;
+    bottom: -40px;
+    left: -20px;
+    animation: blobFloat 6s ease-in-out infinite reverse;
+}
+
+/* QR scene */
+.qri-scene {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Simulated QR code */
+.qri-qr-mock {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 12px;
+    padding: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+[data-theme="light"] .qri-qr-mock {
+    background: rgba(255, 255, 255, 1);
+}
+
+.qri-qr-corner {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border: 3px solid #1e3a8a;
+    border-radius: 3px;
+}
+
+.qri-qr-tl {
+    top: 8px;
+    left: 8px;
+}
+
+.qri-qr-tr {
+    top: 8px;
+    right: 8px;
+}
+
+.qri-qr-bl {
+    bottom: 8px;
+    left: 8px;
+}
+
+.qri-qr-tl::after,
+.qri-qr-tr::after,
+.qri-qr-bl::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #1e3a8a;
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.qri-qr-dots {
+    position: absolute;
+    inset: 32px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1.5px;
+}
+
+.qri-qr-dots span {
+    border-radius: 1px;
+}
+
+.qri-qr-dots span.on {
+    background: #1e3a8a;
+}
+
+/* Scan line */
+.qri-scanline {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #22c55e, transparent);
+    box-shadow: 0 0 8px #22c55e;
+    animation: scanMove 2s ease-in-out infinite;
+    top: 10px;
+}
+
+@keyframes scanMove {
+    0% {
+        top: 10px;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100px;
+        opacity: 0;
+    }
+}
+
+/* Phone icon */
+.qri-phone-icon {
+    position: absolute;
+    bottom: -8px;
+    right: -24px;
+    font-size: 2.4rem;
+    color: rgba(255, 255, 255, 0.85);
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    animation: phoneBob 3s ease-in-out infinite;
+}
+
+@keyframes phoneBob {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(-8deg)
+    }
+
+    50% {
+        transform: translateY(-6px) rotate(-8deg)
+    }
+}
+
+/* Pulse rings */
+.qri-pulse-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1.5px solid rgba(99, 102, 241, 0.45);
+    animation: qriPulseOut 2.4s ease-out infinite;
+}
+
+.qri-pulse1 {
+    width: 130px;
+    height: 130px;
+    top: -10px;
+    left: -10px;
+}
+
+.qri-pulse2 {
+    width: 160px;
+    height: 160px;
+    top: -25px;
+    left: -25px;
+    animation-delay: .8s;
+}
+
+@keyframes qriPulseOut {
+    0% {
+        transform: scale(0.85);
+        opacity: 0.6
+    }
+
+    100% {
+        transform: scale(1.2);
+        opacity: 0
+    }
+}
+
+/* Badge */
+.qri-badge-tag {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 5px 16px;
+    border-radius: 99px;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.45);
+}
+
+/* Body */
+.qri-body {
+    padding: 22px 26px 26px;
+}
+
+.qri-title {
+    font-size: 1.28rem;
+    font-weight: 800;
+    color: var(--text, #f1f5f9);
+    line-height: 1.3;
+    margin-bottom: 8px;
+}
+
+.qri-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.qri-benefits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.qri-benefit {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-secondary, #94a3b8);
+}
+
+.qri-benefit i {
+    color: #a78bfa;
+    font-size: 0.78rem;
+    flex-shrink: 0;
+}
+
+/* Price */
+.qri-price-row {
+    margin-bottom: 18px;
+}
+
+.qri-price {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.qri-price-old {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted, #64748b);
+    text-decoration: line-through;
+}
+
+.qri-price-current {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--text, #f1f5f9);
+    line-height: 1;
+}
+
+.qri-price-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    padding: 3px 10px;
+    border-radius: 99px;
+}
+
+/* CTAs */
+.qri-ctas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.qri-btn-primary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 99px;
+    background: linear-gradient(135deg, #7c3aed, #2563eb);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+
+.qri-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(124, 58, 237, 0.55);
+}
+
+.qri-btn-skip {
+    background: none;
+    border: none;
+    color: var(--text-muted, #64748b);
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+    transition: color 0.2s;
+    font-family: inherit;
+}
+
+.qri-btn-skip:hover {
+    color: var(--text-secondary, #94a3b8);
+}
+
+@media (max-width: 480px) {
+    .qri-body {
+        padding: 18px 18px 22px;
+    }
+
+    .qri-title {
+        font-size: 1.1rem;
+    }
+
+    .qri-visual {
+        height: 170px;
+    }
+
+    .qri-benefits {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+(function() {
+    var KEY = 'hd_qr_seen_<?= intval($listing['id']) ?>';
+    var el = document.getElementById('qr-interstitial');
+    if (!el) return;
+    if (sessionStorage.getItem(KEY)) {
+        el.style.display = 'none';
+        return;
+    }
+    sessionStorage.setItem(KEY, '1');
+    // Show after 3 seconds so user can first read the listing
+    el.style.display = 'none';
+    setTimeout(function() {
+        el.style.display = 'flex';
+    }, 3000);
+})();
+
+function closeQrInterstitial() {
+    var el = document.getElementById('qr-interstitial');
+    if (!el) return;
+    el.classList.add('hiding');
+    setTimeout(function() {
+        el.style.display = 'none';
+    }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var el = document.getElementById('qr-interstitial');
+    if (!el) return;
+    el.addEventListener('click', function(e) {
+        if (e.target === el) closeQrInterstitial();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeQrInterstitial();
+    });
+});
+</script>
+<?php endif; ?>
+
 <?php endif; ?>
 <?php require_once 'includes/footer.php'; ?>

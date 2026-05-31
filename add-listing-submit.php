@@ -65,7 +65,7 @@ $is_24x7     = ($input['is_24x7'] == '1' || $input['is_24x7'] === true) ? 1 : 0;
 $open_time   = $is_24x7 ? '00:00:00' : (!empty($input['open_time'])  ? $input['open_time']  : '09:00:00');
 $close_time  = $is_24x7 ? '00:00:00' : (!empty($input['close_time']) ? $input['close_time'] : '18:00:00');
 $user_id     = 0; // Guest — no auth required
-$status      = 'pending';
+$status      = 'approved';
 
 $conn->begin_transaction();
 

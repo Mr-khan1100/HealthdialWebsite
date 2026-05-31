@@ -7,6 +7,171 @@ require_once 'includes/db.php';
 require_once 'includes/header.php';
 ?>
 
+<style>
+/* ===== STORE BADGE — EQUAL SIZE EVERYWHERE ===== */
+.store-badge {
+    height: 46px;
+    width: 148px;
+    object-fit: contain;
+}
+
+/* ===== MOBILE BASE — Light Theme ===== */
+@media (max-width: 768px) {
+
+    .dl-cta { display: none; }
+
+    .dl-hero { padding: 96px 0 52px; min-height: auto; }
+    .dl-blob-1 { width: 240px; height: 240px; }
+    .dl-blob-2 { width: 180px; height: 180px; }
+    .dl-blob-3 { display: none; }
+    .dl-hero-title { font-size: 2.2rem; }
+
+    /* Store buttons — light */
+    .dl-store-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 8px 14px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .dl-store-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(43,125,233,0.18);
+    }
+
+    /* Stats — light */
+    .dl-stats {
+        padding: 28px 0;
+        background: var(--bg-alt);
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+    }
+    .dl-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+    }
+    .dl-stat-item {
+        background: var(--surface);
+        padding: 22px 10px;
+    }
+
+    /* Features — light */
+    .dl-features { padding: 44px 0; }
+    .dl-feature-card {
+        border-radius: 20px !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04) !important;
+        transition: transform 0.25s, box-shadow 0.25s !important;
+    }
+    .dl-feature-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.1) !important;
+    }
+
+    /* How it works — light */
+    .dl-how { padding: 44px 0; }
+    .dl-step-arrow { display: none; }
+    .dl-steps-grid { gap: 14px; }
+    .dl-step {
+        max-width: 100%;
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 24px 20px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* ===== MOBILE DARK THEME — Glossy Glass ===== */
+@media (max-width: 768px) {
+
+    [data-theme="dark"] .dl-blob-1 { opacity: 0.3; }
+    [data-theme="dark"] .dl-blob-2 { opacity: 0.22; }
+
+    [data-theme="dark"] .dl-trust-row { color: rgba(240,246,255,0.6); }
+    [data-theme="dark"] .dl-avatar   { border-color: rgba(255,255,255,0.15); }
+
+    /* Store buttons — dark glass */
+    [data-theme="dark"] .dl-store-btn {
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.14);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+    [data-theme="dark"] .dl-store-btn:hover {
+        box-shadow: 0 10px 28px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
+    }
+
+    /* Stats — dark glass */
+    [data-theme="dark"] .dl-stats {
+        background: linear-gradient(135deg, #080f22, #0c1a3a);
+        border-top: none;
+        border-bottom: none;
+    }
+    [data-theme="dark"] .dl-stats-grid {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(255,255,255,0.08);
+    }
+    [data-theme="dark"] .dl-stat-item {
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+    }
+    [data-theme="dark"] .dl-stat-label { color: rgba(240,246,255,0.5); }
+
+    /* Feature cards — dark glass */
+    [data-theme="dark"] .dl-feature-card {
+        background: rgba(255,255,255,0.045) !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.07) !important;
+        position: relative; overflow: hidden;
+    }
+    [data-theme="dark"] .dl-feature-card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+    }
+    [data-theme="dark"] .dl-feature-card:hover {
+        box-shadow: 0 14px 36px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    }
+    [data-theme="dark"] .dl-feature-card h3 { color: #f0f6ff; }
+    [data-theme="dark"] .dl-feature-card p  { color: rgba(240,246,255,0.58); }
+    [data-theme="dark"] .dl-features .section-header h2 { color: #f0f6ff; }
+    [data-theme="dark"] .dl-features .section-header p  { color: rgba(240,246,255,0.55) !important; }
+
+    /* Steps — dark glass */
+    [data-theme="dark"] .dl-step {
+        background: rgba(255,255,255,0.045);
+        border: 1px solid rgba(255,255,255,0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.07);
+        position: relative; overflow: hidden;
+    }
+    [data-theme="dark"] .dl-step::before {
+        content: '';
+        position: absolute; top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent);
+    }
+    [data-theme="dark"] .dl-step h3 { color: #f0f6ff; }
+    [data-theme="dark"] .dl-step p  { color: rgba(240,246,255,0.58); }
+    [data-theme="dark"] .dl-step-num  { box-shadow: 0 4px 14px rgba(37,99,235,0.45); }
+    [data-theme="dark"] .dl-step-icon { box-shadow: 0 4px 16px rgba(43,125,233,0.2); }
+    [data-theme="dark"] .dl-how .section-header h2 { color: #f0f6ff; }
+}
+</style>
+
 <!-- ===== HERO SECTION ===== -->
 <section class="dl-hero">
     <div class="dl-hero-bg">
@@ -28,10 +193,10 @@ require_once 'includes/header.php';
             </p>
             <div class="dl-store-buttons">
                 <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank" class="dl-store-btn" aria-label="Google Play">
-                    <img src="assets/images/google-play.svg" alt="Get it on Google Play" height="52" />
+                    <img src="assets/images/google-play.svg" alt="Get it on Google Play" class="store-badge" />
                 </a>
                 <a href="https://apps.apple.com/app/healthdial" target="_blank" class="dl-store-btn" aria-label="App Store">
-                    <img src="assets/images/app-store.svg" alt="Download on App Store" height="52" />
+                    <img src="assets/images/app-store.svg" alt="Download on App Store" class="store-badge" />
                 </a>
             </div>
             <div class="dl-trust-row">
@@ -203,10 +368,10 @@ require_once 'includes/header.php';
         <p style="color:rgba(255,255,255,0.8);max-width:480px;margin:0 auto 32px;font-size:1.05rem;">Download HealthDial today and join thousands of Indians who trust us for their healthcare needs.</p>
         <div class="dl-store-buttons" style="justify-content:center;">
             <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank" class="dl-store-btn">
-                <img src="assets/images/google-play.svg" alt="Google Play" height="52" />
+                <img src="assets/images/google-play.svg" alt="Google Play" class="store-badge" />
             </a>
             <a href="https://apps.apple.com/app/healthdial" target="_blank" class="dl-store-btn">
-                <img src="assets/images/app-store.svg" alt="App Store" height="52" />
+                <img src="assets/images/app-store.svg" alt="App Store" class="store-badge" />
             </a>
         </div>
     </div>

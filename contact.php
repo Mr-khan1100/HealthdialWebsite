@@ -6,7 +6,7 @@ require_once 'includes/icons.php';
 require_once 'includes/header.php';
 ?>
 
-<section class="section" style="padding-top: 140px; background: linear-gradient(135deg, #f0f7ff 0%, #f0faf0 100%);">
+<section class="section" style="padding-top: 140px;">
     <div class="container">
         <div class="section-header">
             <span class="section-label">

@@ -590,8 +590,9 @@ button {
 }
 
 .store-badge {
-    height: 50px;
-    width: auto;
+    height: 46px;
+    width: 148px;
+    object-fit: contain;
     transition: transform var(--duration) var(--ease);
     border-radius: var(--radius-sm);
 }

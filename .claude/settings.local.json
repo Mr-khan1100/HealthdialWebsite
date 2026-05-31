@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"c:\\\\projects\\\\HealthDial\\\\healthdialBackendUpdated\\\\public_html\\\\assets\\\\css\" -File -ErrorAction SilentlyContinue | Select-Object Name, @{Name=\"Size\";Expression={$_.Length}})"
+    ]
+  }
+}

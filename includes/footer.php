@@ -7,14 +7,14 @@
                 <div class="footer-logo">
                     <img src="assets/images/logo.png" alt="HealthDial" />
                 </div>
-                <p class="footer-desc">Your trusted health companion for finding verified medical services instantly
+                <p class="footer-desc">Your trusted health partner for finding verified medical services instantly
                     across India.</p>
                 <div class="footer-app-badges">
                     <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank">
-                        <img src="assets/images/google-play.svg" alt="Google Play" height="40" />
+                        <img src="assets/images/google-play.svg" alt="Google Play" class="store-badge" />
                     </a>
                     <a href="https://apps.apple.com/app/healthdial" target="_blank">
-                        <img src="assets/images/app-store.svg" alt="App Store" height="40" />
+                        <img src="assets/images/app-store.svg" alt="App Store" class="store-badge" />
                     </a>
                 </div>
             </div>
@@ -58,7 +58,8 @@
 </footer>
 
 <!-- Back to Top Button -->
-<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+<button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})"
+    aria-label="Back to top">
     <i class="fas fa-chevron-up"></i>
 </button>
 
@@ -120,7 +121,7 @@ function changeLanguage(lang, btn) {
     document.querySelectorAll('.lang-option').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     localStorage.setItem('hd_lang', lang);
-    
+
     // Trigger Google Translate
     const select = document.querySelector('#google_translate_element select');
     if (select) {
@@ -132,7 +133,7 @@ function changeLanguage(lang, btn) {
         document.cookie = 'googtrans=/en/' + lang + ';path=/;domain=' + location.hostname;
         location.reload();
     }
-    
+
     // Close panel
     setTimeout(() => toggleLangPanel(), 300);
 }
@@ -160,7 +161,8 @@ document.addEventListener('click', function(e) {
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<script src="assets/js/main.js"></script>
+<script src="assets/js/revamp.js?v=2.4.0"></script>
+<script src="assets/js/main.js?v=2.4.0"></script>
 </body>
 
 </html>

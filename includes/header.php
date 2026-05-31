@@ -1,17 +1,17 @@
 <?php
 if (!isset($currentPage))
-  $currentPage = 'home';
+    $currentPage = 'home';
 $titleText = isset($pageTitle) ? $pageTitle . ' | HealthDial' : 'HealthDial - Find Medical Help Instantly';
 $descriptionText = isset($pageDesc) ? $pageDesc : 'Find Hospitals, Clinics, Labs & Doctors Near You - Instantly.';
 $assetBase = '';
 if (function_exists('hd_asset_base')) {
-  $assetBase = hd_asset_base();
+    $assetBase = hd_asset_base();
 } elseif (defined('HEALTHDIAL_ASSET_BASE')) {
-  $assetBase = HEALTHDIAL_ASSET_BASE;
+    $assetBase = HEALTHDIAL_ASSET_BASE;
 }
 ?>
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="dark">
 
 <head>
     <meta charset="UTF-8" />
@@ -29,7 +29,8 @@ if (function_exists('hd_asset_base')) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=2.2.0" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=2.4.0" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=2.4.0" />
 
 
     <meta name="google-site-verification" content="zUHx3csIxzeg0V6z14P2BJEJMLX8d8sse1grih5Kk2Y" />
@@ -37,16 +38,16 @@ if (function_exists('hd_asset_base')) {
     <meta name="robots" content="index, follow">
     <meta name="robots" content="noodp, noydir" />
     <?php
-  if (!empty($structuredData)) {
-    $jsonLdItems = isset($structuredData['@context']) ? [$structuredData] : $structuredData;
-    foreach ($jsonLdItems as $jsonLdItem) {
-      if (!is_array($jsonLdItem)) {
-        continue;
-      }
-      echo '<script type="application/ld+json">' . json_encode($jsonLdItem, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . PHP_EOL;
+    if (!empty($structuredData)) {
+        $jsonLdItems = isset($structuredData['@context']) ? [$structuredData] : $structuredData;
+        foreach ($jsonLdItems as $jsonLdItem) {
+            if (!is_array($jsonLdItem)) {
+                continue;
+            }
+            echo '<script type="application/ld+json">' . json_encode($jsonLdItem, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>' . PHP_EOL;
+        }
     }
-  }
-  ?>
+    ?>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MC8HC3L38F"></script>
     <script>
@@ -71,21 +72,21 @@ if (function_exists('hd_asset_base')) {
             </a>
             <div class="nav-links">
                 <a href="<?= $assetBase ?>/index.php" <?php if ($currentPage == 'home')
-            echo 'class="active"'; ?>>Home</a>
+                      echo 'class="active"'; ?>>Home</a>
                 <a href="<?= $assetBase ?>/categories.php" <?php if ($currentPage == 'categories')
-            echo 'class="active"'; ?>>Categories</a>
+                      echo 'class="active"'; ?>>Categories</a>
                 <a href="<?= $assetBase ?>/listings.php" <?php if ($currentPage == 'listings')
-            echo 'class="active"'; ?>>Listings</a>
+                      echo 'class="active"'; ?>>Listings</a>
                 <a href="<?= $assetBase ?>/cities.php" <?php if ($currentPage == 'cities')
-            echo 'class="active"'; ?>>Cities</a>
+                      echo 'class="active"'; ?>>Cities</a>
                 <a href="<?= $assetBase ?>/blog.php" <?php if ($currentPage == 'blog')
-            echo 'class="active"'; ?>>Blog</a>
+                      echo 'class="active"'; ?>>Blog</a>
                 <a href="<?= $assetBase ?>/news.php" <?php if ($currentPage == 'news')
-            echo 'class="active"'; ?>>News</a>
+                      echo 'class="active"'; ?>>News</a>
                 <a href="<?= $assetBase ?>/contact.php" <?php if ($currentPage == 'contact')
-            echo 'class="active"'; ?>>Contact</a>
+                      echo 'class="active"'; ?>>Contact</a>
                 <a href="<?= $assetBase ?>/promote.php" <?php if ($currentPage == 'promote')
-            echo 'class="active"'; ?> style="color:#f59e0b;font-weight:700;"><i class="fas fa-bolt"
+                      echo 'class="active"'; ?> style="color:#f59e0b;font-weight:700;"><i class="fas fa-bolt"
                         style="margin-right:3px;"></i>Promote</a>
                 <!-- Dark Mode Toggle -->
                 <button class="dark-mode-toggle" id="darkModeToggle" onClick="toggleDarkMode()"
@@ -101,10 +102,14 @@ if (function_exists('hd_asset_base')) {
                         class="fas fa-download"></i> Get App</a>
             </div>
             <div class="nav-right-mobile">
+                <a href="<?= $assetBase ?>/add-listing.php" class="nav-mobile-add-btn">
+                    <i class="fas fa-plus"></i> Add Free Listing
+                </a>
                 <button class="dark-mode-toggle" id="darkModeToggleMobile" onClick="toggleDarkMode()"
                     aria-label="Toggle dark mode">
                     <i class="fas fa-moon"></i>
                 </button>
+
                 <button class="hamburger" aria-label="Menu">
                     <span></span><span></span><span></span>
                 </button>
@@ -136,8 +141,8 @@ if (function_exists('hd_asset_base')) {
         <a href="<?= $assetBase ?>/index.php" class="bottom-nav-item <?= $currentPage == 'home' ? 'active' : '' ?>">
             <i class="fas fa-home"></i><span>Home</span>
         </a>
-        <a href="<?= $assetBase ?>/listings.php"
-            class="bottom-nav-item <?= $currentPage == 'listings' ? 'active' : '' ?>">
+        <a href="<?= $assetBase ?>/looking.php"
+            class="bottom-nav-item <?= $currentPage == 'looking' ? 'active' : '' ?>">
             <i class="fas fa-search"></i><span>Explore</span>
         </a>
         <a href="<?= $assetBase ?>/promote.php" class="bottom-nav-item <?= $currentPage == 'promote' ? 'active' : '' ?>"

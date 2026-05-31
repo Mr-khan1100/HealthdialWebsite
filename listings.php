@@ -135,5 +135,5 @@ $catIcons = [
     </div>
 </section>
 
-<script src="assets/js/listings.js?v=1.0"></script>
+<script src="assets/js/listings.js?v=2.4.0"></script>
 <?php require_once 'includes/footer.php'; ?>

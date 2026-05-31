@@ -1,6 +1,6 @@
 <?php
 $catName = isset($_GET['name']) ? htmlspecialchars($_GET['name']) : 'All';
-$currentPage = 'listings';
+$currentPage = 'looking';
 $pageTitle = $catName . ' Listings';
 $pageDesc = 'Find verified ' . strtolower($catName) . ' near you. Browse medical listings with ratings, contact info and directions on HealthDial.';
 require_once 'includes/icons.php';
@@ -24,7 +24,13 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
 <section class="looking-hero">
     <div class="container">
         <div class="looking-search-wrap">
-            <a href="listings.php" class="looking-back"><?= icon('arrowRight') ?></a>
+            <!-- Location chip -->
+            <button class="location-chip" id="locationChip" onclick="toggleLocationPermission()" type="button">
+                <span class="location-chip-dot" id="locationDot"></span>
+                <i class="fas fa-location-dot"></i>
+                <span id="locationChipLabel">Location Off</span>
+            </button>
+
             <form class="looking-search" id="lookingSearchForm" onsubmit="searchListings(event)">
                 <div class="looking-search-bar">
                     <span class="search-bar-icon"><?= icon('search') ?></span>
@@ -51,18 +57,22 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
 <!-- ===== SORT BAR ===== -->
 <div class="sort-bar">
     <div class="container">
-        <div class="sort-bar-inner">
-            <span class="sort-bar-count" id="resultsCount">Loading...</span>
-            <div class="sort-bar-right">
-                <select id="sortSelect" onchange="changeSortAndReload()" class="sort-select">
-                    <option value="rating">Top Rated</option>
-                    <option value="nearest">Nearest</option>
-                    <option value="newest">Newest</option>
-                </select>
-            </div>
+        <div class="sort-pills" id="sortPills">
+            <button class="sort-pill active" data-sort="rating" onclick="setSortPill(this,'rating')"><i
+                    class="fas fa-star"></i> Top Rated</button>
+            <button class="sort-pill" data-sort="nearest" onclick="setSortPill(this,'nearest')"><i
+                    class="fas fa-location-dot"></i> Nearest</button>
+            <button class="sort-pill" data-sort="newest" onclick="setSortPill(this,'newest')"><i
+                    class="fas fa-clock"></i> Newest</button>
         </div>
     </div>
 </div>
+<!-- hidden select kept so loadListings() can still read sort value -->
+<select id="sortSelect" style="display:none;">
+    <option value="rating" selected>Top Rated</option>
+    <option value="nearest">Nearest</option>
+    <option value="newest">Newest</option>
+</select>
 
 <!-- ===== SPONSORED ===== -->
 <section id="sponsoredSection" style="display:none;">
@@ -124,19 +134,6 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
     </div>
 </section>
 
-<!-- ===== CTA ===== -->
-<section class="section cta-section" id="download">
-    <div class="container">
-        <h2>Better Experience on the <span class="gradient-text">App</span></h2>
-        <p class="cta-subtitle">GPS navigation, one-tap calling and medicine reminders — download now.</p>
-        <div class="cta-buttons">
-            <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"><img
-                    src="assets/images/google-play.svg" alt="Get it on Google Play" class="store-badge" /></a>
-            <a href="https://apps.apple.com/app/healthdial" target="_blank"><img src="assets/images/app-store.svg"
-                    alt="Download on App Store" class="store-badge" /></a>
-        </div>
-    </div>
-</section>
 
 <script>
 // Pass PHP values to JS
@@ -146,5 +143,5 @@ window.LOOKING_CONFIG = {
     apiBase: '<?= API_BASE ?>'
 };
 </script>
-<script src="assets/js/listings.js?v=1.0"></script>
+<script src="assets/js/listings.js?v=2.4.0"></script>
 <?php require_once 'includes/footer.php'; ?>

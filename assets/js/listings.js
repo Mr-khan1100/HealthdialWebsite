@@ -13,10 +13,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initGeolocation();
     initSearchAutocomplete();
     initPWA();
-    
+
     // If on a page that loads listings
     if (document.getElementById('listingsGrid')) {
         loadListings();
+    }
+
+    // Top facility rows on homepage
+    if (window.HD_FACILITY_ROWS) {
+        loadTopFacilities(false);
     }
 });
 
@@ -27,9 +32,12 @@ function initGeolocation() {
         const loc = JSON.parse(stored);
         userLat = loc.lat;
         userLng = loc.lng;
-        onLocationGranted();
+        // Silently restore coordinates — do NOT force sort to nearest
+        updateLocationIndicator();
         return;
     }
+
+    updateLocationIndicator();
 
     if (sessionStorage.getItem('hd_location_dismissed')) return;
 
@@ -37,19 +45,58 @@ function initGeolocation() {
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(result => {
             if (result.state === 'granted') {
-                // Already granted, just get it
                 requestLocation();
             } else if (result.state === 'prompt') {
-                // Show a friendly prompt before browser prompt
                 showLocationPrompt();
             }
-            // If 'denied', do nothing
         }).catch(() => {
-            // Fallback: just show our prompt
             showLocationPrompt();
         });
     } else {
         showLocationPrompt();
+    }
+}
+
+function updateLocationIndicator() {
+    const chip  = document.getElementById('locationChip');
+    const label = document.getElementById('locationChipLabel');
+    const dot   = document.getElementById('locationDot');
+    if (!chip) return;
+
+    if (userLat && userLng) {
+        chip.classList.add('loc-on');
+        if (dot) dot.classList.add('active');
+        const city = sessionStorage.getItem('hd_city');
+        if (label) label.textContent = city || 'Location On';
+    } else {
+        chip.classList.remove('loc-on');
+        if (dot) dot.classList.remove('active');
+        if (label) label.textContent = 'Location Off';
+    }
+}
+
+function toggleLocationPermission() {
+    if (userLat && userLng) {
+        // Turn location OFF
+        userLat = null;
+        userLng = null;
+        sessionStorage.removeItem('hd_location');
+        sessionStorage.removeItem('hd_city');
+        updateLocationIndicator();
+
+        // If sort was 'nearest', snap back to 'rating'
+        const sortSelect = document.getElementById('sortSelect');
+        if (sortSelect && sortSelect.value === 'nearest') {
+            sortSelect.value = 'rating';
+            document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
+            const ratingPill = document.querySelector('.sort-pill[data-sort="rating"]');
+            if (ratingPill) ratingPill.classList.add('active');
+        }
+        currentPage = 1;
+        loadListings();
+    } else {
+        // Turn location ON — fires browser permission prompt
+        requestLocation();
     }
 }
 
@@ -129,6 +176,7 @@ function reverseGeocode(lat, lng) {
                     cityInput.style.color = 'var(--blue)';
                 }
                 sessionStorage.setItem('hd_city', city);
+                updateLocationIndicator(); // update chip label to show resolved city name
             }
         })
         .catch(() => {});
@@ -141,18 +189,68 @@ function dismissLocationBanner() {
 }
 
 function onLocationGranted() {
-    // Update sort options on looking page
-    const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect) {
-        sortSelect.value = 'nearest';
-        loadListings();
-    }
+    updateLocationIndicator();
 
     // Update "View All Nearby" link
     const nearYouLink = document.getElementById('nearYouLink');
     if (nearYouLink) {
         nearYouLink.href = `looking.php?lat=${userLat}&lng=${userLng}`;
     }
+
+    // Reload listings only if user already has 'nearest' selected
+    const sortSelect = document.getElementById('sortSelect');
+    if (sortSelect && sortSelect.value === 'nearest') {
+        currentPage = 1;
+        loadListings();
+    }
+
+    // Refresh facility rows with location
+    if (window.HD_FACILITY_ROWS) {
+        loadTopFacilities(true);
+    }
+}
+
+// ===== TOP FACILITIES (index.php) =====
+async function loadOneFacilityRow(row, withLocation) {
+    const track = document.getElementById('facTrack-' + row.id);
+    const sub   = document.getElementById('facSub-'   + row.id);
+    if (!track) return;
+
+    let url = `${API_BASE}get_filtered_listings.php?category_id=${row.catId}&limit=10`;
+    if (withLocation && userLat && userLng) {
+        url += `&lat=${userLat}&lng=${userLng}&radius=100`;
+    }
+
+    try {
+        const resp = await fetch(url);
+        let text = await resp.text();
+        if (text.includes('}{')) text = text.slice(text.lastIndexOf('}{') + 1);
+        const data = JSON.parse(text);
+
+        if (data.success) {
+            const listings = data.data.listings || [];
+            if (listings.length === 0) {
+                track.innerHTML = '<p class="fac-empty">No listings found in this area.</p>';
+                return;
+            }
+            track.innerHTML = listings.map(l => renderListingCard(l)).join('');
+            if (sub) {
+                sub.textContent = withLocation && userLat
+                    ? `Nearest ${row.label.toLowerCase()} near you`
+                    : `Top rated ${row.label.toLowerCase()} globally`;
+            }
+            if (window.initRevealForNew) initRevealForNew();
+        }
+    } catch (e) {
+        console.error('Facility row failed:', row.id, e);
+        track.innerHTML = '<p class="fac-empty">Failed to load. Please refresh.</p>';
+    }
+}
+
+async function loadTopFacilities(withLocation) {
+    const rows = window.HD_FACILITY_ROWS;
+    if (!rows || !rows.length) return;
+    await Promise.all(rows.map(row => loadOneFacilityRow(row, withLocation)));
 }
 
 // ===== NEAR YOU (listings.php) =====
@@ -228,8 +326,9 @@ async function loadListings(append = false) {
     let url = `${API_BASE}get_filtered_listings.php?page=${currentPage}&limit=12`;
     if (catId) url += `&category_id=${catId}`;
     if (city) url += `&city=${encodeURIComponent(city)}`;
-    if (userLat && userLng) url += `&lat=${userLat}&lng=${userLng}`;
-    if (sort === 'nearest' && userLat) url += `&radius=100`;
+    if (sort === 'nearest' && userLat && userLng) {
+        url += `&lat=${userLat}&lng=${userLng}&radius=100`;
+    }
 
     try {
         const resp = await fetch(url);
@@ -315,9 +414,65 @@ function searchListings(e) {
     }
 }
 
+function setSortPill(btn, value) {
+    // Update hidden select so changeSortAndReload reads the right value
+    const sel = document.getElementById('sortSelect');
+    if (sel) {
+        sel.value = value;
+        // If location was denied mid-session, snap back to correct pill
+        sel._onSnapBack = () => {
+            document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
+            const ratingPill = document.querySelector('.sort-pill[data-sort="rating"]');
+            if (ratingPill) ratingPill.classList.add('active');
+        };
+    }
+    // Optimistically mark pill active
+    document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    changeSortAndReload();
+}
+
 function changeSortAndReload() {
     currentPage = 1;
-    loadListings();
+    const sortSelect = document.getElementById('sortSelect');
+    const sort = sortSelect?.value || 'rating';
+
+    if (sort !== 'nearest') {
+        loadListings();
+        return;
+    }
+
+    // "Nearest" selected — location already available, just reload
+    if (userLat && userLng) {
+        loadListings();
+        return;
+    }
+
+    // Need location permission first
+    if (!navigator.geolocation) {
+        if (sortSelect) sortSelect.value = 'rating';
+        loadListings();
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        pos => {
+            userLat = pos.coords.latitude;
+            userLng = pos.coords.longitude;
+            sessionStorage.setItem('hd_location', JSON.stringify({ lat: userLat, lng: userLng }));
+            reverseGeocode(userLat, userLng);
+            loadListings();
+        },
+        () => {
+            // Permission denied — revert sort pill and hidden select to rating
+            if (sortSelect) {
+                sortSelect.value = 'rating';
+                if (sortSelect._onSnapBack) sortSelect._onSnapBack();
+            }
+            loadListings();
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
 }
 
 function slugifyUrlPart(value, fallback = 'listing') {
