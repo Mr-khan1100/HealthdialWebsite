@@ -3240,7 +3240,7 @@ button {
 /* Gallery */
 .detail-gallery {
     background: linear-gradient(135deg, #f0f7ff 0%, #f0faf0 100%);
-    padding-bottom: 32px;
+    padding: 32px 0 32px;
 }
 
 .gallery-carousel {

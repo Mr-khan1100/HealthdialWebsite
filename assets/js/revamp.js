@@ -120,6 +120,59 @@
     document.addEventListener('DOMContentLoaded', function () {
         initHeroCounters();
         patchWordLoop();
+        initSparkle();
     });
+
+    // ——— Sparkle particle burst on card / button hover ———
+    function initSparkle() {
+        const COLORS = [
+            'rgba(255,255,255,0.92)',
+            'rgba(99,179,255,0.85)',
+            'rgba(16,185,129,0.80)',
+            'rgba(167,139,250,0.80)',
+        ];
+
+        document.addEventListener('mouseenter', function(e) {
+            const target = e.target.closest(
+                '.listing-card, .home-cat-card, .hero-cta-primary, .hero-cta-secondary, .btn-primary'
+            );
+            if (!target) return;
+            if (target._hdSparkling) return;
+            target._hdSparkling = true;
+            setTimeout(() => { target._hdSparkling = false; }, 600);
+
+            const rect = target.getBoundingClientRect();
+            const cx = e.clientX - rect.left;
+            const cy = e.clientY - rect.top;
+            const count = target.classList.contains('listing-card') ? 8 : 5;
+
+            for (let i = 0; i < count; i++) {
+                const spark = document.createElement('span');
+                spark.className = 'hd-spark';
+                const angle = (360 / count) * i + Math.random() * 20 - 10;
+                const dist = 18 + Math.random() * 32;
+                const dx = Math.cos(angle * Math.PI / 180) * dist;
+                const dy = Math.sin(angle * Math.PI / 180) * dist;
+                const size = 3 + Math.random() * 4;
+                const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                const delay = Math.random() * 80;
+
+                spark.style.cssText = [
+                    `left:${cx}px`,
+                    `top:${cy}px`,
+                    `width:${size}px`,
+                    `height:${size}px`,
+                    `background:${color}`,
+                    `box-shadow:0 0 6px ${color},0 0 12px rgba(37,99,235,0.5)`,
+                    `--dx:${dx}px`,
+                    `--dy:${dy}px`,
+                    `animation-delay:${delay}ms`,
+                ].join(';');
+
+                target.appendChild(spark);
+                setTimeout(() => spark.remove(), 650 + delay);
+            }
+        }, true);
+    }
 
 })();

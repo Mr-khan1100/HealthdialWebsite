@@ -85,7 +85,7 @@ img { height: auto; }
    ================================================================ */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: smooth; background: var(--bg); }
+html { scroll-behavior: smooth; background: var(--bg); overflow-x: hidden; }
 
 body {
     font-family: var(--font);
@@ -963,6 +963,27 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
     gap: 20px;
 }
 
+/* ——— EXPLORE IN-FEED BANNER ——— */
+.explore-banner-slot {
+    grid-column: 1 / -1;
+}
+.explore-banner-slot a { display: block; }
+.explore-banner-img {
+    width: 100%;
+    height: 360px;
+    object-fit: fill;
+    border-radius: 14px;
+    display: block;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+}
+@media (max-width: 768px) {
+    .explore-banner-img {
+        height: 110px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+}
+
 /* ——— THE GLASS CARD ——— */
 .listing-card {
     background: var(--glass);
@@ -1250,7 +1271,7 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
 /* ================================================================
    DOWNLOAD CTA
    ================================================================ */
-.home-cta { padding: 56px 0 80px; }
+.home-cta { padding: 30px 0 30px; }
 .home-cta-inner {
     background: var(--glass);
     backdrop-filter: blur(22px);
@@ -1320,7 +1341,7 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
     background: rgba(4,8,22,0.88);
     backdrop-filter: blur(22px);
     border-top: 1px solid var(--glass-border);
-    padding: 64px 0 80px;
+    padding: 15px 0 64px;
 }
 [data-theme="light"] .footer {
     background: rgba(224,232,255,0.88);
@@ -1853,6 +1874,21 @@ label {
     background: transparent;
 }
 
+/* Fix: detail-hero hardcoded light gradient — make it themed */
+.detail-hero {
+    background: var(--bg);
+}
+.detail-back-btn {
+    color: var(--text) !important;
+}
+.detail-back-btn svg {
+    fill: currentColor;
+    stroke: currentColor;
+}
+.detail-back-btn:hover {
+    color: var(--blue-light) !important;
+}
+
 /* Fix: location banner (listings.php) */
 .location-banner {
     background: var(--glass);
@@ -1983,18 +2019,18 @@ label {
 }
 
 /* Tighter section vertical padding */
-.section { padding: 64px 0; }
+.section { padding: 36px 0; }
 
 /* ================================================================
    TOP FACILITIES — horizontal scroll rows
    ================================================================ */
 .top-facilities-section {
-    padding: 48px 0;
+    padding: 28px 0;
 }
 .top-facilities-section .container {
     display: flex;
     flex-direction: column;
-    gap: 48px;
+    gap: 28px;
 }
 
 /* — Row layout — */
@@ -2099,7 +2135,7 @@ label {
 
 @media (max-width: 768px) {
     /* Section padding */
-    .section { padding: 36px 0; }
+    .section { padding: 20px 0; }
 
     /* Hero — hide on mobile */
     .hero-sub           { display: none; }
@@ -2144,8 +2180,162 @@ label {
 }
 
 @media (max-width: 480px) {
-    .section { padding: 28px 0; }
+    .section { padding: 16px 0; }
     .home-cat-grid { grid-template-columns: repeat(2, 1fr); }
     .compact-search-btn span { display: none; }
     .listing-grid  { grid-template-columns: 1fr; }
+}
+
+/* ================================================================
+   SPARKLE + SHINE
+   ================================================================ */
+
+/* Shared shimmer keyframe — uses transform so it never affects layout */
+@keyframes hdShimmerSweep {
+    0%   { transform: translateX(-160%); }
+    40%  { transform: translateX(250%); }
+    100% { transform: translateX(250%); }
+}
+
+/* Sparkle dot burst */
+@keyframes hdSparkFly {
+    0%   { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0); opacity: 0; }
+}
+.hd-spark {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 10;
+    animation: hdSparkFly 0.55s ease forwards;
+}
+
+/* ——— Listing card shimmer (passive sweep, staggered) ——— */
+.listing-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 65%; height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 20%,
+        rgba(255,255,255,0.045) 44%,
+        rgba(255,255,255,0.08)  50%,
+        rgba(255,255,255,0.045) 56%,
+        transparent 80%
+    );
+    pointer-events: none;
+    z-index: 2;
+    border-radius: inherit;
+    transform: translateX(-160%);
+    animation: hdShimmerSweep 5s ease infinite;
+}
+.listing-card:nth-child(2)::after { animation-delay: -1.0s; }
+.listing-card:nth-child(3)::after { animation-delay: -2.0s; }
+.listing-card:nth-child(4)::after { animation-delay: -3.0s; }
+.listing-card:nth-child(5)::after { animation-delay: -0.6s; }
+.listing-card:nth-child(6)::after { animation-delay: -1.6s; }
+.listing-card:nth-child(7)::after { animation-delay: -2.6s; }
+.listing-card:nth-child(8)::after { animation-delay: -3.6s; }
+.listing-card:nth-child(9)::after { animation-delay: -4.2s; }
+
+/* Enhanced hover glow on cards */
+.listing-card:hover {
+    border-color: rgba(255,255,255,0.25) !important;
+    box-shadow:
+        var(--shadow-lg),
+        0 0 0 1px rgba(37,99,235,0.18),
+        0 0 32px rgba(37,99,235,0.22),
+        0 0 64px rgba(37,99,235,0.08) !important;
+}
+
+/* ——— Category card shimmer ——— */
+.home-cat-card { overflow: hidden; }
+.home-cat-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 65%; height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.10) 50%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 2;
+    transform: translateX(-160%);
+    animation: hdShimmerSweep 4.5s ease infinite;
+}
+.home-cat-card:nth-child(2)::after { animation-delay: -0.75s; }
+.home-cat-card:nth-child(3)::after { animation-delay: -1.5s; }
+.home-cat-card:nth-child(4)::after { animation-delay: -2.25s; }
+.home-cat-card:nth-child(5)::after { animation-delay: -3.0s; }
+.home-cat-card:nth-child(6)::after { animation-delay: -3.75s; }
+
+/* ——— Feature chips: shimmer + twinkling border ——— */
+.cta-feature { position: relative; overflow: hidden; }
+.cta-feature::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 65%; height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.10) 50%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+    transform: translateX(-160%);
+    animation: hdShimmerSweep 3.5s ease infinite;
+}
+.cta-feature:nth-child(2)::after { animation-delay: -0.58s; }
+.cta-feature:nth-child(3)::after { animation-delay: -1.17s; }
+.cta-feature:nth-child(4)::after { animation-delay: -1.75s; }
+.cta-feature:nth-child(5)::after { animation-delay: -2.33s; }
+.cta-feature:nth-child(6)::after { animation-delay: -2.92s; }
+
+/* ——— Button: enhanced shimmer + sparkle glow ——— */
+.hero-cta-secondary {
+    position: relative;
+    overflow: hidden;
+}
+.hero-cta-secondary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 65%; height: 100%;
+    background: linear-gradient(
+        105deg,
+        transparent 30%,
+        rgba(255,255,255,0.12) 50%,
+        transparent 70%
+    );
+    pointer-events: none;
+    z-index: 1;
+    transform: translateX(-160%);
+    animation: hdShimmerSweep 4s ease infinite 2s;
+}
+.hero-cta-primary:hover,
+.btn-primary:hover {
+    box-shadow: 0 8px 36px var(--blue-glow), 0 0 48px rgba(37,99,235,0.35), 0 0 80px rgba(16,185,129,0.15) !important;
+}
+
+/* ——— Nav CTA shimmer ——— */
+.nav-cta {
+    position: relative;
+    overflow: hidden;
+}
+.nav-cta::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 65%; height: 100%;
+    background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%);
+    pointer-events: none;
+    z-index: 1;
+    transform: translateX(-160%);
+    animation: hdShimmerSweep 3s ease infinite;
 }

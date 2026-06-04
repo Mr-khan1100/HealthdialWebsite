@@ -354,9 +354,10 @@ async function loadListings(append = false) {
 
             // Render listings
             if (!append) {
-                grid.innerHTML = combinedHtml.join('');
+                grid.innerHTML = buildGridWithBanners(combinedHtml);
             } else {
-                grid.insertAdjacentHTML('beforeend', listings.map(l => renderListingCard(l)).join(''));
+                const existingCards = grid.querySelectorAll('.listing-card').length;
+                grid.insertAdjacentHTML('beforeend', buildGridWithBanners(listings.map(l => renderListingCard(l)), existingCards));
             }
 
             // Update count
@@ -541,6 +542,24 @@ function listingDetailUrl(listing) {
     }
 
     return `/${city}/${slug}`;
+}
+
+// ===== EXPLORE PAGE BANNER (injected every 6 cards) =====
+const EXPLORE_BANNER_HTML = `
+<div class="explore-banner-slot">
+    <a href="add-listing.php">
+        <img src="assets/images/ExplorepageBanner.jpeg" alt="HealthDial" class="explore-banner-img" />
+    </a>
+</div>`;
+
+function buildGridWithBanners(cards, existingCount = 0) {
+    const result = [];
+    cards.forEach((html, i) => {
+        result.push(html);
+        const position = existingCount + i + 1;
+        if (position % 6 === 0) result.push(EXPLORE_BANNER_HTML);
+    });
+    return result.join('');
 }
 
 // ===== RENDER LISTING CARD =====

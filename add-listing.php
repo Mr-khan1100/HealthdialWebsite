@@ -14,1282 +14,1269 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
 ?>
 
 <style>
-/* ===== ADD LISTING BANNER ===== */
-.al-hero {
-    margin-top: 64px;
-    padding: 20px 20px 0;
-    box-sizing: border-box;
-}
-
-.al-hero-img {
-    width: 100%;
-    height: 240px;
-    display: block;
-    object-fit: fill;
-    object-position: center;
-    border-radius: 20px;
-}
-
-.al-hero-img-mobile {
-    display: none;
-}
-
-@media (max-width: 640px) {
+    /* ===== ADD LISTING BANNER ===== */
     .al-hero {
-        margin-top: 56px;
-        padding: 8px 8px 0;
+        max-width: 1200px;
+        margin: 64px auto 0;
+        padding: 0 20px;
+        box-sizing: border-box;
     }
 
-    .al-hero-img-desktop {
-        display: none;
-    }
-
-    .al-hero-img-mobile {
-        display: block;
+    .al-hero-img {
         width: 100%;
-        height: 160px;
+        height: 360px;
+        display: block;
         object-fit: fill;
         object-position: center;
-        border-radius: 20px;
-
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
     }
-}
 
-/* ===== STEP GUIDE ===== */
-.al-guide {
-    background: var(--bg, #060d1f);
-    padding: 64px 0 80px;
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
-}
+    @media (max-width: 640px) {
+        .al-hero {
+            margin-top: 56px;
+            padding: 0 12px;
+        }
 
-.al-guide-heading {
-    text-align: center;
-    margin-bottom: 48px;
-}
+        .al-hero-img {
+            height: 130px;
+            border-radius: 12px;
+        }
+    }
 
-.al-guide-heading h2 {
-    font-size: clamp(22px, 3vw, 32px);
-    font-weight: 800;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 10px;
-}
+    /* ===== STEP GUIDE ===== */
+    .al-guide {
+        background: var(--bg, #060d1f);
+        padding: 15px 0 30px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
 
-.al-guide-heading p {
-    font-size: 15px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.6));
-    max-width: 520px;
-    margin: 0 auto;
-}
+    .al-guide-heading {
+        text-align: center;
+        margin-bottom: 48px;
+    }
 
-/* Steps */
-.al-steps {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin-bottom: 56px;
-}
+    .al-guide-heading h2 {
+        font-size: clamp(22px, 3vw, 32px);
+        font-weight: 800;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 10px;
+    }
 
-.al-step {
-    display: grid;
-    grid-template-columns: 120px 1fr;
-    align-items: center;
-    gap: 28px;
-    padding: 28px 0;
-    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.07));
-}
+    .al-guide-heading p {
+        font-size: 15px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.6));
+        max-width: 520px;
+        margin: 0 auto;
+    }
 
-.al-step:last-child {
-    border-bottom: none;
-}
+    /* Steps */
+    .al-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 56px;
+    }
 
-.al-step-illus {
-    width: 120px;
-    height: 100px;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.al-step-illus i {
-    font-size: 42px;
-    position: relative;
-    z-index: 1;
-}
-
-.al-step-illus::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: .15;
-    background: currentColor;
-}
-
-.al-step-label {
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .6px;
-    text-transform: uppercase;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.5));
-    margin-bottom: 5px;
-}
-
-.al-step-text h3 {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 6px;
-}
-
-.al-step-text p {
-    font-size: 14px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.6));
-    line-height: 1.55;
-    margin: 0;
-}
-
-@media (max-width: 480px) {
     .al-step {
-        grid-template-columns: 80px 1fr;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        align-items: center;
+        gap: 28px;
+        padding: 28px 0;
+        border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.07));
+    }
+
+    .al-step:last-child {
+        border-bottom: none;
     }
 
     .al-step-illus {
-        width: 80px;
-        height: 72px;
-        border-radius: 12px;
+        width: 120px;
+        height: 100px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        position: relative;
+        overflow: hidden;
     }
 
     .al-step-illus i {
-        font-size: 30px;
+        font-size: 42px;
+        position: relative;
+        z-index: 1;
     }
-}
 
-/* QR promo section */
-.al-qr-section {
-    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0ea5e9 100%);
-    border-radius: 24px;
-    padding: 40px 36px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 36px;
-}
+    .al-step-illus::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        opacity: .15;
+        background: currentColor;
+    }
 
-.al-qr-section-text h3 {
-    font-size: clamp(20px, 2.5vw, 28px);
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 10px;
-}
+    .al-step-label {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: .6px;
+        text-transform: uppercase;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.5));
+        margin-bottom: 5px;
+    }
 
-.al-qr-section-text p {
-    font-size: 14px;
-    color: rgba(255, 255, 255, .82);
-    max-width: 440px;
-    line-height: 1.6;
-    margin-bottom: 20px;
-}
+    .al-step-text h3 {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 6px;
+    }
 
-.al-qr-steps {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-}
+    .al-step-text p {
+        font-size: 14px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.6));
+        line-height: 1.55;
+        margin: 0;
+    }
 
-.al-qr-steps li {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: rgba(255, 255, 255, .88);
-}
+    @media (max-width: 480px) {
+        .al-step {
+            grid-template-columns: 80px 1fr;
+            gap: 16px;
+        }
 
-.al-qr-steps li i {
-    color: #fbbf24;
-    font-size: 13px;
-    flex-shrink: 0;
-}
+        .al-step-illus {
+            width: 80px;
+            height: 72px;
+            border-radius: 12px;
+        }
 
-.al-promote-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #fff;
-    color: #1e3a8a;
-    font-weight: 700;
-    font-size: 14px;
-    padding: 12px 24px;
-    border-radius: 100px;
-    text-decoration: none;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
-    transition: transform .18s, box-shadow .18s;
-}
+        .al-step-illus i {
+            font-size: 30px;
+        }
+    }
 
-.al-promote-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
-}
-
-.al-qr-box {
-    background: #fff;
-    border-radius: 20px;
-    padding: 20px;
-    text-align: center;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
-    min-width: 148px;
-}
-
-.al-qr-box img {
-    width: 108px;
-    height: 108px;
-    display: block;
-    margin: 0 auto 10px;
-    border-radius: 6px;
-}
-
-.al-qr-box-label {
-    font-size: 11px;
-    font-weight: 700;
-    color: #1e3a8a;
-    letter-spacing: .3px;
-}
-
-.al-qr-box-sub {
-    font-size: 10px;
-    color: #64748b;
-    margin-top: 3px;
-}
-
-/* After success section */
-.al-after-success {
-    margin-top: 48px;
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.06));
-    border: 1px solid rgba(16, 185, 129, 0.25);
-    border-radius: 24px;
-    padding: 36px 32px;
-}
-
-.al-after-success h3 {
-    font-size: 20px;
-    font-weight: 800;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.al-after-success>p {
-    font-size: 14px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.65));
-    margin-bottom: 28px;
-    max-width: 560px;
-}
-
-.al-after-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-}
-
-.al-after-card {
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
-    border-radius: 16px;
-    padding: 20px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.al-after-card i {
-    font-size: 22px;
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.al-after-card strong {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text, #f0f6ff);
-    display: block;
-    margin-bottom: 4px;
-}
-
-.al-after-card span {
-    font-size: 12px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.6));
-    line-height: 1.5;
-}
-
-@media (max-width: 768px) {
+    /* QR promo section */
     .al-qr-section {
-        grid-template-columns: 1fr;
-        gap: 24px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 55%, #0ea5e9 100%);
+        border-radius: 24px;
+        padding: 40px 36px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 36px;
+    }
+
+    .al-qr-section-text h3 {
+        font-size: clamp(20px, 2.5vw, 28px);
+        font-weight: 800;
+        color: #fff;
+        margin-bottom: 10px;
+    }
+
+    .al-qr-section-text p {
+        font-size: 14px;
+        color: rgba(255, 255, 255, .82);
+        max-width: 440px;
+        line-height: 1.6;
+        margin-bottom: 20px;
+    }
+
+    .al-qr-steps {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .al-qr-steps li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        color: rgba(255, 255, 255, .88);
+    }
+
+    .al-qr-steps li i {
+        color: #fbbf24;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+
+    .al-promote-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #fff;
+        color: #1e3a8a;
+        font-weight: 700;
+        font-size: 14px;
+        padding: 12px 24px;
+        border-radius: 100px;
+        text-decoration: none;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+        transition: transform .18s, box-shadow .18s;
+    }
+
+    .al-promote-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
     }
 
     .al-qr-box {
-        display: none;
-    }
-}
-
-@media (max-width: 640px) {
-    .al-guide {
-        padding: 44px 0 56px;
-    }
-
-    .al-qr-section {
-        padding: 28px 20px;
+        background: #fff;
+        border-radius: 20px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, .3);
+        min-width: 148px;
     }
 
+    .al-qr-box img {
+        width: 108px;
+        height: 108px;
+        display: block;
+        margin: 0 auto 10px;
+        border-radius: 6px;
+    }
+
+    .al-qr-box-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #1e3a8a;
+        letter-spacing: .3px;
+    }
+
+    .al-qr-box-sub {
+        font-size: 10px;
+        color: #64748b;
+        margin-top: 3px;
+    }
+
+    /* After success section */
     .al-after-success {
-        padding: 24px 18px;
-    }
-}
-
-/* Wrapper */
-.al-page {
-    background: var(--bg, #060d1f);
-    padding: 40px 0;
-}
-
-.al-form-wrap {
-    max-width: 740px;
-    margin: 0 auto;
-}
-
-/* Tips */
-.al-tips {
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
-    border-radius: 16px;
-    padding: 20px 22px;
-    margin-bottom: 28px;
-    backdrop-filter: blur(16px);
-}
-
-.al-tips-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.al-tip {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    font-size: 13px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin-bottom: 8px;
-}
-
-.al-tip:last-child {
-    margin-bottom: 0;
-}
-
-.al-tip i {
-    color: #3b82f6;
-    margin-top: 1px;
-    flex-shrink: 0;
-}
-
-/* Error banner */
-.al-error {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    background: rgba(239, 68, 68, 0.12);
-    border: 1px solid rgba(239, 68, 68, 0.35);
-    border-radius: 12px;
-    padding: 14px 18px;
-    color: #f87171;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.al-error.show {
-    display: flex;
-}
-
-/* Cards */
-.al-card {
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border-radius: 20px;
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
-    box-shadow: 0 2px 12px rgba(0, 0, 0, .3);
-    margin-bottom: 20px;
-    overflow: hidden;
-    backdrop-filter: blur(20px);
-    transition: box-shadow .2s, border-color .2s;
-}
-
-.al-card:focus-within {
-    box-shadow: 0 4px 24px rgba(37, 99, 235, .2);
-    border-color: rgba(59, 130, 246, 0.5);
-}
-
-.al-card-head {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 18px 22px;
-    border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
-}
-
-.al-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 11px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 17px;
-    flex-shrink: 0;
-}
-
-.al-card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text, #f0f6ff);
-    margin: 0;
-}
-
-.al-card-sub {
-    font-size: 12px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin: 2px 0 0;
-}
-
-.al-card-body {
-    padding: 22px;
-}
-
-/* Fields */
-.al-f {
-    margin-bottom: 18px;
-}
-
-.al-f:last-child {
-    margin-bottom: 0;
-}
-
-.al-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-label.al-lbl {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin-bottom: 7px;
-}
-
-label.al-lbl .req {
-    color: #ef4444;
-    margin-left: 2px;
-}
-
-.al-input,
-.al-sel,
-.al-txt {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
-    border-radius: 11px;
-    font-family: inherit;
-    font-size: 14px;
-    color: var(--text, #f0f6ff);
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    transition: border-color .18s, box-shadow .18s, background .18s;
-    outline: none;
-    box-sizing: border-box;
-    backdrop-filter: blur(8px);
-}
-
-.al-input:focus,
-.al-sel:focus,
-.al-txt:focus {
-    border-color: #3b82f6;
-    background: var(--glass-hover, rgba(255, 255, 255, 0.10));
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
-}
-
-.al-input::placeholder,
-.al-txt::placeholder {
-    color: var(--text-muted, rgba(240, 246, 255, 0.36));
-}
-
-.al-sel {
-    appearance: none;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-    padding-right: 40px;
-}
-
-.al-sel option {
-    background: #0f172a;
-    color: #f0f6ff;
-}
-
-.al-txt {
-    resize: vertical;
-    min-height: 96px;
-}
-
-.al-char {
-    font-size: 11px;
-    color: var(--text-muted, rgba(240, 246, 255, 0.36));
-    text-align: right;
-    margin-top: 4px;
-}
-
-/* GPS row */
-.al-gps-row {
-    display: flex;
-    gap: 10px;
-}
-
-.al-gps-row .al-input {
-    flex: 1;
-}
-
-.al-gps-btn {
-    flex-shrink: 0;
-    height: 44px;
-    padding: 0 14px;
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
-    border-radius: 11px;
-    color: #60a5fa;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all .2s;
-    white-space: nowrap;
-}
-
-.al-gps-btn:hover {
-    background: #2563eb;
-    color: #fff;
-    border-color: #2563eb;
-}
-
-.al-gps-btn:disabled {
-    opacity: .6;
-    cursor: default;
-}
-
-.al-gps-status {
-    font-size: 12px;
-    margin-top: 6px;
-    display: none;
-}
-
-/* 24x7 toggle */
-.al-24-toggle {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 14px;
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
-    border-radius: 11px;
-    cursor: pointer;
-    margin-bottom: 14px;
-    user-select: none;
-    transition: border-color .2s;
-}
-
-.al-24-toggle:hover {
-    border-color: #a855f7;
-}
-
-.al-24-toggle input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #9333ea;
-    cursor: pointer;
-    flex-shrink: 0;
-}
-
-.al-24-lbl strong {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text, #f0f6ff);
-}
-
-.al-24-lbl small {
-    font-size: 12px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-}
-
-/* Photo upload */
-.al-drop {
-    border: 2px dashed var(--border-hover, rgba(255, 255, 255, 0.18));
-    border-radius: 14px;
-    padding: 32px 20px;
-    text-align: center;
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    cursor: pointer;
-    position: relative;
-    transition: border-color .2s, background .2s;
-}
-
-.al-drop:hover,
-.al-drop.over {
-    border-color: #3b82f6;
-    background: var(--glass-hover, rgba(255, 255, 255, 0.10));
-}
-
-.al-drop input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-}
-
-.al-drop-icon {
-    width: 54px;
-    height: 54px;
-    background: rgba(37, 99, 235, 0.18);
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 14px;
-    color: #60a5fa;
-    font-size: 22px;
-}
-
-.al-drop h4 {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 6px;
-}
-
-.al-drop p {
-    font-size: 13px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin: 0;
-}
-
-.al-photo-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 10px;
-    margin-top: 18px;
-}
-
-.al-photo-thumb {
-    position: relative;
-    aspect-ratio: 1;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 2px solid transparent;
-    cursor: pointer;
-    transition: border-color .2s;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
-}
-
-.al-photo-thumb.cover {
-    border-color: #2563eb;
-}
-
-.al-photo-thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.al-cover-badge {
-    position: absolute;
-    top: 5px;
-    left: 5px;
-    background: #2563eb;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: .5px;
-    padding: 2px 7px;
-    border-radius: 100px;
-}
-
-.al-rm {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 22px;
-    height: 22px;
-    background: rgba(0, 0, 0, .55);
-    color: #fff;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    transition: background .18s;
-}
-
-.al-rm:hover {
-    background: #ef4444;
-}
-
-.al-photo-hint {
-    font-size: 12px;
-    color: var(--text-muted, rgba(240, 246, 255, 0.36));
-    text-align: center;
-    margin-top: 10px;
-}
-
-/* Submit */
-.al-sub-card {
-    background: var(--glass, rgba(255, 255, 255, 0.055));
-    border-radius: 20px;
-    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
-    padding: 28px 22px;
-    text-align: center;
-    backdrop-filter: blur(20px);
-}
-
-.al-sub-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    background: linear-gradient(135deg, #2563eb, #0ea5e9);
-    color: #fff;
-    border: none;
-    border-radius: 13px;
-    padding: 15px 48px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    min-width: 220px;
-    transition: transform .2s, box-shadow .2s;
-}
-
-.al-sub-btn:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(37, 99, 235, .32);
-}
-
-.al-sub-btn:disabled {
-    opacity: .6;
-    cursor: default;
-    transform: none;
-    box-shadow: none;
-}
-
-.al-sub-note {
-    font-size: 13px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin-top: 12px;
-}
-
-/* Success overlay */
-.al-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, .65);
-    z-index: 10000;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    backdrop-filter: blur(8px);
-}
-
-.al-overlay.show {
-    display: flex;
-}
-
-.al-success-box {
-    background: rgba(8, 16, 40, 0.96);
-    border: 1px solid var(--border-hover, rgba(255, 255, 255, 0.18));
-    backdrop-filter: blur(28px);
-    border-radius: 24px;
-    padding: 48px 36px;
-    text-align: center;
-    max-width: 420px;
-    width: 100%;
-    animation: alPop .38s cubic-bezier(.34, 1.56, .64, 1);
-}
-
-[data-theme="light"] .al-success-box {
-    background: rgba(255, 255, 255, 0.97);
-}
-
-@keyframes alPop {
-    from {
-        transform: scale(.75);
-        opacity: 0;
+        margin-top: 48px;
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.06));
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        border-radius: 24px;
+        padding: 36px 32px;
     }
 
-    to {
-        transform: scale(1);
-        opacity: 1;
+    .al-after-success h3 {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
     }
-}
 
-.al-success-icon {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    background: rgba(16, 185, 129, 0.18);
-    color: #10b981;
-    font-size: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 22px;
-}
+    .al-after-success>p {
+        font-size: 14px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.65));
+        margin-bottom: 28px;
+        max-width: 560px;
+    }
 
-.al-success-box h2 {
-    font-size: 24px;
-    font-weight: 800;
-    color: var(--text, #f0f6ff);
-    margin-bottom: 10px;
-}
+    .al-after-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+    }
 
-.al-success-box p {
-    font-size: 15px;
-    color: var(--text-secondary, rgba(240, 246, 255, 0.66));
-    margin-bottom: 28px;
-    line-height: 1.6;
-}
+    .al-after-card {
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+        border-radius: 16px;
+        padding: 20px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
 
-.al-success-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    align-items: center;
-}
+    .al-after-card i {
+        font-size: 22px;
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
 
-@media (max-width: 640px) {
-    .al-row {
-        grid-template-columns: 1fr;
+    .al-after-card strong {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text, #f0f6ff);
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .al-after-card span {
+        font-size: 12px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.6));
+        line-height: 1.5;
+    }
+
+    @media (max-width: 768px) {
+        .al-qr-section {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .al-qr-box {
+            display: none;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .al-guide {
+            padding: 30px 0 30px;
+        }
+
+        .al-qr-section {
+            padding: 28px 20px;
+        }
+
+        .al-after-success {
+            padding: 24px 18px;
+        }
+    }
+
+    /* Wrapper */
+    .al-page {
+        background: var(--bg, #060d1f);
+        padding: 40px 0 15px;
+    }
+
+    .al-form-wrap {
+        max-width: 740px;
+        margin: 0 auto;
+    }
+
+    /* Tips */
+    .al-tips {
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin-bottom: 28px;
+        backdrop-filter: blur(16px);
+    }
+
+    .al-tips-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .al-tip {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 13px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin-bottom: 8px;
+    }
+
+    .al-tip:last-child {
+        margin-bottom: 0;
+    }
+
+    .al-tip i {
+        color: #3b82f6;
+        margin-top: 1px;
+        flex-shrink: 0;
+    }
+
+    /* Error banner */
+    .al-error {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        border-radius: 12px;
+        padding: 14px 18px;
+        color: #f87171;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 20px;
+    }
+
+    .al-error.show {
+        display: flex;
+    }
+
+    /* Cards */
+    .al-card {
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border-radius: 20px;
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+        box-shadow: 0 2px 12px rgba(0, 0, 0, .3);
+        margin-bottom: 20px;
+        overflow: hidden;
+        backdrop-filter: blur(20px);
+        transition: box-shadow .2s, border-color .2s;
+    }
+
+    .al-card:focus-within {
+        box-shadow: 0 4px 24px rgba(37, 99, 235, .2);
+        border-color: rgba(59, 130, 246, 0.5);
+    }
+
+    .al-card-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 22px;
+        border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.08));
+    }
+
+    .al-card-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        flex-shrink: 0;
+    }
+
+    .al-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text, #f0f6ff);
+        margin: 0;
+    }
+
+    .al-card-sub {
+        font-size: 12px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin: 2px 0 0;
     }
 
     .al-card-body {
-        padding: 18px 16px;
+        padding: 22px;
     }
 
-    .al-drop {
-        padding: 24px 16px;
+    /* Fields */
+    .al-f {
+        margin-bottom: 18px;
     }
 
-    .al-sub-card {
-        padding: 22px 16px;
-    }
-}
-
-/* ===== QR UPSELL POPUP ===== */
-.al-qr-popup {
-    background: linear-gradient(145deg, #07101f 0%, #0c1e3e 100%);
-    border: 1px solid rgba(37, 99, 235, 0.3);
-    border-radius: 28px;
-    width: 92%;
-    max-width: 760px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
-    animation: alSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.al-qr-popup::before {
-    content: '';
-    position: absolute;
-    top: -100px;
-    right: -100px;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(37, 99, 235, 0.18), transparent 65%);
-    pointer-events: none;
-}
-
-.al-qr-popup-close {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-    z-index: 5;
-}
-
-.al-qr-popup-close:hover {
-    background: rgba(255, 255, 255, 0.14);
-    color: #fff;
-}
-
-.al-qr-popup-inner {
-    display: grid;
-    grid-template-columns: 200px 1fr;
-}
-
-.al-qr-popup-visual {
-    background: linear-gradient(160deg, #1d4ed8 0%, #0284c7 100%);
-    padding: 44px 24px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    border-radius: 28px 0 0 28px;
-}
-
-.al-qr-popup-icon-wrap {
-    width: 108px;
-    height: 108px;
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 52px;
-    color: #fff;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
-}
-
-.al-qr-popup-badge {
-    background: rgba(255, 255, 255, 0.22);
-    color: #fff;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 1.2px;
-    padding: 4px 12px;
-    border-radius: 100px;
-}
-
-.al-qr-popup-price {
-    font-size: 42px;
-    font-weight: 900;
-    color: #fff;
-    line-height: 1;
-}
-
-.al-qr-popup-price-sub {
-    font-size: 11px;
-    color: rgba(255, 255, 255, 0.72);
-    text-align: center;
-}
-
-.al-qr-popup-content {
-    padding: 36px 36px 30px;
-}
-
-.al-qr-popup-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #10b981;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid rgba(16, 185, 129, 0.28);
-    padding: 5px 12px;
-    border-radius: 100px;
-    margin-bottom: 14px;
-}
-
-.al-qr-popup-title {
-    font-size: clamp(19px, 2.5vw, 25px);
-    font-weight: 900;
-    color: #f0f6ff;
-    margin-bottom: 10px;
-    line-height: 1.3;
-}
-
-.al-qr-popup-desc {
-    font-size: 13.5px;
-    color: rgba(240, 246, 255, 0.62);
-    line-height: 1.6;
-    margin-bottom: 18px;
-    max-width: 380px;
-}
-
-.al-qr-popup-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 9px;
-}
-
-.al-qr-popup-features li {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    font-size: 13px;
-    color: rgba(240, 246, 255, 0.83);
-}
-
-.al-qr-popup-features li i {
-    font-size: 11px;
-    color: #60a5fa;
-    width: 20px;
-    height: 20px;
-    background: rgba(59, 130, 246, 0.14);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.al-qr-popup-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.al-qr-buy-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-    background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-    padding: 13px 26px;
-    border-radius: 14px;
-    border: none;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 4px 22px rgba(37, 99, 235, 0.55);
-    transition: transform 0.15s, box-shadow 0.15s;
-}
-
-.al-qr-buy-btn::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -80%;
-    width: 55%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
-    animation: alShimmerSweep 2s ease infinite;
-}
-
-.al-qr-buy-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(37, 99, 235, 0.7);
-}
-
-.al-qr-buy-btn:active {
-    transform: scale(0.98);
-}
-
-.al-qr-buy-btn:disabled {
-    opacity: 0.6;
-    pointer-events: none;
-}
-
-.al-qr-skip-btn {
-    background: none;
-    border: none;
-    color: rgba(240, 246, 255, 0.42);
-    font-size: 13.5px;
-    cursor: pointer;
-    padding: 6px 4px;
-    transition: color 0.2s;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-.al-qr-skip-btn:hover {
-    color: rgba(240, 246, 255, 0.75);
-}
-
-.al-qr-popup-secure {
-    margin-top: 14px;
-    font-size: 11px;
-    color: rgba(240, 246, 255, 0.3);
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-@media (max-width: 620px) {
-    .al-qr-popup {
-        border-radius: 20px;
+    .al-f:last-child {
+        margin-bottom: 0;
     }
 
-    .al-qr-popup-inner {
-        grid-template-columns: 1fr;
+    .al-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
     }
 
-    .al-qr-popup-visual {
-        padding: 24px 20px;
-        flex-direction: row;
-        gap: 16px;
-        flex-wrap: wrap;
-        justify-content: center;
-        border-radius: 20px 20px 0 0;
+    label.al-lbl {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin-bottom: 7px;
     }
 
-    .al-qr-popup-icon-wrap {
-        width: 64px;
-        height: 64px;
-        font-size: 30px;
+    label.al-lbl .req {
+        color: #ef4444;
+        margin-left: 2px;
     }
 
-    .al-qr-popup-price {
-        font-size: 28px;
+    .al-input,
+    .al-sel,
+    .al-txt {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
+        border-radius: 11px;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--text, #f0f6ff);
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        transition: border-color .18s, box-shadow .18s, background .18s;
+        outline: none;
+        box-sizing: border-box;
+        backdrop-filter: blur(8px);
     }
 
-    .al-qr-popup-price-sub,
-    .al-qr-popup-badge {
+    .al-input:focus,
+    .al-sel:focus,
+    .al-txt:focus {
+        border-color: #3b82f6;
+        background: var(--glass-hover, rgba(255, 255, 255, 0.10));
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .15);
+    }
+
+    .al-input::placeholder,
+    .al-txt::placeholder {
+        color: var(--text-muted, rgba(240, 246, 255, 0.36));
+    }
+
+    .al-sel {
+        appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 40px;
+    }
+
+    .al-sel option {
+        background: #0f172a;
+        color: #f0f6ff;
+    }
+
+    .al-txt {
+        resize: vertical;
+        min-height: 96px;
+    }
+
+    .al-char {
+        font-size: 11px;
+        color: var(--text-muted, rgba(240, 246, 255, 0.36));
+        text-align: right;
+        margin-top: 4px;
+    }
+
+    /* GPS row */
+    .al-gps-row {
+        display: flex;
+        gap: 10px;
+    }
+
+    .al-gps-row .al-input {
+        flex: 1;
+    }
+
+    .al-gps-btn {
+        flex-shrink: 0;
+        height: 44px;
+        padding: 0 14px;
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
+        border-radius: 11px;
+        color: #60a5fa;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all .2s;
+        white-space: nowrap;
+    }
+
+    .al-gps-btn:hover {
+        background: #2563eb;
+        color: #fff;
+        border-color: #2563eb;
+    }
+
+    .al-gps-btn:disabled {
+        opacity: .6;
+        cursor: default;
+    }
+
+    .al-gps-status {
+        font-size: 12px;
+        margin-top: 6px;
         display: none;
     }
 
-    .al-qr-popup-content {
-        padding: 22px 20px 20px;
+    /* 24x7 toggle */
+    .al-24-toggle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border: 1.5px solid var(--border-hover, rgba(255, 255, 255, 0.18));
+        border-radius: 11px;
+        cursor: pointer;
+        margin-bottom: 14px;
+        user-select: none;
+        transition: border-color .2s;
     }
-}
 
-/* ===== PROGRESSIVE FORM REVEAL ===== */
-.al-form-step-hidden {
-    display: none;
-}
+    .al-24-toggle:hover {
+        border-color: #a855f7;
+    }
 
-@keyframes alSlideIn {
-    from {
+    .al-24-toggle input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #9333ea;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .al-24-lbl strong {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text, #f0f6ff);
+    }
+
+    .al-24-lbl small {
+        font-size: 12px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+    }
+
+    /* Photo upload */
+    .al-drop {
+        border: 2px dashed var(--border-hover, rgba(255, 255, 255, 0.18));
+        border-radius: 14px;
+        padding: 32px 20px;
+        text-align: center;
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        cursor: pointer;
+        position: relative;
+        transition: border-color .2s, background .2s;
+    }
+
+    .al-drop:hover,
+    .al-drop.over {
+        border-color: #3b82f6;
+        background: var(--glass-hover, rgba(255, 255, 255, 0.10));
+    }
+
+    .al-drop input[type="file"] {
+        position: absolute;
+        inset: 0;
         opacity: 0;
-        transform: translateY(18px);
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.al-reveal {
-    animation: alSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.al-continue-wrap {
-    margin-top: 20px;
-}
-
-.al-continue-btn {
-    width: 100%;
-    padding: 15px 24px;
-    border-radius: 14px;
-    border: none;
-    background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
-    color: #fff;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: default;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    opacity: 0.32;
-    pointer-events: none;
-    transition: opacity 0.3s, transform 0.15s;
-    position: relative;
-    overflow: hidden;
-}
-
-.al-continue-btn.active {
-    opacity: 1;
-    pointer-events: auto;
-    cursor: pointer;
-    animation: alPulseGlow 2s ease infinite;
-}
-
-.al-continue-btn.active::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -80%;
-    width: 55%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: alShimmerSweep 2.2s ease infinite;
-}
-
-.al-continue-btn:active {
-    transform: scale(0.98);
-}
-
-@keyframes alPulseGlow {
-
-    0%,
-    100% {
-        box-shadow: 0 4px 22px rgba(37, 99, 235, 0.5);
+    .al-drop-icon {
+        width: 54px;
+        height: 54px;
+        background: rgba(37, 99, 235, 0.18);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 14px;
+        color: #60a5fa;
+        font-size: 22px;
     }
 
-    50% {
-        box-shadow: 0 4px 40px rgba(37, 99, 235, 0.85), 0 0 0 5px rgba(37, 99, 235, 0.18);
+    .al-drop h4 {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 6px;
     }
-}
 
-@keyframes alShimmerSweep {
-    0% {
+    .al-drop p {
+        font-size: 13px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin: 0;
+    }
+
+    .al-photo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 10px;
+        margin-top: 18px;
+    }
+
+    .al-photo-thumb {
+        position: relative;
+        aspect-ratio: 1;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition: border-color .2s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+    }
+
+    .al-photo-thumb.cover {
+        border-color: #2563eb;
+    }
+
+    .al-photo-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .al-cover-badge {
+        position: absolute;
+        top: 5px;
+        left: 5px;
+        background: #2563eb;
+        color: #fff;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: .5px;
+        padding: 2px 7px;
+        border-radius: 100px;
+    }
+
+    .al-rm {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        width: 22px;
+        height: 22px;
+        background: rgba(0, 0, 0, .55);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        transition: background .18s;
+    }
+
+    .al-rm:hover {
+        background: #ef4444;
+    }
+
+    .al-photo-hint {
+        font-size: 12px;
+        color: var(--text-muted, rgba(240, 246, 255, 0.36));
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    /* Submit */
+    .al-sub-card {
+        background: var(--glass, rgba(255, 255, 255, 0.055));
+        border-radius: 20px;
+        border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
+        padding: 28px 22px;
+        text-align: center;
+        backdrop-filter: blur(20px);
+    }
+
+    .al-sub-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #2563eb, #0ea5e9);
+        color: #fff;
+        border: none;
+        border-radius: 13px;
+        padding: 15px 48px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        min-width: 220px;
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .al-sub-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(37, 99, 235, .32);
+    }
+
+    .al-sub-btn:disabled {
+        opacity: .6;
+        cursor: default;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .al-sub-note {
+        font-size: 13px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin-top: 12px;
+    }
+
+    /* Success overlay */
+    .al-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .65);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        backdrop-filter: blur(8px);
+    }
+
+    .al-overlay.show {
+        display: flex;
+    }
+
+    .al-success-box {
+        background: rgba(8, 16, 40, 0.96);
+        border: 1px solid var(--border-hover, rgba(255, 255, 255, 0.18));
+        backdrop-filter: blur(28px);
+        border-radius: 24px;
+        padding: 48px 36px;
+        text-align: center;
+        max-width: 420px;
+        width: 100%;
+        animation: alPop .38s cubic-bezier(.34, 1.56, .64, 1);
+    }
+
+    [data-theme="light"] .al-success-box {
+        background: rgba(255, 255, 255, 0.97);
+    }
+
+    @keyframes alPop {
+        from {
+            transform: scale(.75);
+            opacity: 0;
+        }
+
+        to {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .al-success-icon {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: rgba(16, 185, 129, 0.18);
+        color: #10b981;
+        font-size: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 22px;
+    }
+
+    .al-success-box h2 {
+        font-size: 24px;
+        font-weight: 800;
+        color: var(--text, #f0f6ff);
+        margin-bottom: 10px;
+    }
+
+    .al-success-box p {
+        font-size: 15px;
+        color: var(--text-secondary, rgba(240, 246, 255, 0.66));
+        margin-bottom: 28px;
+        line-height: 1.6;
+    }
+
+    .al-success-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: center;
+    }
+
+    @media (max-width: 640px) {
+        .al-row {
+            grid-template-columns: 1fr;
+        }
+
+        .al-card-body {
+            padding: 18px 16px;
+        }
+
+        .al-drop {
+            padding: 24px 16px;
+        }
+
+        .al-sub-card {
+            padding: 22px 16px;
+        }
+    }
+
+    /* ===== QR UPSELL POPUP ===== */
+    .al-qr-popup {
+        background: linear-gradient(145deg, #07101f 0%, #0c1e3e 100%);
+        border: 1px solid rgba(37, 99, 235, 0.3);
+        border-radius: 28px;
+        width: 92%;
+        max-width: 760px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.65);
+        animation: alSlideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .al-qr-popup::before {
+        content: '';
+        position: absolute;
+        top: -100px;
+        right: -100px;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.18), transparent 65%);
+        pointer-events: none;
+    }
+
+    .al-qr-popup-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.06);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 13px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+        z-index: 5;
+    }
+
+    .al-qr-popup-close:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #fff;
+    }
+
+    .al-qr-popup-inner {
+        display: grid;
+        grid-template-columns: 200px 1fr;
+    }
+
+    .al-qr-popup-visual {
+        background: linear-gradient(160deg, #1d4ed8 0%, #0284c7 100%);
+        padding: 44px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 14px;
+        border-radius: 28px 0 0 28px;
+    }
+
+    .al-qr-popup-icon-wrap {
+        width: 108px;
+        height: 108px;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 52px;
+        color: #fff;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+
+    .al-qr-popup-badge {
+        background: rgba(255, 255, 255, 0.22);
+        color: #fff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.2px;
+        padding: 4px 12px;
+        border-radius: 100px;
+    }
+
+    .al-qr-popup-price {
+        font-size: 42px;
+        font-weight: 900;
+        color: #fff;
+        line-height: 1;
+    }
+
+    .al-qr-popup-price-sub {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.72);
+        text-align: center;
+    }
+
+    .al-qr-popup-content {
+        padding: 36px 36px 30px;
+    }
+
+    .al-qr-popup-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.28);
+        padding: 5px 12px;
+        border-radius: 100px;
+        margin-bottom: 14px;
+    }
+
+    .al-qr-popup-title {
+        font-size: clamp(19px, 2.5vw, 25px);
+        font-weight: 900;
+        color: #f0f6ff;
+        margin-bottom: 10px;
+        line-height: 1.3;
+    }
+
+    .al-qr-popup-desc {
+        font-size: 13.5px;
+        color: rgba(240, 246, 255, 0.62);
+        line-height: 1.6;
+        margin-bottom: 18px;
+        max-width: 380px;
+    }
+
+    .al-qr-popup-features {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 9px;
+    }
+
+    .al-qr-popup-features li {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+        color: rgba(240, 246, 255, 0.83);
+    }
+
+    .al-qr-popup-features li i {
+        font-size: 11px;
+        color: #60a5fa;
+        width: 20px;
+        height: 20px;
+        background: rgba(59, 130, 246, 0.14);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .al-qr-popup-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .al-qr-buy-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+        padding: 13px 26px;
+        border-radius: 14px;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 22px rgba(37, 99, 235, 0.55);
+        transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .al-qr-buy-btn::after {
+        content: '';
+        position: absolute;
+        top: 0;
         left: -80%;
+        width: 55%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+        animation: alShimmerSweep 2s ease infinite;
     }
 
-    100% {
-        left: 160%;
+    .al-qr-buy-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(37, 99, 235, 0.7);
     }
-}
+
+    .al-qr-buy-btn:active {
+        transform: scale(0.98);
+    }
+
+    .al-qr-buy-btn:disabled {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+
+    .al-qr-skip-btn {
+        background: none;
+        border: none;
+        color: rgba(240, 246, 255, 0.42);
+        font-size: 13.5px;
+        cursor: pointer;
+        padding: 6px 4px;
+        transition: color 0.2s;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .al-qr-skip-btn:hover {
+        color: rgba(240, 246, 255, 0.75);
+    }
+
+    .al-qr-popup-secure {
+        margin-top: 14px;
+        font-size: 11px;
+        color: rgba(240, 246, 255, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    @media (max-width: 620px) {
+        .al-qr-popup {
+            border-radius: 20px;
+        }
+
+        .al-qr-popup-inner {
+            grid-template-columns: 1fr;
+        }
+
+        .al-qr-popup-visual {
+            padding: 24px 20px;
+            flex-direction: row;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .al-qr-popup-icon-wrap {
+            width: 64px;
+            height: 64px;
+            font-size: 30px;
+        }
+
+        .al-qr-popup-price {
+            font-size: 28px;
+        }
+
+        .al-qr-popup-price-sub,
+        .al-qr-popup-badge {
+            display: none;
+        }
+
+        .al-qr-popup-content {
+            padding: 22px 20px 20px;
+        }
+    }
+
+    /* ===== PROGRESSIVE FORM REVEAL ===== */
+    .al-form-step-hidden {
+        display: none;
+    }
+
+    @keyframes alSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .al-reveal {
+        animation: alSlideIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .al-continue-wrap {
+        margin-top: 20px;
+    }
+
+    .al-continue-btn {
+        width: 100%;
+        padding: 15px 24px;
+        border-radius: 14px;
+        border: none;
+        background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: default;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        opacity: 0.32;
+        pointer-events: none;
+        transition: opacity 0.3s, transform 0.15s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .al-continue-btn.active {
+        opacity: 1;
+        pointer-events: auto;
+        cursor: pointer;
+        animation: alPulseGlow 2s ease infinite;
+    }
+
+    .al-continue-btn.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -80%;
+        width: 55%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: alShimmerSweep 2.2s ease infinite;
+    }
+
+    .al-continue-btn:active {
+        transform: scale(0.98);
+    }
+
+    @keyframes alPulseGlow {
+
+        0%,
+        100% {
+            box-shadow: 0 4px 22px rgba(37, 99, 235, 0.5);
+        }
+
+        50% {
+            box-shadow: 0 4px 40px rgba(37, 99, 235, 0.85), 0 0 0 5px rgba(37, 99, 235, 0.18);
+        }
+    }
+
+    @keyframes alShimmerSweep {
+        0% {
+            left: -80%;
+        }
+
+        100% {
+            left: 160%;
+        }
+    }
 </style>
 
 <!-- BANNER IMAGE -->
 <div class="al-hero">
-    <img class="al-hero-img al-hero-img-desktop" src="assets/images/addListingBanner.png"
-        alt="Add Your Medical Listing on HealthDial" loading="eager" />
-    <img class="al-hero-img al-hero-img-mobile" src="assets/images/addListingBannerMobileView.png"
-        alt="Add Your Medical Listing on HealthDial" loading="eager" />
+    <img class="al-hero-img" src="assets/images/addListingBanner.png" alt="Add Your Medical Listing on HealthDial"
+        loading="eager" />
 </div>
 
 <!-- FORM -->
@@ -1321,7 +1308,7 @@ label.al-lbl .req {
                             <select class="al-sel" id="alCat" name="category_id" required>
                                 <option value="">— Select a Category —</option>
                                 <?php foreach ($categories as $cat): ?>
-                                <option value="<?= intval($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                    <option value="<?= intval($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -1702,229 +1689,229 @@ label.al-lbl .req {
 
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
-/* ===== Add Listing JS ===== */
-let photos = []; // [{ file, dataUrl }]
-let _listingId = 0; // stored after successful submission
+    /* ===== Add Listing JS ===== */
+    let photos = []; // [{ file, dataUrl }]
+    let _listingId = 0; // stored after successful submission
 
-// ---- Progressive form reveal ----
-document.getElementById('alCat').addEventListener('change', function() {
-    document.getElementById('alContinueBtn').classList.toggle('active', !!this.value);
-});
-
-function alContinueForm() {
-    const fields = document.getElementById('alBasicFields');
-    fields.style.display = 'block';
-    void fields.offsetHeight;
-    fields.classList.add('al-reveal');
-    document.getElementById('alContinueWrap').style.display = 'none';
-
-    ['alCardLocation', 'alCardContact', 'alCardHours', 'alCardPhotos', 'alCardSubmit'].forEach((id, i) => {
-        setTimeout(() => {
-            const el = document.getElementById(id);
-            el.style.display = 'block';
-            void el.offsetHeight;
-            el.classList.add('al-reveal');
-        }, 120 + i * 140);
+    // ---- Progressive form reveal ----
+    document.getElementById('alCat').addEventListener('change', function () {
+        document.getElementById('alContinueBtn').classList.toggle('active', !!this.value);
     });
-}
-// ----------------------------------
 
-// ---- QR popup flow ----
-function showQrPopup(listingId) {
-    _listingId = listingId;
-    document.getElementById('alViewListingBtn').href = 'listing-detail.php?id=' + listingId;
-    document.getElementById('alQrOverlay').classList.add('show');
-}
+    function alContinueForm() {
+        const fields = document.getElementById('alBasicFields');
+        fields.style.display = 'block';
+        void fields.offsetHeight;
+        fields.classList.add('al-reveal');
+        document.getElementById('alContinueWrap').style.display = 'none';
 
-function skipQr() {
-    document.getElementById('alQrOverlay').classList.remove('show');
-    showSuccessPopup(false);
-}
-
-function showSuccessPopup(qrPaid) {
-    if (qrPaid) {
-        document.getElementById('alSuccessIcon').style.background = 'rgba(37,99,235,0.18)';
-        document.getElementById('alSuccessIcon').style.color = '#60a5fa';
-        document.getElementById('alSuccessTitle').textContent = 'QR Code Generated!';
-        document.getElementById('alSuccessMsg').textContent =
-            'Your listing is live and your QR code has been generated successfully. It will be printed and delivered to your facility.';
-    }
-    document.getElementById('alSuccessOverlay').classList.add('show');
-    if (qrPaid && _listingId) {
-        setTimeout(() => {
-            window.location.href = 'listing-detail.php?id=' + _listingId + '&qr=generated';
-        }, 2800);
-    }
-}
-
-async function buyQrCode() {
-    const btn = document.getElementById('alQrBuyBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order…';
-
-    try {
-        const res = await fetch('qr_create_order.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                listing_id: _listingId
-            })
+        ['alCardLocation', 'alCardContact', 'alCardHours', 'alCardPhotos', 'alCardSubmit'].forEach((id, i) => {
+            setTimeout(() => {
+                const el = document.getElementById(id);
+                el.style.display = 'block';
+                void el.offsetHeight;
+                el.classList.add('al-reveal');
+            }, 120 + i * 140);
         });
-        const data = await res.json();
+    }
+    // ----------------------------------
 
-        if (!data.success) {
+    // ---- QR popup flow ----
+    function showQrPopup(listingId) {
+        _listingId = listingId;
+        document.getElementById('alViewListingBtn').href = 'listing-detail.php?id=' + listingId;
+        document.getElementById('alQrOverlay').classList.add('show');
+    }
+
+    function skipQr() {
+        document.getElementById('alQrOverlay').classList.remove('show');
+        showSuccessPopup(false);
+    }
+
+    function showSuccessPopup(qrPaid) {
+        if (qrPaid) {
+            document.getElementById('alSuccessIcon').style.background = 'rgba(37,99,235,0.18)';
+            document.getElementById('alSuccessIcon').style.color = '#60a5fa';
+            document.getElementById('alSuccessTitle').textContent = 'QR Code Generated!';
+            document.getElementById('alSuccessMsg').textContent =
+                'Your listing is live and your QR code has been generated successfully. It will be printed and delivered to your facility.';
+        }
+        document.getElementById('alSuccessOverlay').classList.add('show');
+        if (qrPaid && _listingId) {
+            setTimeout(() => {
+                window.location.href = 'listing-detail.php?id=' + _listingId + '&qr=generated';
+            }, 2800);
+        }
+    }
+
+    async function buyQrCode() {
+        const btn = document.getElementById('alQrBuyBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order…';
+
+        try {
+            const res = await fetch('qr_create_order.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    listing_id: _listingId
+                })
+            });
+            const data = await res.json();
+
+            if (!data.success) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
+                alert(data.message || 'Could not create order. Please try again.');
+                return;
+            }
+
+            const rzp = new Razorpay({
+                key: data.razorpay_key_id,
+                amount: data.amount_paise,
+                currency: 'INR',
+                name: 'HealthDial',
+                description: 'QR Code for your listing',
+                order_id: data.razorpay_order_id,
+                theme: {
+                    color: '#2563eb'
+                },
+                handler: async function (response) {
+                    try {
+                        const vRes = await fetch('qr_verify_payment.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                listing_id: _listingId,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature
+                            })
+                        });
+                        const vData = await vRes.json();
+                        document.getElementById('alQrOverlay').classList.remove('show');
+                        showSuccessPopup(vData.success);
+                    } catch {
+                        document.getElementById('alQrOverlay').classList.remove('show');
+                        showSuccessPopup(false);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
+                    }
+                }
+            });
+            rzp.open();
+        } catch {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-            alert(data.message || 'Could not create order. Please try again.');
+            alert('Network error. Please try again.');
+        }
+    }
+    // -----------------------
+
+    // Description counter
+    document.getElementById('alDesc').addEventListener('input', function () {
+        document.getElementById('alDescCount').textContent = this.value.length;
+    });
+
+    // 24x7 toggle
+    function toggle24(cb) {
+        document.getElementById('alHoursRow').style.display = cb.checked ? 'none' : 'grid';
+    }
+
+    // GPS
+    function detectGPS() {
+        const btn = document.getElementById('alGpsBtn');
+        const status = document.getElementById('alGpsStatus');
+        if (!navigator.geolocation) {
+            setGpsStatus('Geolocation not supported by your browser.', false);
             return;
         }
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting…';
+        setGpsStatus('<i class="fas fa-circle-notch fa-spin"></i> Detecting your location…', null);
 
-        const rzp = new Razorpay({
-            key: data.razorpay_key_id,
-            amount: data.amount_paise,
-            currency: 'INR',
-            name: 'HealthDial',
-            description: 'QR Code for your listing',
-            order_id: data.razorpay_order_id,
-            theme: {
-                color: '#2563eb'
+        navigator.geolocation.getCurrentPosition(
+            pos => {
+                document.getElementById('alLat').value = pos.coords.latitude.toFixed(6);
+                document.getElementById('alLng').value = pos.coords.longitude.toFixed(6);
+                btn.innerHTML = '<i class="fas fa-check"></i> Detected';
+                btn.style.cssText = 'background:#dcfce7;color:#059669;border-color:#86efac;';
+                btn.disabled = false;
+                setGpsStatus('<i class="fas fa-check-circle"></i> Coordinates set. You can also type them manually.',
+                    true);
             },
-            handler: async function(response) {
-                try {
-                    const vRes = await fetch('qr_verify_payment.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            listing_id: _listingId,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_signature: response.razorpay_signature
-                        })
-                    });
-                    const vData = await vRes.json();
-                    document.getElementById('alQrOverlay').classList.remove('show');
-                    showSuccessPopup(vData.success);
-                } catch {
-                    document.getElementById('alQrOverlay').classList.remove('show');
-                    showSuccessPopup(false);
-                }
-            },
-            modal: {
-                ondismiss: function() {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-                }
-            }
-        });
-        rzp.open();
-    } catch {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-        alert('Network error. Please try again.');
-    }
-}
-// -----------------------
-
-// Description counter
-document.getElementById('alDesc').addEventListener('input', function() {
-    document.getElementById('alDescCount').textContent = this.value.length;
-});
-
-// 24x7 toggle
-function toggle24(cb) {
-    document.getElementById('alHoursRow').style.display = cb.checked ? 'none' : 'grid';
-}
-
-// GPS
-function detectGPS() {
-    const btn = document.getElementById('alGpsBtn');
-    const status = document.getElementById('alGpsStatus');
-    if (!navigator.geolocation) {
-        setGpsStatus('Geolocation not supported by your browser.', false);
-        return;
-    }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Detecting…';
-    setGpsStatus('<i class="fas fa-circle-notch fa-spin"></i> Detecting your location…', null);
-
-    navigator.geolocation.getCurrentPosition(
-        pos => {
-            document.getElementById('alLat').value = pos.coords.latitude.toFixed(6);
-            document.getElementById('alLng').value = pos.coords.longitude.toFixed(6);
-            btn.innerHTML = '<i class="fas fa-check"></i> Detected';
-            btn.style.cssText = 'background:#dcfce7;color:#059669;border-color:#86efac;';
-            btn.disabled = false;
-            setGpsStatus('<i class="fas fa-check-circle"></i> Coordinates set. You can also type them manually.',
-                true);
-        },
-        () => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry';
-            // Allow manual entry
-            ['alLat', 'alLng'].forEach(id => {
-                const el = document.getElementById(id);
-                el.removeAttribute('readonly');
-                el.style.background = '';
-            });
-            setGpsStatus(
-                '<i class="fas fa-exclamation-circle"></i> Could not detect. Please enter coordinates manually.',
-                false);
-        }, {
+            () => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-location-crosshairs"></i> Retry';
+                // Allow manual entry
+                ['alLat', 'alLng'].forEach(id => {
+                    const el = document.getElementById(id);
+                    el.removeAttribute('readonly');
+                    el.style.background = '';
+                });
+                setGpsStatus(
+                    '<i class="fas fa-exclamation-circle"></i> Could not detect. Please enter coordinates manually.',
+                    false);
+            }, {
             enableHighAccuracy: true,
             timeout: 12000
         }
-    );
-}
-
-function setGpsStatus(html, ok) {
-    const el = document.getElementById('alGpsStatus');
-    el.style.display = 'block';
-    el.innerHTML = html;
-    el.style.color = ok === true ? '#059669' : ok === false ? '#ef4444' : '#64748b';
-}
-
-// Photo handling
-function pickPhotos(files) {
-    addPhotos(Array.from(files));
-}
-
-function dropPhotos(e) {
-    e.preventDefault();
-    document.getElementById('alDrop').classList.remove('over');
-    addPhotos(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
-}
-
-function addPhotos(files) {
-    const slots = 5 - photos.length;
-    if (slots <= 0) {
-        showError('Maximum 5 photos allowed.');
-        return;
+        );
     }
-    files.slice(0, slots).forEach(file => {
-        if (file.size > 5 * 1024 * 1024) {
-            showError('"' + file.name + '" exceeds 5MB limit.');
+
+    function setGpsStatus(html, ok) {
+        const el = document.getElementById('alGpsStatus');
+        el.style.display = 'block';
+        el.innerHTML = html;
+        el.style.color = ok === true ? '#059669' : ok === false ? '#ef4444' : '#64748b';
+    }
+
+    // Photo handling
+    function pickPhotos(files) {
+        addPhotos(Array.from(files));
+    }
+
+    function dropPhotos(e) {
+        e.preventDefault();
+        document.getElementById('alDrop').classList.remove('over');
+        addPhotos(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+    }
+
+    function addPhotos(files) {
+        const slots = 5 - photos.length;
+        if (slots <= 0) {
+            showError('Maximum 5 photos allowed.');
             return;
         }
-        const reader = new FileReader();
-        reader.onload = e => {
-            photos.push({
-                file,
-                dataUrl: e.target.result
-            });
-            renderGrid();
-        };
-        reader.readAsDataURL(file);
-    });
-}
+        files.slice(0, slots).forEach(file => {
+            if (file.size > 5 * 1024 * 1024) {
+                showError('"' + file.name + '" exceeds 5MB limit.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                photos.push({
+                    file,
+                    dataUrl: e.target.result
+                });
+                renderGrid();
+            };
+            reader.readAsDataURL(file);
+        });
+    }
 
-function renderGrid() {
-    const grid = document.getElementById('alGrid');
-    const hint = document.getElementById('alHint');
-    grid.innerHTML = photos.map((p, i) => `
+    function renderGrid() {
+        const grid = document.getElementById('alGrid');
+        const hint = document.getElementById('alHint');
+        grid.innerHTML = photos.map((p, i) => `
         <div class="al-photo-thumb ${i === 0 ? 'cover' : ''}" onclick="setCover(${i})" title="${i === 0 ? 'Cover photo' : 'Set as cover'}">
             <img src="${p.dataUrl}" alt="" />
             ${i === 0 ? '<div class="al-cover-badge">COVER</div>' : ''}
@@ -1932,151 +1919,151 @@ function renderGrid() {
                 <i class="fas fa-times"></i>
             </button>
         </div>`).join('');
-    if (photos.length) {
-        hint.style.display = 'block';
-        hint.innerHTML = '<i class="fas fa-images" style="color:#2563eb;margin-right:5px;"></i>' +
-            photos.length + ' photo' + (photos.length > 1 ? 's' : '') + ' selected' +
-            (photos.length > 1 ? ' &nbsp;·&nbsp; click any photo to set it as cover' : '');
-    } else {
-        hint.style.display = 'none';
-    }
-    // Reset file input so the same file can be re-selected if removed
-    document.getElementById('alFileInput').value = '';
-}
-
-function setCover(i) {
-    if (i === 0) return;
-    photos.unshift(photos.splice(i, 1)[0]);
-    renderGrid();
-}
-
-function rmPhoto(i) {
-    photos.splice(i, 1);
-    renderGrid();
-}
-
-// Form submit
-document.getElementById('alForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-    hideError();
-
-    if (photos.length === 0) {
-        showError('Please add at least one photo of your facility.');
-        document.getElementById('alDrop').scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-        });
-        return;
-    }
-
-    const btn = document.getElementById('alSubBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
-
-
-    try {
-        const city = document.getElementById('alCity').value.trim();
-        const state = document.getElementById('alState').value.trim();
-        const address = document.getElementById('alAddr').value.trim();
-        const is24 = document.getElementById('al24').checked;
-
-        const payload = {
-            category_id: document.getElementById('alCat').value,
-            name: document.getElementById('alName').value.trim(),
-            description: document.getElementById('alDesc').value.trim(),
-            address,
-            city,
-            state,
-            latitude: document.getElementById('alLat').value || '0',
-            longitude: document.getElementById('alLng').value || '0',
-            mobile: document.getElementById('alMobile').value.trim(),
-            whatsapp: document.getElementById('alWA').value.trim(),
-            email: document.getElementById('alEmail').value.trim(),
-            open_time: is24 ? '00:00:00' : document.getElementById('alOpen').value,
-            close_time: is24 ? '00:00:00' : document.getElementById('alClose').value,
-            is_24x7: is24 ? '1' : '0',
-            images: photos.map((p, i) => ({
-                data: p.dataUrl,
-                name: p.file.name,
-                is_primary: i === 0 ? '1' : '0'
-            }))
-        };
-
-        const res = await fetch('add-listing-submit.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-
-        if (data.success) {
-            showQrPopup(data.data.listing_id);
+        if (photos.length) {
+            hint.style.display = 'block';
+            hint.innerHTML = '<i class="fas fa-images" style="color:#2563eb;margin-right:5px;"></i>' +
+                photos.length + ' photo' + (photos.length > 1 ? 's' : '') + ' selected' +
+                (photos.length > 1 ? ' &nbsp;·&nbsp; click any photo to set it as cover' : '');
         } else {
-            showError(data.message || 'Submission failed. Please try again.');
+            hint.style.display = 'none';
+        }
+        // Reset file input so the same file can be re-selected if removed
+        document.getElementById('alFileInput').value = '';
+    }
+
+    function setCover(i) {
+        if (i === 0) return;
+        photos.unshift(photos.splice(i, 1)[0]);
+        renderGrid();
+    }
+
+    function rmPhoto(i) {
+        photos.splice(i, 1);
+        renderGrid();
+    }
+
+    // Form submit
+    document.getElementById('alForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        hideError();
+
+        if (photos.length === 0) {
+            showError('Please add at least one photo of your facility.');
+            document.getElementById('alDrop').scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+            return;
+        }
+
+        const btn = document.getElementById('alSubBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+
+
+        try {
+            const city = document.getElementById('alCity').value.trim();
+            const state = document.getElementById('alState').value.trim();
+            const address = document.getElementById('alAddr').value.trim();
+            const is24 = document.getElementById('al24').checked;
+
+            const payload = {
+                category_id: document.getElementById('alCat').value,
+                name: document.getElementById('alName').value.trim(),
+                description: document.getElementById('alDesc').value.trim(),
+                address,
+                city,
+                state,
+                latitude: document.getElementById('alLat').value || '0',
+                longitude: document.getElementById('alLng').value || '0',
+                mobile: document.getElementById('alMobile').value.trim(),
+                whatsapp: document.getElementById('alWA').value.trim(),
+                email: document.getElementById('alEmail').value.trim(),
+                open_time: is24 ? '00:00:00' : document.getElementById('alOpen').value,
+                close_time: is24 ? '00:00:00' : document.getElementById('alClose').value,
+                is_24x7: is24 ? '1' : '0',
+                images: photos.map((p, i) => ({
+                    data: p.dataUrl,
+                    name: p.file.name,
+                    is_primary: i === 0 ? '1' : '0'
+                }))
+            };
+
+            const res = await fetch('add-listing-submit.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+
+            if (data.success) {
+                showQrPopup(data.data.listing_id);
+            } else {
+                showError(data.message || 'Submission failed. Please try again.');
+                btn.disabled = false;
+                btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+            }
+        } catch (err) {
+            showError('Network error. Please check your connection and try again.');
             btn.disabled = false;
             btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
         }
-    } catch (err) {
-        showError('Network error. Please check your connection and try again.');
-        btn.disabled = false;
-        btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+    });
+
+    function showError(msg) {
+        const el = document.getElementById('alError');
+        document.getElementById('alErrorText').textContent = msg;
+        el.classList.add('show');
+        el.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
     }
-});
 
-function showError(msg) {
-    const el = document.getElementById('alError');
-    document.getElementById('alErrorText').textContent = msg;
-    el.classList.add('show');
-    el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
-    });
-}
+    function hideError() {
+        document.getElementById('alError').classList.remove('show');
+    }
 
-function hideError() {
-    document.getElementById('alError').classList.remove('show');
-}
+    function resetForm(e) {
+        if (e) e.preventDefault();
+        document.getElementById('alOverlay').classList.remove('show');
+        document.getElementById('alForm').reset();
+        photos = [];
+        renderGrid();
+        document.getElementById('alHoursRow').style.display = 'grid';
+        document.getElementById('alDescCount').textContent = '0';
+        document.getElementById('alSubBtn').disabled = false;
+        document.getElementById('alSubBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+        _listingId = 0;
+        document.getElementById('alQrOverlay').classList.remove('show');
+        document.getElementById('alSuccessOverlay').classList.remove('show');
+        const si = document.getElementById('alSuccessIcon');
+        si.style.background = '';
+        si.style.color = '';
+        document.getElementById('alSuccessTitle').textContent = 'Listing Added Successfully!';
+        document.getElementById('alSuccessMsg').textContent =
+            'Your listing is now live on HealthDial. Patients across India can find, call, and navigate to your facility.';
 
-function resetForm(e) {
-    if (e) e.preventDefault();
-    document.getElementById('alOverlay').classList.remove('show');
-    document.getElementById('alForm').reset();
-    photos = [];
-    renderGrid();
-    document.getElementById('alHoursRow').style.display = 'grid';
-    document.getElementById('alDescCount').textContent = '0';
-    document.getElementById('alSubBtn').disabled = false;
-    document.getElementById('alSubBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
-    _listingId = 0;
-    document.getElementById('alQrOverlay').classList.remove('show');
-    document.getElementById('alSuccessOverlay').classList.remove('show');
-    const si = document.getElementById('alSuccessIcon');
-    si.style.background = '';
-    si.style.color = '';
-    document.getElementById('alSuccessTitle').textContent = 'Listing Added Successfully!';
-    document.getElementById('alSuccessMsg').textContent =
-        'Your listing is now live on HealthDial. Patients across India can find, call, and navigate to your facility.';
+        // Reset progressive form state
+        const continueWrap = document.getElementById('alContinueWrap');
+        continueWrap.style.display = 'block';
+        document.getElementById('alContinueBtn').classList.remove('active');
+        const basicFields = document.getElementById('alBasicFields');
+        basicFields.style.display = 'none';
+        basicFields.classList.remove('al-reveal');
+        ['alCardLocation', 'alCardContact', 'alCardHours', 'alCardPhotos', 'alCardSubmit'].forEach(id => {
+            const el = document.getElementById(id);
+            el.style.display = 'none';
+            el.classList.remove('al-reveal');
+        });
 
-    // Reset progressive form state
-    const continueWrap = document.getElementById('alContinueWrap');
-    continueWrap.style.display = 'block';
-    document.getElementById('alContinueBtn').classList.remove('active');
-    const basicFields = document.getElementById('alBasicFields');
-    basicFields.style.display = 'none';
-    basicFields.classList.remove('al-reveal');
-    ['alCardLocation', 'alCardContact', 'alCardHours', 'alCardPhotos', 'alCardSubmit'].forEach(id => {
-        const el = document.getElementById(id);
-        el.style.display = 'none';
-        el.classList.remove('al-reveal');
-    });
-
-    window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-    });
-}
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    }
 </script>
 
 <?php require_once 'includes/footer.php'; ?>
