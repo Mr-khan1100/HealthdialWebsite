@@ -323,6 +323,58 @@ if (!$listing): ?>
                     <?php endif; ?>
                 </div>
 
+                <!-- MOBILE ONLY: Contact (reordered for mobile) -->
+                <div class="dm-contact detail-contact-card">
+                    <h3>Contact</h3>
+                    <div class="detail-contact-buttons">
+                        <?php if ($listing['mobile']): ?>
+                        <a href="tel:<?= htmlspecialchars($listing['mobile']) ?>" class="btn detail-btn-call">
+                            <?= icon('phone') ?> Call Now
+                        </a>
+                        <?php endif; ?>
+                        <?php $waNum = $listing['whatsapp'] ?? $listing['mobile']; if ($waNum): ?>
+                        <a href="https://wa.me/91<?= preg_replace('/[^0-9]/', '', $waNum) ?>" target="_blank"
+                            class="btn detail-btn-whatsapp">
+                            <?= icon('phone') ?> WhatsApp
+                        </a>
+                        <?php endif; ?>
+                        <?php if ($listing['latitude'] && $listing['longitude']): ?>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=<?= $listing['latitude'] ?>,<?= $listing['longitude'] ?>"
+                            target="_blank" class="btn detail-btn-directions">
+                            <?= icon('gps') ?> Get Directions
+                        </a>
+                        <?php endif; ?>
+                    </div>
+                    <button class="btn btn-secondary detail-btn-share" onclick="shareListing()"
+                        style="width:100%; margin-top:12px;">
+                        <i class="fas fa-share-alt"></i> Share Listing
+                    </button>
+                    <button class="btn btn-primary"
+                        onclick="document.getElementById('aptModalDetail').classList.add('active')"
+                        style="width:100%; margin-top:8px;">
+                        <i class="fas fa-calendar-check"></i> Request Appointment
+                    </button>
+                    <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>"
+                        class="btn"
+                        style="width:100%; margin-top:8px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600;">
+                        <i class="fas fa-bolt"></i> Promote This Listing
+                    </a>
+                </div>
+
+                <!-- MOBILE ONLY: Map (reordered for mobile) -->
+                <?php if ($listing['latitude'] && $listing['longitude']): ?>
+                <div class="dm-map detail-map-card">
+                    <h3>Location</h3>
+                    <div class="detail-map">
+                        <iframe
+                            src="https://maps.google.com/maps?q=<?= $listing['latitude'] ?>,<?= $listing['longitude'] ?>&z=15&output=embed"
+                            width="100%" height="250" style="border:0; border-radius:var(--radius);" allowfullscreen=""
+                            loading="lazy">
+                        </iframe>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <?php if ($listing['description']): ?>
                 <div class="detail-description">
                     <h3>About</h3>
@@ -518,6 +570,25 @@ if (!$listing): ?>
                     cursor: not-allowed;
                     transform: none;
                 }
+
+                /* ===== MOBILE SECTION REORDER ===== */
+                .dm-contact, .dm-map, .dm-app { display: none; }
+
+                @media (max-width: 768px) {
+                    .detail-sidebar { display: none !important; }
+                    .detail-main { display: flex; flex-direction: column; }
+                    .detail-header    { order: 1; }
+                    .detail-title     { order: 2; }
+                    .detail-rating    { order: 3; }
+                    .detail-info-grid { order: 4; }
+                    .dm-contact       { display: block; order: 5; }
+                    .dm-map           { display: block; order: 6; }
+                    .detail-description { order: 7; }
+                    .dm-reviews       { display: block; order: 8; }
+                    .detail-qr-section { order: 9; }
+                    .dm-app           { display: flex; align-items: center; gap: 12px; order: 10;
+                                        background: var(--card); border-radius: var(--radius); padding: 16px; }
+                }
                 </style>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -564,10 +635,23 @@ if (!$listing): ?>
                     <?php endif; ?>
                 </div>
 
+                <!-- MOBILE ONLY: Get App (after QR on mobile) -->
+                <div class="dm-app">
+                    <img src="assets/images/icon.png" alt="HealthDial"
+                        style="width:48px; height:48px; border-radius:12px; flex-shrink:0;" />
+                    <div style="flex:1; min-width:0;">
+                        <strong>Get the HealthDial App</strong>
+                        <p style="font-size:var(--fs-xs); color:var(--text-muted); margin-top:4px;">GPS navigation,
+                            reminders & more</p>
+                    </div>
+                    <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"
+                        class="btn btn-primary" style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
+                </div>
+
                 <!-- Reviews -->
-                <?php if (!empty($reviews)): ?>
-                <div class="detail-reviews" id="reviews">
+                <div class="detail-reviews dm-reviews" id="reviews">
                     <h3>Reviews (<?= $reviewCount ?>)</h3>
+                    <?php if (!empty($reviews)): ?>
                     <div class="reviews-list">
                         <?php foreach ($reviews as $rev): ?>
                         <div class="review-card">
@@ -587,8 +671,10 @@ if (!$listing): ?>
                         </div>
                         <?php endforeach; ?>
                     </div>
+                    <?php else: ?>
+                    <p style="color:var(--text-muted); font-size:var(--fs-sm); padding:8px 0;">No reviews yet. Be the first to review!</p>
+                    <?php endif; ?>
                 </div>
-                <?php endif; ?>
             </div>
 
             <!-- Sidebar / Contact -->

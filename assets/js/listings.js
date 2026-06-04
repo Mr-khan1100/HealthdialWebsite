@@ -27,33 +27,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== GEOLOCATION =====
 function initGeolocation() {
+    // Restore cached coords immediately so the indicator doesn't flash "Off"
     const stored = sessionStorage.getItem('hd_location');
     if (stored) {
-        const loc = JSON.parse(stored);
-        userLat = loc.lat;
-        userLng = loc.lng;
-        // Silently restore coordinates — do NOT force sort to nearest
-        updateLocationIndicator();
-        return;
+        try {
+            const loc = JSON.parse(stored);
+            userLat = loc.lat;
+            userLng = loc.lng;
+        } catch (e) { sessionStorage.removeItem('hd_location'); }
     }
-
     updateLocationIndicator();
 
     if (sessionStorage.getItem('hd_location_dismissed')) return;
+    if (!navigator.geolocation) return;
 
-    // Check permission state first
+    const applyPermState = (state) => {
+        if (state === 'denied') {
+            // Browser permission blocked — clear any stale cached position
+            userLat = null;
+            userLng = null;
+            sessionStorage.removeItem('hd_location');
+            sessionStorage.removeItem('hd_city');
+            updateLocationIndicator();
+        } else if (state === 'granted') {
+            // Already allowed — fetch fresh coords if we have none cached
+            if (!userLat) requestLocation();
+        } else {
+            // 'prompt': never asked yet, OR user revoked then cleared site permission.
+            // Clear stale cache so we don't silently use outdated position.
+            userLat = null;
+            userLng = null;
+            sessionStorage.removeItem('hd_location');
+            sessionStorage.removeItem('hd_city');
+            updateLocationIndicator();
+            requestLocation(); // triggers native browser permission dialog
+        }
+    };
+
     if (navigator.permissions) {
         navigator.permissions.query({ name: 'geolocation' }).then(result => {
-            if (result.state === 'granted') {
-                requestLocation();
-            } else if (result.state === 'prompt') {
-                showLocationPrompt();
-            }
+            applyPermState(result.state);
+            // React to live permission changes (e.g. user revokes mid-session)
+            result.addEventListener('change', () => applyPermState(result.state));
         }).catch(() => {
-            showLocationPrompt();
+            if (!userLat) requestLocation();
         });
     } else {
-        showLocationPrompt();
+        // No Permissions API (older browsers) — request if no cached coords
+        if (!userLat) requestLocation();
     }
 }
 
@@ -101,9 +122,6 @@ function toggleLocationPermission() {
 }
 
 function showLocationPrompt() {
-    // Only show on pages with listings
-    if (!document.getElementById('listingsGrid')) return;
-
     // Create a floating location prompt
     const prompt = document.createElement('div');
     prompt.id = 'locationPrompt';
@@ -156,6 +174,7 @@ function requestLocation() {
         },
         err => {
             console.warn('Location denied:', err.message);
+            sessionStorage.setItem('hd_location_dismissed', '1');
             const banner = document.getElementById('locationBanner');
             if (banner) banner.style.display = 'none';
         },
