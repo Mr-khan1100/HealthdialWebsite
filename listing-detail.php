@@ -1258,11 +1258,14 @@ function submitReview() {
                     </div>
                 `;
             } else {
-                // API returned error - send via WhatsApp as backup
-                const msg =
-                    `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
-                window.open('https://wa.me/919911660669?text=' + encodeURIComponent(msg), '_blank');
                 const form = document.querySelector('.review-form-section');
+                <?php
+                $_waRaw = preg_replace('/[^0-9]/', '', $listing['whatsapp'] ?? '');
+                $LISTING_WA_FULL = $_waRaw ? '91' . $_waRaw : '';
+                ?>
+                <?php if ($LISTING_WA_FULL): ?>
+                const _reviewWaMsg = `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
+                window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsg), '_blank');
                 form.innerHTML = `
                     <div style="text-align:center;padding:30px 20px;">
                         <div style="width:60px;height:60px;border-radius:50%;background:rgba(67,182,73,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
@@ -1272,15 +1275,18 @@ function submitReview() {
                         <p style="color:var(--text-muted);">Your review has been sent successfully.</p>
                     </div>
                 `;
+                <?php else: ?>
+                btn.innerHTML = origText;
+                btn.disabled = false;
+                alert('Something went wrong. Please try again.');
+                <?php endif; ?>
             }
         })
         .catch(err => {
             console.error('Review submit error:', err);
-            // Send via WhatsApp as reliable backup
-            const msg =
-                `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
-            window.open('https://wa.me/919911660669?text=' + encodeURIComponent(msg), '_blank');
-            // Still show success to user
+            <?php if ($LISTING_WA_FULL): ?>
+            const _reviewWaMsgCatch = `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
+            window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsgCatch), '_blank');
             const form = document.querySelector('.review-form-section');
             form.innerHTML = `
                 <div style="text-align:center;padding:30px 20px;">
@@ -1291,6 +1297,11 @@ function submitReview() {
                     <p style="color:var(--text-muted);">Your review has been sent successfully.</p>
                 </div>
             `;
+            <?php else: ?>
+            btn.innerHTML = origText;
+            btn.disabled = false;
+            alert('Something went wrong. Please try again.');
+            <?php endif; ?>
         });
 }
 window.submitReview = submitReview;

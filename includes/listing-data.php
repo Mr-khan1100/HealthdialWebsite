@@ -20,8 +20,8 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
             $slugSelect,
             $citySlugSelect,
             $categorySlugSelect,
-            COALESCE(AVG(CASE WHEN r.status = 1 THEN r.rating END), 0) AS avg_rating,
-            COUNT(CASE WHEN r.status = 1 THEN r.id END) AS review_count
+            COALESCE(AVG(CASE WHEN r.status = 'approved' THEN r.rating END), 0) AS avg_rating,
+            COUNT(CASE WHEN r.status = 'approved' THEN r.id END) AS review_count
         FROM listings l
         LEFT JOIN categories c ON c.id = l.category_id
         LEFT JOIN reviews r ON r.listing_id = l.id
@@ -103,7 +103,7 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
         SELECT r.rating, r.review, r.created_at, COALESCE(u.name, r.guest_name, 'Anonymous') AS reviewer_name
         FROM reviews r
         LEFT JOIN users u ON u.id = r.user_id AND r.user_id > 0
-        WHERE r.listing_id = ? AND r.status = 1
+        WHERE r.listing_id = ? AND r.status = 'approved'
         ORDER BY r.created_at DESC
         LIMIT 20
     ");
@@ -176,8 +176,8 @@ function hd_fetch_similar_listings($conn, $listing, $limit = 6)
             $slugSelect,
             li.image_path AS image,
             li.is_external_url,
-            COALESCE(AVG(CASE WHEN r.status = 1 THEN r.rating END), 0) AS avg_rating,
-            COUNT(CASE WHEN r.status = 1 THEN r.id END) AS review_count,
+            COALESCE(AVG(CASE WHEN r.status = 'approved' THEN r.rating END), 0) AS avg_rating,
+            COUNT(CASE WHEN r.status = 'approved' THEN r.id END) AS review_count,
             CASE WHEN l.city LIKE ? OR l.address LIKE ? THEN 1 ELSE 0 END AS same_city
             $distanceSelect
         FROM listings l

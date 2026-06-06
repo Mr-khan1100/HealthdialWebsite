@@ -29,8 +29,8 @@ if (function_exists('hd_asset_base')) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=2.9.0" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=2.9.0" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=3.0.0" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=3.0.0" />
 
 
     <meta name="google-site-verification" content="zUHx3csIxzeg0V6z14P2BJEJMLX8d8sse1grih5Kk2Y" />

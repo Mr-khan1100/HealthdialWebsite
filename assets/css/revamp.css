@@ -997,6 +997,7 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
     position: relative;
     display: flex;
     flex-direction: column;
+    cursor: pointer;
     transform-style: preserve-3d;
     will-change: transform;
 }
@@ -2099,6 +2100,7 @@ label {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
     padding-bottom: 12px;
     /* hide scrollbar */
     scrollbar-width: none;

@@ -623,7 +623,7 @@ function renderListingCard(listing, isSponsored = false) {
         : `https://www.google.com/maps/search/?api=1&query=${addr}`;
 
     return `
-    <div class="listing-card reveal">
+    <div class="listing-card reveal" onclick="listingCardClick(event,'${escHtml(detailUrl)}')">
         <a href="${escHtml(detailUrl)}" class="listing-card-image">
             ${image}
             ${sponsoredBadge}
@@ -703,6 +703,11 @@ function handleImgError(img) {
     const parent = img.parentElement;
     // Remove the broken img and watermark
     parent.innerHTML = `<div class="listing-placeholder-modern" style="background:${data.gradient}"><div class="placeholder-icon-ring">${data.svg}</div><div class="placeholder-name">${name.substring(0,30)}</div><div class="placeholder-cat">${catLabel}</div></div>`;
+}
+
+function listingCardClick(e, url) {
+    if (e.target.closest('a, button')) return;
+    window.location.href = url;
 }
 
 function escHtml(str) {

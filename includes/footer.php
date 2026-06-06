@@ -161,8 +161,8 @@ document.addEventListener('click', function(e) {
 </script>
 <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
 
-<script src="assets/js/revamp.js?v=2.9.0"></script>
-<script src="assets/js/main.js?v=2.9.0"></script>
+<script src="assets/js/revamp.js?v=3.0.0"></script>
+<script src="assets/js/main.js?v=3.0.0"></script>
 </body>
 
 </html>
