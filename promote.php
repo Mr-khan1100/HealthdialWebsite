@@ -5,6 +5,7 @@ $pageDesc = 'Boost your hospital, clinic or pharmacy visibility on HealthDial. C
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
 require_once 'includes/header.php';
+require_once 'includes/website_banner.php';
 
 // Fetch plans from API
 $plans = [];
@@ -18,13 +19,17 @@ $preselectedId = isset($_GET['listing_id']) ? intval($_GET['listing_id']) : 0;
 $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listing_name']) : '';
 ?>
 
+
+
 <!-- Hero -->
 <section class="promote-hero">
     <div class="container">
+        <?php render_website_banner('promotion', 'top'); ?>
         <div class="promote-hero-content">
             <span class="promote-badge"><i class="fas fa-bolt"></i> Premium Promotion</span>
             <h1>Get More <span class="gradient-text">Patients</span> for Your Listing</h1>
-            <p>Promote your hospital, clinic or pharmacy on HealthDial and appear at the top of search results. Reach thousands of patients looking for healthcare nearby.</p>
+            <p>Promote your hospital, clinic or pharmacy on HealthDial and appear at the top of search results. Reach
+                thousands of patients looking for healthcare nearby.</p>
         </div>
     </div>
 </section>
@@ -58,22 +63,26 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                 <div class="promote-search-wrap">
                     <div class="promote-search-bar">
                         <i class="fas fa-hospital" style="color:var(--blue);margin-right:8px;"></i>
-                        <input type="text" id="promoListingSearch" placeholder="Type listing name..." autocomplete="off" value="<?= $preselectedName ?>" />
+                        <input type="text" id="promoListingSearch" placeholder="Type listing name..." autocomplete="off"
+                            value="<?= $preselectedName ?>" />
                         <div class="promote-search-spinner" id="searchSpinner" style="display:none;">
                             <i class="fas fa-spinner fa-spin"></i>
                         </div>
                     </div>
                     <div class="promote-search-dropdown" id="promoSearchDropdown"></div>
                 </div>
-                <div class="promote-selected" id="selectedListingDisplay" style="display:<?= $preselectedId ? 'flex' : 'none' ?>;">
+                <div class="promote-selected" id="selectedListingDisplay"
+                    style="display:<?= $preselectedId ? 'flex' : 'none' ?>;">
                     <div class="promote-selected-info">
                         <i class="fas fa-check-circle" style="color:var(--green);"></i>
                         <span id="selectedListingName"><?= $preselectedName ?></span>
                     </div>
-                    <button class="promote-change-btn" onclick="clearSelectedListing()"><i class="fas fa-times"></i> Change</button>
+                    <button class="promote-change-btn" onclick="clearSelectedListing()"><i class="fas fa-times"></i>
+                        Change</button>
                 </div>
                 <input type="hidden" id="selectedListingId" value="<?= $preselectedId ?>" />
-                <button class="btn btn-primary promote-next-btn" id="step1NextBtn" onclick="goToStep(2)" <?= $preselectedId ? '' : 'disabled' ?>>
+                <button class="btn btn-primary promote-next-btn" id="step1NextBtn" onclick="goToStep(2)"
+                    <?= $preselectedId ? '' : 'disabled' ?>>
                     Continue <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
@@ -84,33 +93,37 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                 <p class="promote-card-desc">Select a promotion plan that fits your needs.</p>
                 <div class="promote-plans-grid" id="plansGrid">
                     <?php if (empty($plans)): ?>
-                        <div class="promote-no-plans">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>No promotion plans available right now. Please try again later.</p>
-                        </div>
+                    <div class="promote-no-plans">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>No promotion plans available right now. Please try again later.</p>
+                    </div>
                     <?php else: ?>
-                        <?php foreach ($plans as $i => $plan): ?>
-                        <div class="promote-plan-card <?= $i === 1 ? 'popular' : '' ?>" data-plan-id="<?= $plan['id'] ?>" data-plan-price="<?= $plan['price'] ?>" onclick="selectPlan(this)">
-                            <?php if ($i === 1): ?><span class="plan-popular-tag">Most Popular</span><?php endif; ?>
-                            <h3><?= htmlspecialchars($plan['name']) ?></h3>
-                            <div class="plan-price">₹<?= number_format($plan['price'], 0) ?></div>
-                            <div class="plan-duration"><i class="fas fa-calendar-alt"></i> <?= $plan['duration_days'] ?> days</div>
-                            <p class="plan-desc"><?= htmlspecialchars($plan['description'] ?? 'Boost your listing visibility') ?></p>
-                            <ul class="plan-features">
-                                <li><i class="fas fa-check"></i> Top search position</li>
-                                <li><i class="fas fa-check"></i> "Sponsored" badge</li>
-                                <li><i class="fas fa-check"></i> <?= $plan['duration_days'] ?> days visibility</li>
-                                <?php if ($plan['price'] >= 500): ?>
-                                <li><i class="fas fa-check"></i> Priority in nearby results</li>
-                                <?php endif; ?>
-                            </ul>
-                        </div>
-                        <?php endforeach; ?>
+                    <?php foreach ($plans as $i => $plan): ?>
+                    <div class="promote-plan-card <?= $i === 1 ? 'popular' : '' ?>" data-plan-id="<?= $plan['id'] ?>"
+                        data-plan-price="<?= $plan['price'] ?>" onclick="selectPlan(this)">
+                        <?php if ($i === 1): ?><span class="plan-popular-tag">Most Popular</span><?php endif; ?>
+                        <h3><?= htmlspecialchars($plan['name']) ?></h3>
+                        <div class="plan-price">₹<?= number_format($plan['price'], 0) ?></div>
+                        <div class="plan-duration"><i class="fas fa-calendar-alt"></i> <?= $plan['duration_days'] ?>
+                            days</div>
+                        <p class="plan-desc">
+                            <?= htmlspecialchars($plan['description'] ?? 'Boost your listing visibility') ?></p>
+                        <ul class="plan-features">
+                            <li><i class="fas fa-check"></i> Top search position</li>
+                            <li><i class="fas fa-check"></i> "Sponsored" badge</li>
+                            <li><i class="fas fa-check"></i> <?= $plan['duration_days'] ?> days visibility</li>
+                            <?php if ($plan['price'] >= 500): ?>
+                            <li><i class="fas fa-check"></i> Priority in nearby results</li>
+                            <?php endif; ?>
+                        </ul>
+                    </div>
+                    <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
                 <input type="hidden" id="selectedPlanId" value="" />
                 <div class="promote-nav-btns">
-                    <button class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button class="btn btn-secondary" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i>
+                        Back</button>
                     <button class="btn btn-primary promote-next-btn" id="step2NextBtn" onclick="goToStep(3)" disabled>
                         Continue <i class="fas fa-arrow-right"></i>
                     </button>
@@ -121,7 +134,7 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
             <div class="promote-card" id="step3" style="display:none;">
                 <h2><i class="fas fa-credit-card" style="color:var(--green);"></i> Complete Payment</h2>
                 <p class="promote-card-desc">Enter your details and proceed to secure payment.</p>
-                
+
                 <div class="promote-summary" id="orderSummary"></div>
 
                 <div class="promote-form">
@@ -135,20 +148,23 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                             <input type="tel" id="promoPhone" placeholder="10-digit phone" maxlength="10" />
                         </div>
                         <div class="promote-field">
-                            <label><i class="fas fa-envelope"></i> Email <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+                            <label><i class="fas fa-envelope"></i> Email <span
+                                    style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
                             <input type="email" id="promoEmail" placeholder="your@email.com" />
                         </div>
                     </div>
                 </div>
 
                 <div class="promote-nav-btns">
-                    <button class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Back</button>
+                    <button class="btn btn-secondary" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i>
+                        Back</button>
                     <button class="btn btn-primary promote-pay-btn" id="payNowBtn" onclick="initiatePayment()">
                         <i class="fas fa-lock"></i> Pay ₹<span id="payAmount">0</span> Securely
                     </button>
                 </div>
                 <p class="promote-secure-note">
-                    <i class="fas fa-shield-alt"></i> Secured by <strong>Razorpay</strong> Payment Gateway. Your payment details are never stored on our servers.
+                    <i class="fas fa-shield-alt"></i> Secured by <strong>Razorpay</strong> Payment Gateway. Your payment
+                    details are never stored on our servers.
                 </p>
             </div>
         </div>
@@ -188,14 +204,23 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
 
 <script>
 const API_BASE = '<?= API_BASE ?>';
-let selectedListing = { id: <?= $preselectedId ?>, name: '<?= addslashes($preselectedName) ?>' };
+let selectedListing = {
+    id: <?= $preselectedId ?>,
+    name: '<?= addslashes($preselectedName) ?>'
+};
 let selectedPlan = null;
 let searchTimeout;
 
 // ===== STEP NAVIGATION =====
 function goToStep(step) {
-    if (step === 2 && !selectedListing.id) { alert('Please select a listing first.'); return; }
-    if (step === 3 && !document.getElementById('selectedPlanId').value) { alert('Please select a plan first.'); return; }
+    if (step === 2 && !selectedListing.id) {
+        alert('Please select a listing first.');
+        return;
+    }
+    if (step === 3 && !document.getElementById('selectedPlanId').value) {
+        alert('Please select a plan first.');
+        return;
+    }
 
     document.querySelectorAll('.promote-card').forEach(c => c.style.display = 'none');
     document.getElementById('step' + step).style.display = 'block';
@@ -207,7 +232,10 @@ function goToStep(step) {
     }
 
     if (step === 3) populateSummary();
-    document.querySelector('.promote-wizard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelector('.promote-wizard').scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
 }
 
 // ===== STEP 1: LISTING SEARCH =====
@@ -219,8 +247,12 @@ const spinner = document.getElementById('searchSpinner');
 searchInput.addEventListener('input', function() {
     clearTimeout(searchTimeout);
     const q = this.value.trim();
-    if (q.length < 2) { dropdown.innerHTML = ''; dropdown.style.display = 'none'; return; }
-    
+    if (q.length < 2) {
+        dropdown.innerHTML = '';
+        dropdown.style.display = 'none';
+        return;
+    }
+
     spinner.style.display = 'block';
     searchTimeout = setTimeout(async () => {
         try {
@@ -236,12 +268,15 @@ searchInput.addEventListener('input', function() {
             spinner.style.display = 'none';
 
             const listings = (data.data && data.data.results) ? data.data.results : [];
-            
+
             if (listings.length === 0) {
-                dropdown.innerHTML = '<div class="promo-search-item no-result"><i class="fas fa-info-circle"></i> No listings found for "' + q + '"</div>';
+                dropdown.innerHTML =
+                    '<div class="promo-search-item no-result"><i class="fas fa-info-circle"></i> No listings found for "' +
+                    q + '"</div>';
             } else {
                 dropdown.innerHTML = listings.slice(0, 10).map(l => {
-                    const safeName = (l.name || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    const safeName = (l.name || '').replace(/'/g, "\\'").replace(/"/g,
+                        '&quot;');
                     const city = l.city || l.address || '';
                     const safeCity = city.replace(/'/g, "\\'").replace(/"/g, '&quot;');
                     const cat = l.category || '';
@@ -255,10 +290,11 @@ searchInput.addEventListener('input', function() {
                 }).join('');
             }
             dropdown.style.display = 'block';
-        } catch(err) {
+        } catch (err) {
             console.error('Search error:', err);
             spinner.style.display = 'none';
-            dropdown.innerHTML = '<div class="promo-search-item no-result"><i class="fas fa-exclamation-triangle"></i> Search failed. Try again.</div>';
+            dropdown.innerHTML =
+                '<div class="promo-search-item no-result"><i class="fas fa-exclamation-triangle"></i> Search failed. Try again.</div>';
             dropdown.style.display = 'block';
         }
     }, 300);
@@ -269,7 +305,10 @@ document.addEventListener('click', e => {
 });
 
 function selectListingItem(id, name, city) {
-    selectedListing = { id, name };
+    selectedListing = {
+        id,
+        name
+    };
     document.getElementById('selectedListingId').value = id;
     document.getElementById('selectedListingName').textContent = name + (city ? ' — ' + city : '');
     document.getElementById('selectedListingDisplay').style.display = 'flex';
@@ -279,7 +318,10 @@ function selectListingItem(id, name, city) {
 }
 
 function clearSelectedListing() {
-    selectedListing = { id: 0, name: '' };
+    selectedListing = {
+        id: 0,
+        name: ''
+    };
     document.getElementById('selectedListingId').value = '';
     document.getElementById('selectedListingDisplay').style.display = 'none';
     searchInput.value = '';
@@ -293,7 +335,12 @@ function selectPlan(card) {
     card.classList.add('selected');
     document.getElementById('selectedPlanId').value = card.dataset.planId;
     document.getElementById('step2NextBtn').disabled = false;
-    selectedPlan = { id: card.dataset.planId, price: card.dataset.planPrice, name: card.querySelector('h3').textContent, duration: card.querySelector('.plan-duration').textContent };
+    selectedPlan = {
+        id: card.dataset.planId,
+        price: card.dataset.planPrice,
+        name: card.querySelector('h3').textContent,
+        duration: card.querySelector('.plan-duration').textContent
+    };
 }
 
 // ===== STEP 3: SUMMARY & PAY =====
@@ -312,73 +359,84 @@ function initiatePayment() {
     const phone = document.getElementById('promoPhone').value.trim();
     const email = document.getElementById('promoEmail').value.trim();
 
-    if (!name) { alert('Please enter your name.'); return; }
-    if (!phone || phone.length < 10) { alert('Please enter a valid 10-digit phone number.'); return; }
+    if (!name) {
+        alert('Please enter your name.');
+        return;
+    }
+    if (!phone || phone.length < 10) {
+        alert('Please enter a valid 10-digit phone number.');
+        return;
+    }
 
     const btn = document.getElementById('payNowBtn');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order...';
     btn.disabled = true;
 
     fetch(API_BASE + 'create_promotion_order.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            listing_id: parseInt(document.getElementById('selectedListingId').value),
-            plan_id: parseInt(document.getElementById('selectedPlanId').value),
-            customer_name: name,
-            customer_phone: phone,
-            customer_email: email
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                listing_id: parseInt(document.getElementById('selectedListingId').value),
+                plan_id: parseInt(document.getElementById('selectedPlanId').value),
+                customer_name: name,
+                customer_phone: phone,
+                customer_email: email
+            })
         })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success && data.razorpay_order_id) {
-            const options = {
-                key: data.razorpay_key_id,
-                amount: data.amount_paise,
-                currency: 'INR',
-                name: 'HealthDial',
-                description: 'Listing Promotion — ' + selectedPlan.name,
-                order_id: data.razorpay_order_id,
-                handler: function(response) {
-                    // Payment successful — redirect to success page with verification params
-                    const params = new URLSearchParams({
-                        order_id: data.receipt_id,
-                        razorpay_payment_id: response.razorpay_payment_id,
-                        razorpay_order_id: response.razorpay_order_id,
-                        razorpay_signature: response.razorpay_signature
-                    });
-                    window.location.href = 'payment-success.php?' + params.toString();
-                },
-                prefill: {
-                    name: data.customer_name,
-                    contact: data.customer_phone,
-                    email: data.customer_email || ''
-                },
-                theme: {
-                    color: '#0782ca'
-                },
-                modal: {
-                    ondismiss: function() {
-                        btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount').textContent + ' Securely';
-                        btn.disabled = false;
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.razorpay_order_id) {
+                const options = {
+                    key: data.razorpay_key_id,
+                    amount: data.amount_paise,
+                    currency: 'INR',
+                    name: 'HealthDial',
+                    description: 'Listing Promotion — ' + selectedPlan.name,
+                    order_id: data.razorpay_order_id,
+                    handler: function(response) {
+                        // Payment successful — redirect to success page with verification params
+                        const params = new URLSearchParams({
+                            order_id: data.receipt_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature
+                        });
+                        window.location.href = 'payment-success.php?' + params.toString();
+                    },
+                    prefill: {
+                        name: data.customer_name,
+                        contact: data.customer_phone,
+                        email: data.customer_email || ''
+                    },
+                    theme: {
+                        color: '#0782ca'
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById(
+                                'payAmount').textContent + ' Securely';
+                            btn.disabled = false;
+                        }
                     }
-                }
-            };
-            const rzp = new Razorpay(options);
-            rzp.open();
-        } else {
-            alert('Error: ' + (data.message || 'Could not create payment order'));
-            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount').textContent + ' Securely';
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+            } else {
+                alert('Error: ' + (data.message || 'Could not create payment order'));
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount')
+                    .textContent + ' Securely';
+                btn.disabled = false;
+            }
+        })
+        .catch(err => {
+            console.error('Payment error:', err);
+            alert('Network error. Please try again.');
+            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount').textContent +
+                ' Securely';
             btn.disabled = false;
-        }
-    })
-    .catch(err => {
-        console.error('Payment error:', err);
-        alert('Network error. Please try again.');
-        btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount').textContent + ' Securely';
-        btn.disabled = false;
-    });
+        });
 }
 </script>
 

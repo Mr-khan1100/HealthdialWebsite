@@ -401,12 +401,12 @@ if (!$listing): ?>
 
                 .detail-qr-canvas {
                     flex-shrink: 0;
-                    width: 144px;
-                    height: 144px;
+                    width: 210px;
+                    height: 210px;
                     background: #fff;
-                    border-radius: 14px;
-                    padding: 10px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, .10);
+                    border-radius: 16px;
+                    padding: 16px;
+                    box-shadow: 0 2px 14px rgba(0, 0, 0, .12);
                     display: flex;
                     align-items: center;
                     justify-content: center;
@@ -513,10 +513,10 @@ if (!$listing): ?>
 
                 .detail-qr-locked-placeholder {
                     flex-shrink: 0;
-                    width: 144px;
-                    height: 144px;
+                    width: 210px;
+                    height: 210px;
                     background: #f8fafc;
-                    border-radius: 14px;
+                    border-radius: 16px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -586,8 +586,7 @@ if (!$listing): ?>
                     .detail-description { order: 7; }
                     .dm-reviews       { display: block; order: 8; }
                     .detail-qr-section { order: 9; }
-                    .dm-app           { display: flex; align-items: center; gap: 12px; order: 10;
-                                        background: var(--card); border-radius: var(--radius); padding: 16px; }
+                    .dm-app           { display: none; }
                 }
                 </style>
 
@@ -749,6 +748,7 @@ if (!$listing): ?>
             </div>
         </div>
 
+        <div class="mobile-sections-wrapper">
         <?php if (!empty($similarListings)): ?>
         <section class="similar-listings-section" aria-labelledby="similarListingsTitle">
             <div class="similar-listings-header">
@@ -884,8 +884,43 @@ if (!$listing): ?>
                 <i class="fas fa-paper-plane"></i> Submit Review
             </button>
         </div>
+
+        <!-- MOBILE ONLY: Get App (below Write Review) -->
+        <div class="dm-app-mobile">
+            <img src="assets/images/icon.png" alt="HealthDial"
+                style="width:48px; height:48px; border-radius:12px; flex-shrink:0;" />
+            <div style="flex:1; min-width:0;">
+                <strong>Get the HealthDial App</strong>
+                <p style="font-size:var(--fs-xs); color:var(--text-muted); margin-top:4px;">GPS navigation,
+                    reminders &amp; more</p>
+            </div>
+            <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"
+                class="btn btn-primary" style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
+        </div>
+        </div><!-- /mobile-sections-wrapper -->
     </div>
 </section>
+<style>
+.dm-app-mobile { display: none; }
+@media (max-width: 768px) {
+    .mobile-sections-wrapper {
+        display: flex;
+        flex-direction: column;
+    }
+    .review-form-section   { order: 1; }
+    .dm-app-mobile         { order: 2; }
+    .similar-listings-section { order: 3; }
+    .dm-app-mobile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--card);
+        border-radius: var(--radius);
+        padding: 16px;
+        margin-top: 16px;
+    }
+}
+</style>
 
 <!-- Appointment Request Modal -->
 <div class="apt-modal-overlay" id="aptModalDetail">
@@ -950,11 +985,11 @@ function renderQRCode(container) {
         }
         new QRCode(container, {
             text: HD_REVIEW_URL,
-            width: 124,
-            height: 124,
-            colorDark: '#1e3a8a',
+            width: 178,
+            height: 178,
+            colorDark: '#000000',
             colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.M
+            correctLevel: QRCode.CorrectLevel.L
         });
     }
     initQR();

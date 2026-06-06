@@ -6,6 +6,9 @@ $pageDesc = 'Find verified ' . strtolower($catName) . ' near you. Browse medical
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
 require_once 'includes/header.php';
+require_once 'includes/website_banner.php';
+
+$exploreBanners = get_website_banners('explore', 'top');
 
 // Fetch categories for filter pills
 $categories = [];
@@ -45,14 +48,16 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
         <div class="category-pills" id="categoryPills">
             <a href="looking.php" class="pill <?= $activeCat === 0 ? 'active' : '' ?>">All</a>
             <?php foreach ($categories as $cat): ?>
-                <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?><?= $activeCity ? '&city=' . urlencode($activeCity) : '' ?>"
-                    class="pill <?= $activeCat === intval($cat['id']) ? 'active' : '' ?>">
-                    <?= htmlspecialchars($cat['name']) ?>
-                </a>
+            <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?><?= $activeCity ? '&city=' . urlencode($activeCity) : '' ?>"
+                class="pill <?= $activeCat === intval($cat['id']) ? 'active' : '' ?>">
+                <?= htmlspecialchars($cat['name']) ?>
+            </a>
             <?php endforeach; ?>
         </div>
     </div>
 </section>
+
+<!-- <?php render_website_banner('explore', 'top'); ?> -->
 
 <!-- ===== SORT BAR ===== -->
 <div class="sort-bar">
@@ -136,12 +141,15 @@ $activeCity = isset($_GET['city']) ? htmlspecialchars($_GET['city']) : '';
 
 
 <script>
-    // Pass PHP values to JS
-    window.LOOKING_CONFIG = {
-        activeCat: <?= $activeCat ?>,
-        activeCity: '<?= addslashes($activeCity) ?>',
-        apiBase: '<?= API_BASE ?>'
-    };
+// Pass PHP values to JS
+window.LOOKING_CONFIG = {
+    activeCat: <?= $activeCat ?>,
+    activeCity: '<?= addslashes($activeCity) ?>',
+    apiBase: '<?= API_BASE ?>'
+};
+</script>
+<script>
+window.EXPLORE_INLINE_BANNER = <?php echo json_encode(array_values($exploreBanners)); ?>;
 </script>
 <script src="assets/js/listings.js?v=2.4.0"></script>
 <?php require_once 'includes/footer.php'; ?>

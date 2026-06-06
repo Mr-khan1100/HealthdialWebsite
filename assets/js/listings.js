@@ -564,19 +564,29 @@ function listingDetailUrl(listing) {
 }
 
 // ===== EXPLORE PAGE BANNER (injected every 6 cards) =====
-const EXPLORE_BANNER_HTML = `
+const EXPLORE_BANNER_FALLBACK = `
 <div class="explore-banner-slot">
     <a href="add-listing.php">
         <img src="assets/images/ExplorepageBanner.jpeg" alt="HealthDial" class="explore-banner-img" />
     </a>
 </div>`;
 
+function getExploreBannerHtml() {
+    const banners = window.EXPLORE_INLINE_BANNER;
+    if (!banners || !banners.length) return EXPLORE_BANNER_FALLBACK;
+    const b = banners[0];
+    const img = `<img src="${escHtml(b.image_url)}" alt="${escHtml(b.title || 'Banner')}" class="explore-banner-img" loading="lazy" />`;
+    const inner = b.link_url ? `<a href="${escHtml(b.link_url)}" target="_blank" rel="noopener">${img}</a>` : img;
+    return `<div class="explore-banner-slot">${inner}</div>`;
+}
+
 function buildGridWithBanners(cards, existingCount = 0) {
     const result = [];
+    const bannerHtml = getExploreBannerHtml();
     cards.forEach((html, i) => {
         result.push(html);
         const position = existingCount + i + 1;
-        if (position % 6 === 0) result.push(EXPLORE_BANNER_HTML);
+        if (position % 6 === 0) result.push(bannerHtml);
     });
     return result.join('');
 }

@@ -5,6 +5,7 @@ $pageDesc = 'List your hospital, clinic, pharmacy, lab or medical facility on He
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
 require_once 'includes/header.php';
+require_once 'includes/website_banner.php';
 
 $categories = [];
 $catData = fetch_api_data(API_BASE . 'get_categories.php');
@@ -347,6 +348,10 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
             padding: 24px 18px;
         }
     }
+
+    /* Top banner slot — always provides header clearance */
+    .al-banner-wrap { margin-top: 64px; }
+    @media (max-width: 640px) { .al-banner-wrap { margin-top: 56px; } }
 
     /* Wrapper */
     .al-page {
@@ -1273,10 +1278,8 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
     }
 </style>
 
-<!-- BANNER IMAGE -->
-<div class="al-hero">
-    <img class="al-hero-img" src="assets/images/addListingBanner.png" alt="Add Your Medical Listing on HealthDial"
-        loading="eager" />
+<div class="al-banner-wrap">
+<?php render_website_banner('add_listing', 'top'); ?>
 </div>
 
 <!-- FORM -->

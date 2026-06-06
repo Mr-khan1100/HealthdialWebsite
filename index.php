@@ -18,6 +18,7 @@ $pageDesc = 'Health DIAL is your One Stop Source for finding , Doctors, Pharmaci
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
 require_once 'includes/header.php';
+require_once 'includes/website_banner.php';
 
 // Fetch categories from API
 $categories = [];
@@ -204,12 +205,7 @@ $catColorMap = [
     </div>
 </section>
 
-<!-- ===== HOMEPAGE BANNER ===== -->
-<div class="hp-banner-wrap">
-    <a href="add-listing.php">
-        <img src="assets/images/HomepageBanner.jpeg" alt="HealthDial Banner" class="hp-banner-img" />
-    </a>
-</div>
+<?php render_website_banner('home', 'top'); ?>
 
 <!-- ===== TOP FACILITIES ===== -->
 <section class="top-facilities-section section">
@@ -284,10 +280,7 @@ $catColorMap = [
     ];
 </script>
 
-<!-- ===== FOOTER BANNER ===== -->
-<div class="hp-banner-wrap hp-footer-banner-wrap">
-    <img src="assets/images/HomepageFooterBanner.jpeg" alt="HealthDial" class="hp-banner-img hp-footer-banner-img" />
-</div>
+<?php render_website_banner('home', 'bottom'); ?>
 
 <!-- ===== DOWNLOAD CTA ===== -->
 <section class="home-cta">
