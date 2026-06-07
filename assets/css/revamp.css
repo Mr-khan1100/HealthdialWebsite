@@ -2100,7 +2100,7 @@ label {
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-x;
+    touch-action: pan-x pan-y;
     padding-bottom: 12px;
     /* hide scrollbar */
     scrollbar-width: none;

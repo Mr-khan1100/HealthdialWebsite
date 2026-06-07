@@ -1897,6 +1897,7 @@ function closeQrInterstitial() {
     el.classList.add('hiding');
     setTimeout(function() {
         el.style.display = 'none';
+        document.dispatchEvent(new Event('hdQrInterstitialClosed'));
     }, 300);
 }
 
@@ -1912,6 +1913,278 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 <?php endif; ?>
+
+<!-- ===== PROMOTE INTERSTITIAL ===== -->
+<div id="promote-interstitial" class="pmi-overlay" style="display:none;" aria-modal="true" role="dialog" aria-label="Promote This Listing">
+    <div class="pmi-card">
+        <button class="pmi-close" onclick="closePromoteInterstitial()" aria-label="Close">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <div class="pmi-visual">
+            <div class="pmi-blob pmi-blob1"></div>
+            <div class="pmi-blob pmi-blob2"></div>
+            <div class="pmi-icon-grid">
+                <div class="pmi-ico pmi-ico--amber"><i class="fas fa-rocket"></i></div>
+                <div class="pmi-ico pmi-ico--orange"><i class="fas fa-star"></i></div>
+                <div class="pmi-ico pmi-ico--red"><i class="fas fa-fire"></i></div>
+                <div class="pmi-ico pmi-ico--yellow"><i class="fas fa-users"></i></div>
+                <div class="pmi-ico pmi-ico--center"><i class="fas fa-chart-line"></i></div>
+                <div class="pmi-ico pmi-ico--amber"><i class="fas fa-eye"></i></div>
+                <div class="pmi-ico pmi-ico--orange"><i class="fas fa-arrow-trend-up"></i></div>
+                <div class="pmi-ico pmi-ico--red"><i class="fas fa-trophy"></i></div>
+                <div class="pmi-ico pmi-ico--yellow"><i class="fas fa-bolt"></i></div>
+            </div>
+            <div class="pmi-badge-tag">
+                <i class="fas fa-rocket"></i> Premium Visibility
+            </div>
+        </div>
+
+        <div class="pmi-body">
+            <h2 class="pmi-title">Reach More Patients with <span class="pmi-gradient-text">HealthDial Pro</span></h2>
+            <p class="pmi-sub">Put <strong><?= htmlspecialchars($listing['name']) ?></strong> at the top of search results. Thousands of patients search for care nearby every day — make sure they find you first.</p>
+
+            <div class="pmi-benefits">
+                <div class="pmi-benefit"><i class="fas fa-arrow-up"></i> Top of search results</div>
+                <div class="pmi-benefit"><i class="fas fa-check-circle"></i> Verified badge</div>
+                <div class="pmi-benefit"><i class="fas fa-users"></i> More patient reach</div>
+                <div class="pmi-benefit"><i class="fas fa-chart-bar"></i> Analytics dashboard</div>
+            </div>
+
+            <div class="pmi-ctas">
+                <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>" class="pmi-btn-primary" onclick="closePromoteInterstitial()">
+                    <i class="fas fa-bolt"></i> Promote This Listing
+                </a>
+                <button class="pmi-btn-skip" onclick="closePromoteInterstitial()">Maybe Later</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.pmi-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    padding: 16px;
+    animation: pmiFadeIn 0.35s ease both;
+}
+.pmi-overlay.hiding { animation: pmiFadeOut 0.28s ease both; }
+@keyframes pmiFadeIn { from { opacity:0 } to { opacity:1 } }
+@keyframes pmiFadeOut { from { opacity:1 } to { opacity:0 } }
+
+.pmi-card {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: var(--glass, rgba(8,16,40,0.96));
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.09));
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.55);
+    animation: pmiSlideUp 0.38s cubic-bezier(.22,1,.36,1) both;
+}
+[data-theme="light"] .pmi-card { background: rgba(255,255,255,0.97); }
+@keyframes pmiSlideUp {
+    from { transform:translateY(40px); opacity:0 }
+    to   { transform:translateY(0);    opacity:1 }
+}
+
+.pmi-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    z-index: 10;
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
+    background: rgba(255,255,255,0.08);
+    color: var(--text-muted, #94a3b8);
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+}
+.pmi-close:hover { background: rgba(239,68,68,0.18); color:#f87171; border-color:rgba(239,68,68,0.35); }
+
+.pmi-visual {
+    position: relative;
+    height: 180px;
+    overflow: hidden;
+    background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(234,88,12,0.15) 50%, rgba(220,38,38,0.13) 100%);
+    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.09));
+}
+
+.pmi-blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(50px);
+    opacity: 0.45;
+}
+.pmi-blob1 { width:220px; height:220px; background:#f59e0b; top:-60px; left:-40px; animation:blobFloat 7s ease-in-out infinite; }
+.pmi-blob2 { width:180px; height:180px; background:#ea580c; bottom:-50px; right:-20px; animation:blobFloat 9s ease-in-out infinite reverse; }
+
+.pmi-icon-grid {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    grid-template-rows: repeat(3,1fr);
+    gap: 0;
+    padding: 24px;
+}
+.pmi-ico {
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem;
+    border-radius: 14px;
+    width: 44px; height: 44px;
+    margin: auto;
+    animation: icoFloat 4s ease-in-out infinite;
+}
+.pmi-ico:nth-child(2) { animation-delay:.4s }
+.pmi-ico:nth-child(3) { animation-delay:.8s }
+.pmi-ico:nth-child(4) { animation-delay:.2s }
+.pmi-ico:nth-child(5) { animation-delay:.6s }
+.pmi-ico:nth-child(6) { animation-delay:1s }
+.pmi-ico:nth-child(7) { animation-delay:.3s }
+.pmi-ico:nth-child(8) { animation-delay:.7s }
+.pmi-ico:nth-child(9) { animation-delay:.5s }
+.pmi-ico--amber  { background:rgba(245,158,11,0.22); color:#fbbf24; }
+.pmi-ico--orange { background:rgba(234,88,12,0.22);  color:#fb923c; }
+.pmi-ico--red    { background:rgba(220,38,38,0.22);  color:#f87171; }
+.pmi-ico--yellow { background:rgba(234,179,8,0.22);  color:#fde047; }
+.pmi-ico--center {
+    background: linear-gradient(135deg,#f59e0b,#ea580c);
+    color: #fff;
+    font-size: 1.5rem;
+    width: 52px; height: 52px;
+    box-shadow: 0 8px 24px rgba(245,158,11,0.45);
+    border-radius: 16px;
+}
+
+.pmi-badge-tag {
+    position: absolute;
+    bottom: 14px; left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg,#f59e0b,#d97706);
+    color: #fff;
+    font-size: 0.72rem; font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 5px 16px;
+    border-radius: 99px;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(245,158,11,0.4);
+}
+
+.pmi-body { padding: 22px 26px 26px; }
+
+.pmi-title {
+    font-size: 1.28rem; font-weight: 800;
+    color: var(--text, #f1f5f9);
+    line-height: 1.3; margin-bottom: 8px;
+}
+.pmi-gradient-text {
+    background: linear-gradient(135deg,#f59e0b,#ea580c);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.pmi-sub {
+    font-size: 0.85rem; color: var(--text-secondary, #94a3b8);
+    line-height: 1.6; margin-bottom: 16px;
+}
+
+.pmi-benefits {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 20px;
+}
+.pmi-benefit {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 0.79rem; font-weight: 600;
+    color: var(--text-secondary, #94a3b8);
+}
+.pmi-benefit i { color: #fbbf24; font-size: 0.79rem; flex-shrink: 0; }
+
+.pmi-ctas { display: flex; flex-direction: column; gap: 10px; }
+
+.pmi-btn-primary {
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    padding: 14px 24px; border-radius: 99px;
+    background: linear-gradient(135deg,#f59e0b,#d97706);
+    color: #fff; font-weight: 700; font-size: 0.95rem;
+    text-decoration: none; border: none; cursor: pointer;
+    box-shadow: 0 6px 24px rgba(245,158,11,0.38);
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+}
+.pmi-btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(245,158,11,0.52); }
+
+.pmi-btn-skip {
+    background: none; border: none;
+    color: var(--text-muted, #64748b);
+    font-size: 0.82rem; cursor: pointer;
+    padding: 6px; text-align: center; font-weight: 600;
+    transition: color 0.2s; font-family: inherit;
+}
+.pmi-btn-skip:hover { color: var(--text-secondary, #94a3b8); }
+
+@media (max-width:480px) {
+    .pmi-body { padding:18px 18px 22px; }
+    .pmi-title { font-size:1.1rem; }
+    .pmi-visual { height:155px; }
+    .pmi-benefits { grid-template-columns:1fr; }
+    .pmi-ico { width:36px; height:36px; font-size:1rem; }
+    .pmi-ico--center { width:46px; height:46px; font-size:1.3rem; }
+}
+</style>
+
+<script>
+(function() {
+    var KEY = 'hd_promote_seen_<?= intval($listing['id']) ?>';
+    var el  = document.getElementById('promote-interstitial');
+    if (!el) return;
+    if (sessionStorage.getItem(KEY)) return;
+    sessionStorage.setItem(KEY, '1');
+
+    function showPromote() {
+        el.style.display = 'flex';
+    }
+
+    <?php if (!$qrPaid): ?>
+    // Show after QR interstitial is dismissed
+    document.addEventListener('hdQrInterstitialClosed', function() {
+        setTimeout(showPromote, 500);
+    }, { once: true });
+    // Fallback: show after 10s if QR was never dismissed via button
+    setTimeout(function() {
+        if (el.style.display === 'none' || el.style.display === '') showPromote();
+    }, 10000);
+    <?php else: ?>
+    // QR is already paid, no QR popup — show after 3s
+    setTimeout(showPromote, 3000);
+    <?php endif; ?>
+})();
+
+function closePromoteInterstitial() {
+    var el = document.getElementById('promote-interstitial');
+    if (!el) return;
+    el.classList.add('hiding');
+    setTimeout(function() { el.style.display = 'none'; }, 300);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var el = document.getElementById('promote-interstitial');
+    if (!el) return;
+    el.addEventListener('click', function(e) { if (e.target === el) closePromoteInterstitial(); });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePromoteInterstitial(); });
+});
+</script>
 
 <?php endif; ?>
 <?php require_once 'includes/footer.php'; ?>
