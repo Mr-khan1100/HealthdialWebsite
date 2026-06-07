@@ -6821,22 +6821,23 @@ button {
 /* ===== LOCATION PERMISSION PROMPT ===== */
 .location-prompt {
     position: fixed;
-    top: 16px;
+    top: 74px;
     left: 50%;
-    transform: translateX(-50%) translateY(-100px);
-    z-index: 10000;
-    animation: slideDownPrompt 0.4s ease forwards;
-    animation-delay: 1s;
-    opacity: 0;
+    transform: translateX(-50%);
+    z-index: 999;
     width: calc(100% - 32px);
-    max-width: 480px;
+    max-width: 560px;
+    animation: slideDownPrompt 0.4s cubic-bezier(.22,1,.36,1) both;
+    animation-delay: 0.3s;
 }
 
 @keyframes slideDownPrompt {
-    to {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-    }
+    from { transform: translateX(-50%) translateY(-120%); opacity: 0; }
+    to   { transform: translateX(-50%) translateY(0);    opacity: 1; }
+}
+@keyframes slideDownPromptMobile {
+    from { transform: translateY(-120%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
 }
 
 .location-prompt-inner {
@@ -6920,7 +6921,18 @@ button {
 
 @media (max-width: 600px) {
     .location-prompt {
-        top: 12px;
+        top: 64px !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        transform: none !important;
+        animation-name: slideDownPromptMobile !important;
+        border-radius: 0;
+    }
+    .location-prompt-inner {
+        border-radius: 0;
+        max-width: none !important;
     }
 }
 

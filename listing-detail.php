@@ -332,7 +332,8 @@ if (!$listing): ?>
                             <?= icon('phone') ?> Call Now
                         </a>
                         <?php endif; ?>
-                        <?php $waNum = $listing['whatsapp'] ?? $listing['mobile']; if ($waNum): ?>
+                        <?php $waNum = $listing['whatsapp'] ?? $listing['mobile'];
+                            if ($waNum): ?>
                         <a href="https://wa.me/91<?= preg_replace('/[^0-9]/', '', $waNum) ?>" target="_blank"
                             class="btn detail-btn-whatsapp">
                             <?= icon('phone') ?> WhatsApp
@@ -572,21 +573,64 @@ if (!$listing): ?>
                 }
 
                 /* ===== MOBILE SECTION REORDER ===== */
-                .dm-contact, .dm-map, .dm-app { display: none; }
+                .dm-contact,
+                .dm-map,
+                .dm-app {
+                    display: none;
+                }
 
                 @media (max-width: 768px) {
-                    .detail-sidebar { display: none !important; }
-                    .detail-main { display: flex; flex-direction: column; }
-                    .detail-header    { order: 1; }
-                    .detail-title     { order: 2; }
-                    .detail-rating    { order: 3; }
-                    .detail-info-grid { order: 4; }
-                    .dm-contact       { display: block; order: 5; }
-                    .dm-map           { display: block; order: 6; }
-                    .detail-description { order: 7; }
-                    .dm-reviews       { display: block; order: 8; }
-                    .detail-qr-section { order: 9; }
-                    .dm-app           { display: none; }
+                    .detail-sidebar {
+                        display: none !important;
+                    }
+
+                    .detail-main {
+                        display: flex;
+                        flex-direction: column;
+                    }
+
+                    .detail-header {
+                        order: 1;
+                    }
+
+                    .detail-title {
+                        order: 2;
+                    }
+
+                    .detail-rating {
+                        order: 3;
+                    }
+
+                    .detail-info-grid {
+                        order: 4;
+                    }
+
+                    .dm-contact {
+                        display: block;
+                        order: 5;
+                    }
+
+                    .dm-map {
+                        display: block;
+                        order: 6;
+                    }
+
+                    .detail-description {
+                        order: 7;
+                    }
+
+                    .dm-reviews {
+                        display: block;
+                        order: 8;
+                    }
+
+                    .detail-qr-section {
+                        order: 9;
+                    }
+
+                    .dm-app {
+                        display: none;
+                    }
                 }
                 </style>
 
@@ -644,7 +688,8 @@ if (!$listing): ?>
                             reminders & more</p>
                     </div>
                     <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"
-                        class="btn btn-primary" style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
+                        class="btn btn-primary"
+                        style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
                 </div>
 
                 <!-- Reviews -->
@@ -671,7 +716,8 @@ if (!$listing): ?>
                         <?php endforeach; ?>
                     </div>
                     <?php else: ?>
-                    <p style="color:var(--text-muted); font-size:var(--fs-sm); padding:8px 0;">No reviews yet. Be the first to review!</p>
+                    <p style="color:var(--text-muted); font-size:var(--fs-sm); padding:8px 0;">No reviews yet. Be the
+                        first to review!</p>
                     <?php endif; ?>
                 </div>
             </div>
@@ -749,167 +795,184 @@ if (!$listing): ?>
         </div>
 
         <div class="mobile-sections-wrapper">
-        <?php if (!empty($similarListings)): ?>
-        <section class="similar-listings-section" aria-labelledby="similarListingsTitle">
-            <div class="similar-listings-header">
-                <div>
-                    <span class="section-label"><i class="fas fa-hospital"></i> Similar Facilities</span>
-                    <h2 id="similarListingsTitle">More
-                        <?= htmlspecialchars(strtolower($listing['category_name'] ?? 'medical facilities')) ?> in
-                        <?= htmlspecialchars(hd_city_label($listing['city'] ?? '')) ?>
-                    </h2>
-                </div>
-                <a href="<?= $assetBase ?>/looking.php?cat=<?= intval($listing['category_id'] ?? 0) ?>&name=<?= urlencode($listing['category_name'] ?? '') ?>&city=<?= urlencode(hd_city_label($listing['city'] ?? '')) ?>"
-                    class="similar-view-all">View all</a>
-            </div>
-            <div class="listing-grid similar-listings-grid">
-                <?php foreach ($similarListings as $similar): ?>
-                <?php
-                            $similarUrl = hd_listing_url([
-                                'id' => $similar['id'],
-                                'name' => $similar['name'],
-                                'address' => $similar['address'],
-                                'city' => $similar['city'],
-                                'slug' => $similar['slug'] ?? null,
-                            ], false);
-                            $similarRating = round(floatval($similar['avg_rating'] ?? 0), 1);
-                            $similarReviews = intval($similar['review_count'] ?? 0);
-                            ?>
-                <article class="listing-card similar-listing-card">
-                    <a href="<?= htmlspecialchars($similarUrl) ?>" class="listing-card-image">
-                        <?php if (!empty($similar['image'])): ?>
-                        <img src="<?= htmlspecialchars($similar['image']) ?>"
-                            alt="<?= htmlspecialchars($similar['name']) ?>" loading="lazy" />
-                        <?php else: ?>
-                        <div class="listing-placeholder-modern" style="background:<?= $catGrad ?>">
-                            <div class="placeholder-icon-ring"><span style="font-size:28px"><?= $catIcon ?></span></div>
-                            <div class="placeholder-name"><?= htmlspecialchars(substr($similar['name'], 0, 30)) ?></div>
-                            <div class="placeholder-cat">
-                                <?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?>
-                            </div>
-                        </div>
-                        <?php endif; ?>
-                    </a>
-                    <div class="listing-card-body">
-                        <div class="listing-card-top">
-                            <span
-                                class="listing-category-badge"><?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?></span>
-                            <span class="listing-rating">
-                                <i class="fas fa-star"></i>
-                                <small><?= $similarRating ?> (<?= $similarReviews ?>)</small>
-                            </span>
-                        </div>
-                        <a href="<?= htmlspecialchars($similarUrl) ?>"
-                            class="listing-card-name"><?= htmlspecialchars($similar['name']) ?></a>
-                        <p class="listing-card-address"><i class="fas fa-map-marker-alt"></i>
-                            <?= htmlspecialchars($similar['address'] ?? '') ?>
-                            <?= !empty($similar['city']) ? ', ' . htmlspecialchars($similar['city']) : '' ?>
-                        </p>
-                        <?php if (!empty($similar['distance'])): ?>
-                        <span class="listing-distance"><i class="fas fa-location-arrow"></i>
-                            <?= htmlspecialchars($similar['distance']) ?> km away</span>
-                        <?php endif; ?>
+            <?php if (!empty($similarListings)): ?>
+            <section class="similar-listings-section" aria-labelledby="similarListingsTitle">
+                <div class="similar-listings-header">
+                    <div>
+                        <span class="section-label"><i class="fas fa-hospital"></i> Similar Facilities</span>
+                        <h2 id="similarListingsTitle">More
+                            <?= htmlspecialchars(strtolower($listing['category_name'] ?? 'medical facilities')) ?> in
+                            <?= htmlspecialchars(hd_city_label($listing['city'] ?? '')) ?>
+                        </h2>
                     </div>
-                </article>
-                <?php endforeach; ?>
-            </div>
-        </section>
-        <?php endif; ?>
-
-        <!-- ===== WEB REVIEW FORM ===== -->
-        <div class="review-form-section" id="reviewFormSection">
-            <h3><i class="fas fa-pen" style="color:var(--blue);"></i> Write a Review</h3>
-
-            <div class="star-rating-wrapper">
-                <label class="review-label">Your Rating</label>
-                <div class="star-input" id="starInput" onmouseleave="hdPreviewStars(0)">
-                    <span class="star-icon" data-val="1" onclick="hdSetStar(1)"
-                        onmouseenter="hdPreviewStars(1)">&#9733;</span>
-                    <span class="star-icon" data-val="2" onclick="hdSetStar(2)"
-                        onmouseenter="hdPreviewStars(2)">&#9733;</span>
-                    <span class="star-icon" data-val="3" onclick="hdSetStar(3)"
-                        onmouseenter="hdPreviewStars(3)">&#9733;</span>
-                    <span class="star-icon" data-val="4" onclick="hdSetStar(4)"
-                        onmouseenter="hdPreviewStars(4)">&#9733;</span>
-                    <span class="star-icon" data-val="5" onclick="hdSetStar(5)"
-                        onmouseenter="hdPreviewStars(5)">&#9733;</span>
-                    <span class="star-label" id="starLabel">Tap to rate</span>
+                    <a href="<?= $assetBase ?>/looking.php?cat=<?= intval($listing['category_id'] ?? 0) ?>&name=<?= urlencode($listing['category_name'] ?? '') ?>&city=<?= urlencode(hd_city_label($listing['city'] ?? '')) ?>"
+                        class="similar-view-all">View all</a>
                 </div>
-            </div>
-            <script>
-            // Star rating - defined inline to guarantee availability
-            var hdSelectedRating = 0;
-            var hdRatingLabels = ['Tap to rate', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
-            var hdRatingColors = ['#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
+                <div class="listing-grid similar-listings-grid">
+                    <?php foreach ($similarListings as $similar): ?>
+                    <?php
+                                $similarUrl = hd_listing_url([
+                                    'id' => $similar['id'],
+                                    'name' => $similar['name'],
+                                    'address' => $similar['address'],
+                                    'city' => $similar['city'],
+                                    'slug' => $similar['slug'] ?? null,
+                                ], false);
+                                $similarRating = round(floatval($similar['avg_rating'] ?? 0), 1);
+                                $similarReviews = intval($similar['review_count'] ?? 0);
+                                ?>
+                    <article class="listing-card similar-listing-card">
+                        <a href="<?= htmlspecialchars($similarUrl) ?>" class="listing-card-image">
+                            <?php if (!empty($similar['image'])): ?>
+                            <img src="<?= htmlspecialchars($similar['image']) ?>"
+                                alt="<?= htmlspecialchars($similar['name']) ?>" loading="lazy" />
+                            <?php else: ?>
+                            <div class="listing-placeholder-modern" style="background:<?= $catGrad ?>">
+                                <div class="placeholder-icon-ring"><span style="font-size:28px"><?= $catIcon ?></span>
+                                </div>
+                                <div class="placeholder-name"><?= htmlspecialchars(substr($similar['name'], 0, 30)) ?>
+                                </div>
+                                <div class="placeholder-cat">
+                                    <?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        </a>
+                        <div class="listing-card-body">
+                            <div class="listing-card-top">
+                                <span
+                                    class="listing-category-badge"><?= htmlspecialchars($similar['category_name'] ?? $listing['category_name']) ?></span>
+                                <span class="listing-rating">
+                                    <i class="fas fa-star"></i>
+                                    <small><?= $similarRating ?> (<?= $similarReviews ?>)</small>
+                                </span>
+                            </div>
+                            <a href="<?= htmlspecialchars($similarUrl) ?>"
+                                class="listing-card-name"><?= htmlspecialchars($similar['name']) ?></a>
+                            <p class="listing-card-address"><i class="fas fa-map-marker-alt"></i>
+                                <?= htmlspecialchars($similar['address'] ?? '') ?>
+                                <?= !empty($similar['city']) ? ', ' . htmlspecialchars($similar['city']) : '' ?>
+                            </p>
+                            <?php if (!empty($similar['distance'])): ?>
+                            <span class="listing-distance"><i class="fas fa-location-arrow"></i>
+                                <?= htmlspecialchars($similar['distance']) ?> km away</span>
+                            <?php endif; ?>
+                        </div>
+                    </article>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+            <?php endif; ?>
 
-            function hdSetStar(v) {
-                hdSelectedRating = v;
-                hdRenderStars(v);
-            }
+            <!-- ===== WEB REVIEW FORM ===== -->
+            <div class="review-form-section" id="reviewFormSection">
+                <h3><i class="fas fa-pen" style="color:var(--blue);"></i> Write a Review</h3>
 
-            function hdPreviewStars(v) {
-                hdRenderStars(v === 0 ? hdSelectedRating : v);
-            }
+                <div class="star-rating-wrapper">
+                    <label class="review-label">Your Rating</label>
+                    <div class="star-input" id="starInput" onmouseleave="hdPreviewStars(0)">
+                        <span class="star-icon" data-val="1" onclick="hdSetStar(1)"
+                            onmouseenter="hdPreviewStars(1)">&#9733;</span>
+                        <span class="star-icon" data-val="2" onclick="hdSetStar(2)"
+                            onmouseenter="hdPreviewStars(2)">&#9733;</span>
+                        <span class="star-icon" data-val="3" onclick="hdSetStar(3)"
+                            onmouseenter="hdPreviewStars(3)">&#9733;</span>
+                        <span class="star-icon" data-val="4" onclick="hdSetStar(4)"
+                            onmouseenter="hdPreviewStars(4)">&#9733;</span>
+                        <span class="star-icon" data-val="5" onclick="hdSetStar(5)"
+                            onmouseenter="hdPreviewStars(5)">&#9733;</span>
+                        <span class="star-label" id="starLabel">Tap to rate</span>
+                    </div>
+                </div>
+                <script>
+                // Star rating - defined inline to guarantee availability
+                var hdSelectedRating = 0;
+                var hdRatingLabels = ['Tap to rate', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'];
+                var hdRatingColors = ['#94a3b8', '#ef4444', '#f97316', '#eab308', '#22c55e', '#10b981'];
 
-            function hdRenderStars(v) {
-                var icons = document.querySelectorAll('#starInput .star-icon');
-                for (var i = 0; i < icons.length; i++) {
-                    if (i < v) {
-                        icons[i].classList.add('active');
-                    } else {
-                        icons[i].classList.remove('active');
+                function hdSetStar(v) {
+                    hdSelectedRating = v;
+                    hdRenderStars(v);
+                }
+
+                function hdPreviewStars(v) {
+                    hdRenderStars(v === 0 ? hdSelectedRating : v);
+                }
+
+                function hdRenderStars(v) {
+                    var icons = document.querySelectorAll('#starInput .star-icon');
+                    for (var i = 0; i < icons.length; i++) {
+                        if (i < v) {
+                            icons[i].classList.add('active');
+                        } else {
+                            icons[i].classList.remove('active');
+                        }
+                    }
+                    var lbl = document.getElementById('starLabel');
+                    if (lbl) {
+                        lbl.textContent = hdRatingLabels[v] || hdRatingLabels[0];
+                        lbl.style.color = hdRatingColors[v] || hdRatingColors[0];
                     }
                 }
-                var lbl = document.getElementById('starLabel');
-                if (lbl) {
-                    lbl.textContent = hdRatingLabels[v] || hdRatingLabels[0];
-                    lbl.style.color = hdRatingColors[v] || hdRatingColors[0];
-                }
-            }
-            </script>
+                </script>
 
-            <div class="review-field">
-                <label class="review-label" for="reviewName"><i class="fas fa-user"></i> Your Name</label>
-                <input type="text" id="reviewName" placeholder="Enter your name" class="review-input" />
+                <div class="review-field">
+                    <label class="review-label" for="reviewName"><i class="fas fa-user"></i> Your Name</label>
+                    <input type="text" id="reviewName" placeholder="Enter your name" class="review-input" />
+                </div>
+
+                <div class="review-field">
+                    <label class="review-label" for="reviewText"><i class="fas fa-comment-alt"></i> Your Review</label>
+                    <textarea class="review-textarea" id="reviewText"
+                        placeholder="Share your experience with this place..." maxlength="500"
+                        oninput="updateCharCount(this)"></textarea>
+                    <span class="review-char-count" id="charCount">0 / 500</span>
+                </div>
+
+                <button class="review-submit-btn" onclick="submitReview()">
+                    <i class="fas fa-paper-plane"></i> Submit Review
+                </button>
             </div>
 
-            <div class="review-field">
-                <label class="review-label" for="reviewText"><i class="fas fa-comment-alt"></i> Your Review</label>
-                <textarea class="review-textarea" id="reviewText" placeholder="Share your experience with this place..."
-                    maxlength="500" oninput="updateCharCount(this)"></textarea>
-                <span class="review-char-count" id="charCount">0 / 500</span>
+            <!-- MOBILE ONLY: Get App (below Write Review) -->
+            <div class="dm-app-mobile">
+                <img src="assets/images/icon.png" alt="HealthDial"
+                    style="width:48px; height:48px; border-radius:12px; flex-shrink:0;" />
+                <div style="flex:1; min-width:0;">
+                    <strong>Get the HealthDial App</strong>
+                    <p style="font-size:var(--fs-xs); color:var(--text-muted); margin-top:4px;">GPS navigation,
+                        reminders &amp; more</p>
+                </div>
+                <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"
+                    class="btn btn-primary"
+                    style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
             </div>
-
-            <button class="review-submit-btn" onclick="submitReview()">
-                <i class="fas fa-paper-plane"></i> Submit Review
-            </button>
-        </div>
-
-        <!-- MOBILE ONLY: Get App (below Write Review) -->
-        <div class="dm-app-mobile">
-            <img src="assets/images/icon.png" alt="HealthDial"
-                style="width:48px; height:48px; border-radius:12px; flex-shrink:0;" />
-            <div style="flex:1; min-width:0;">
-                <strong>Get the HealthDial App</strong>
-                <p style="font-size:var(--fs-xs); color:var(--text-muted); margin-top:4px;">GPS navigation,
-                    reminders &amp; more</p>
-            </div>
-            <a href="https://play.google.com/store/apps/details?id=com.healthdial.mobile" target="_blank"
-                class="btn btn-primary" style="font-size:var(--fs-xs); padding:8px 16px; flex-shrink:0;">Download</a>
-        </div>
         </div><!-- /mobile-sections-wrapper -->
     </div>
 </section>
 <style>
-.dm-app-mobile { display: none; }
+.dm-app-mobile {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .mobile-sections-wrapper {
         display: flex;
         flex-direction: column;
     }
-    .review-form-section   { order: 1; }
-    .dm-app-mobile         { order: 2; }
-    .similar-listings-section { order: 3; }
+
+    .review-form-section {
+        order: 1;
+    }
+
+    .dm-app-mobile {
+        order: 2;
+    }
+
+    .similar-listings-section {
+        order: 3;
+    }
+
     .dm-app-mobile {
         display: flex;
         align-items: center;
@@ -1260,12 +1323,14 @@ function submitReview() {
             } else {
                 const form = document.querySelector('.review-form-section');
                 <?php
-                $_waRaw = preg_replace('/[^0-9]/', '', $listing['whatsapp'] ?? '');
-                $LISTING_WA_FULL = $_waRaw ? '91' . $_waRaw : '';
-                ?>
+                        $_waRaw = preg_replace('/[^0-9]/', '', $listing['whatsapp'] ?? '');
+                        $LISTING_WA_FULL = $_waRaw ? '91' . $_waRaw : '';
+                        ?>
                 <?php if ($LISTING_WA_FULL): ?>
-                const _reviewWaMsg = `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
-                window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsg), '_blank');
+                const _reviewWaMsg =
+                    `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
+                window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsg),
+                    '_blank');
                 form.innerHTML = `
                     <div style="text-align:center;padding:30px 20px;">
                         <div style="width:60px;height:60px;border-radius:50%;background:rgba(67,182,73,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
@@ -1285,8 +1350,10 @@ function submitReview() {
         .catch(err => {
             console.error('Review submit error:', err);
             <?php if ($LISTING_WA_FULL): ?>
-            const _reviewWaMsgCatch = `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
-            window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsgCatch), '_blank');
+            const _reviewWaMsgCatch =
+                `New Review for <?= addslashes($listing['name']) ?>\n\nName: ${name}\nRating: ${hdSelectedRating}/5\nReview: ${text || 'No comment'}`;
+            window.open('https://wa.me/<?= $LISTING_WA_FULL ?>?text=' + encodeURIComponent(_reviewWaMsgCatch),
+                '_blank');
             const form = document.querySelector('.review-form-section');
             form.innerHTML = `
                 <div style="text-align:center;padding:30px 20px;">
@@ -1342,7 +1409,7 @@ function submitDetailAppointment() {
 }
 window.submitDetailAppointment = submitDetailAppointment;
 </script>
-<script src="assets/js/listings.js?v=2.4.0"></script>
+<script src="assets/js/listings.js?v=2.5.0"></script>
 
 <?php if (!$qrPaid): ?>
 <!-- ===== QR UPSELL INTERSTITIAL ===== -->
@@ -1915,7 +1982,8 @@ document.addEventListener('DOMContentLoaded', function() {
 <?php endif; ?>
 
 <!-- ===== PROMOTE INTERSTITIAL ===== -->
-<div id="promote-interstitial" class="pmi-overlay" style="display:none;" aria-modal="true" role="dialog" aria-label="Promote This Listing">
+<div id="promote-interstitial" class="pmi-overlay" style="display:none;" aria-modal="true" role="dialog"
+    aria-label="Promote This Listing">
     <div class="pmi-card">
         <button class="pmi-close" onclick="closePromoteInterstitial()" aria-label="Close">
             <i class="fas fa-times"></i>
@@ -1942,7 +2010,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         <div class="pmi-body">
             <h2 class="pmi-title">Reach More Patients with <span class="pmi-gradient-text">HealthDial Pro</span></h2>
-            <p class="pmi-sub">Put <strong><?= htmlspecialchars($listing['name']) ?></strong> at the top of search results. Thousands of patients search for care nearby every day — make sure they find you first.</p>
+            <p class="pmi-sub">Put <strong><?= htmlspecialchars($listing['name']) ?></strong> at the top of search
+                results. Thousands of patients search for care nearby every day — make sure they find you first.</p>
 
             <div class="pmi-benefits">
                 <div class="pmi-benefit"><i class="fas fa-arrow-up"></i> Top of search results</div>
@@ -1952,7 +2021,8 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
 
             <div class="pmi-ctas">
-                <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>" class="pmi-btn-primary" onclick="closePromoteInterstitial()">
+                <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>"
+                    class="pmi-btn-primary" onclick="closePromoteInterstitial()">
                     <i class="fas fa-bolt"></i> Promote This Listing
                 </a>
                 <button class="pmi-btn-skip" onclick="closePromoteInterstitial()">Maybe Later</button>
@@ -1969,15 +2039,36 @@ document.addEventListener('DOMContentLoaded', function() {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0,0,0,0.72);
+    background: rgba(0, 0, 0, 0.72);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
     padding: 16px;
     animation: pmiFadeIn 0.35s ease both;
 }
-.pmi-overlay.hiding { animation: pmiFadeOut 0.28s ease both; }
-@keyframes pmiFadeIn { from { opacity:0 } to { opacity:1 } }
-@keyframes pmiFadeOut { from { opacity:1 } to { opacity:0 } }
+
+.pmi-overlay.hiding {
+    animation: pmiFadeOut 0.28s ease both;
+}
+
+@keyframes pmiFadeIn {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
+@keyframes pmiFadeOut {
+    from {
+        opacity: 1
+    }
+
+    to {
+        opacity: 0
+    }
+}
 
 .pmi-card {
     position: relative;
@@ -1985,41 +2076,61 @@ document.addEventListener('DOMContentLoaded', function() {
     max-width: 520px;
     border-radius: 24px;
     overflow: hidden;
-    background: var(--glass, rgba(8,16,40,0.96));
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.09));
+    background: var(--glass, rgba(8, 16, 40, 0.96));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
-    box-shadow: 0 32px 80px rgba(0,0,0,0.55);
-    animation: pmiSlideUp 0.38s cubic-bezier(.22,1,.36,1) both;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55);
+    animation: pmiSlideUp 0.38s cubic-bezier(.22, 1, .36, 1) both;
 }
-[data-theme="light"] .pmi-card { background: rgba(255,255,255,0.97); }
+
+[data-theme="light"] .pmi-card {
+    background: rgba(255, 255, 255, 0.97);
+}
+
 @keyframes pmiSlideUp {
-    from { transform:translateY(40px); opacity:0 }
-    to   { transform:translateY(0);    opacity:1 }
+    from {
+        transform: translateY(40px);
+        opacity: 0
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1
+    }
 }
 
 .pmi-close {
     position: absolute;
-    top: 14px; right: 14px;
+    top: 14px;
+    right: 14px;
     z-index: 10;
-    width: 34px; height: 34px;
+    width: 34px;
+    height: 34px;
     border-radius: 50%;
-    border: 1px solid var(--glass-border, rgba(255,255,255,0.12));
-    background: rgba(255,255,255,0.08);
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.12));
+    background: rgba(255, 255, 255, 0.08);
     color: var(--text-muted, #94a3b8);
     font-size: 0.85rem;
     cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s;
 }
-.pmi-close:hover { background: rgba(239,68,68,0.18); color:#f87171; border-color:rgba(239,68,68,0.35); }
+
+.pmi-close:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #f87171;
+    border-color: rgba(239, 68, 68, 0.35);
+}
 
 .pmi-visual {
     position: relative;
     height: 180px;
     overflow: hidden;
-    background: linear-gradient(135deg, rgba(245,158,11,0.18) 0%, rgba(234,88,12,0.15) 50%, rgba(220,38,38,0.13) 100%);
-    border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.09));
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.18) 0%, rgba(234, 88, 12, 0.15) 50%, rgba(220, 38, 38, 0.13) 100%);
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.09));
 }
 
 .pmi-blob {
@@ -2028,126 +2139,255 @@ document.addEventListener('DOMContentLoaded', function() {
     filter: blur(50px);
     opacity: 0.45;
 }
-.pmi-blob1 { width:220px; height:220px; background:#f59e0b; top:-60px; left:-40px; animation:blobFloat 7s ease-in-out infinite; }
-.pmi-blob2 { width:180px; height:180px; background:#ea580c; bottom:-50px; right:-20px; animation:blobFloat 9s ease-in-out infinite reverse; }
+
+.pmi-blob1 {
+    width: 220px;
+    height: 220px;
+    background: #f59e0b;
+    top: -60px;
+    left: -40px;
+    animation: blobFloat 7s ease-in-out infinite;
+}
+
+.pmi-blob2 {
+    width: 180px;
+    height: 180px;
+    background: #ea580c;
+    bottom: -50px;
+    right: -20px;
+    animation: blobFloat 9s ease-in-out infinite reverse;
+}
 
 .pmi-icon-grid {
     position: absolute;
     inset: 0;
     display: grid;
-    grid-template-columns: repeat(3,1fr);
-    grid-template-rows: repeat(3,1fr);
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 0;
     padding: 24px;
 }
+
 .pmi-ico {
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.25rem;
     border-radius: 14px;
-    width: 44px; height: 44px;
+    width: 44px;
+    height: 44px;
     margin: auto;
     animation: icoFloat 4s ease-in-out infinite;
 }
-.pmi-ico:nth-child(2) { animation-delay:.4s }
-.pmi-ico:nth-child(3) { animation-delay:.8s }
-.pmi-ico:nth-child(4) { animation-delay:.2s }
-.pmi-ico:nth-child(5) { animation-delay:.6s }
-.pmi-ico:nth-child(6) { animation-delay:1s }
-.pmi-ico:nth-child(7) { animation-delay:.3s }
-.pmi-ico:nth-child(8) { animation-delay:.7s }
-.pmi-ico:nth-child(9) { animation-delay:.5s }
-.pmi-ico--amber  { background:rgba(245,158,11,0.22); color:#fbbf24; }
-.pmi-ico--orange { background:rgba(234,88,12,0.22);  color:#fb923c; }
-.pmi-ico--red    { background:rgba(220,38,38,0.22);  color:#f87171; }
-.pmi-ico--yellow { background:rgba(234,179,8,0.22);  color:#fde047; }
+
+.pmi-ico:nth-child(2) {
+    animation-delay: .4s
+}
+
+.pmi-ico:nth-child(3) {
+    animation-delay: .8s
+}
+
+.pmi-ico:nth-child(4) {
+    animation-delay: .2s
+}
+
+.pmi-ico:nth-child(5) {
+    animation-delay: .6s
+}
+
+.pmi-ico:nth-child(6) {
+    animation-delay: 1s
+}
+
+.pmi-ico:nth-child(7) {
+    animation-delay: .3s
+}
+
+.pmi-ico:nth-child(8) {
+    animation-delay: .7s
+}
+
+.pmi-ico:nth-child(9) {
+    animation-delay: .5s
+}
+
+.pmi-ico--amber {
+    background: rgba(245, 158, 11, 0.22);
+    color: #fbbf24;
+}
+
+.pmi-ico--orange {
+    background: rgba(234, 88, 12, 0.22);
+    color: #fb923c;
+}
+
+.pmi-ico--red {
+    background: rgba(220, 38, 38, 0.22);
+    color: #f87171;
+}
+
+.pmi-ico--yellow {
+    background: rgba(234, 179, 8, 0.22);
+    color: #fde047;
+}
+
 .pmi-ico--center {
-    background: linear-gradient(135deg,#f59e0b,#ea580c);
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
     color: #fff;
     font-size: 1.5rem;
-    width: 52px; height: 52px;
-    box-shadow: 0 8px 24px rgba(245,158,11,0.45);
+    width: 52px;
+    height: 52px;
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.45);
     border-radius: 16px;
 }
 
 .pmi-badge-tag {
     position: absolute;
-    bottom: 14px; left: 50%;
+    bottom: 14px;
+    left: 50%;
     transform: translateX(-50%);
-    background: linear-gradient(135deg,#f59e0b,#d97706);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
     color: #fff;
-    font-size: 0.72rem; font-weight: 700;
+    font-size: 0.72rem;
+    font-weight: 700;
     letter-spacing: 0.05em;
     padding: 5px 16px;
     border-radius: 99px;
     white-space: nowrap;
-    box-shadow: 0 4px 16px rgba(245,158,11,0.4);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
 }
 
-.pmi-body { padding: 22px 26px 26px; }
+.pmi-body {
+    padding: 22px 26px 26px;
+}
 
 .pmi-title {
-    font-size: 1.28rem; font-weight: 800;
+    font-size: 1.28rem;
+    font-weight: 800;
     color: var(--text, #f1f5f9);
-    line-height: 1.3; margin-bottom: 8px;
+    line-height: 1.3;
+    margin-bottom: 8px;
 }
+
 .pmi-gradient-text {
-    background: linear-gradient(135deg,#f59e0b,#ea580c);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background: linear-gradient(135deg, #f59e0b, #ea580c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
 .pmi-sub {
-    font-size: 0.85rem; color: var(--text-secondary, #94a3b8);
-    line-height: 1.6; margin-bottom: 16px;
+    font-size: 0.85rem;
+    color: var(--text-secondary, #94a3b8);
+    line-height: 1.6;
+    margin-bottom: 16px;
 }
 
 .pmi-benefits {
-    display: grid; grid-template-columns: 1fr 1fr;
-    gap: 8px; margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 20px;
 }
+
 .pmi-benefit {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 0.79rem; font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.79rem;
+    font-weight: 600;
     color: var(--text-secondary, #94a3b8);
 }
-.pmi-benefit i { color: #fbbf24; font-size: 0.79rem; flex-shrink: 0; }
 
-.pmi-ctas { display: flex; flex-direction: column; gap: 10px; }
+.pmi-benefit i {
+    color: #fbbf24;
+    font-size: 0.79rem;
+    flex-shrink: 0;
+}
+
+.pmi-ctas {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
 
 .pmi-btn-primary {
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    padding: 14px 24px; border-radius: 99px;
-    background: linear-gradient(135deg,#f59e0b,#d97706);
-    color: #fff; font-weight: 700; font-size: 0.95rem;
-    text-decoration: none; border: none; cursor: pointer;
-    box-shadow: 0 6px 24px rgba(245,158,11,0.38);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 24px;
+    border-radius: 99px;
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(245, 158, 11, 0.38);
     transition: transform 0.2s, box-shadow 0.2s;
     font-family: inherit;
 }
-.pmi-btn-primary:hover { transform:translateY(-2px); box-shadow:0 10px 32px rgba(245,158,11,0.52); }
+
+.pmi-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(245, 158, 11, 0.52);
+}
 
 .pmi-btn-skip {
-    background: none; border: none;
+    background: none;
+    border: none;
     color: var(--text-muted, #64748b);
-    font-size: 0.82rem; cursor: pointer;
-    padding: 6px; text-align: center; font-weight: 600;
-    transition: color 0.2s; font-family: inherit;
+    font-size: 0.82rem;
+    cursor: pointer;
+    padding: 6px;
+    text-align: center;
+    font-weight: 600;
+    transition: color 0.2s;
+    font-family: inherit;
 }
-.pmi-btn-skip:hover { color: var(--text-secondary, #94a3b8); }
+
+.pmi-btn-skip:hover {
+    color: var(--text-secondary, #94a3b8);
+}
 
 @media (max-width:480px) {
-    .pmi-body { padding:18px 18px 22px; }
-    .pmi-title { font-size:1.1rem; }
-    .pmi-visual { height:155px; }
-    .pmi-benefits { grid-template-columns:1fr; }
-    .pmi-ico { width:36px; height:36px; font-size:1rem; }
-    .pmi-ico--center { width:46px; height:46px; font-size:1.3rem; }
+    .pmi-body {
+        padding: 18px 18px 22px;
+    }
+
+    .pmi-title {
+        font-size: 1.1rem;
+    }
+
+    .pmi-visual {
+        height: 155px;
+    }
+
+    .pmi-benefits {
+        grid-template-columns: 1fr;
+    }
+
+    .pmi-ico {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+
+    .pmi-ico--center {
+        width: 46px;
+        height: 46px;
+        font-size: 1.3rem;
+    }
 }
 </style>
 
 <script>
 (function() {
     var KEY = 'hd_promote_seen_<?= intval($listing['id']) ?>';
-    var el  = document.getElementById('promote-interstitial');
+    var el = document.getElementById('promote-interstitial');
     if (!el) return;
     if (sessionStorage.getItem(KEY)) return;
     sessionStorage.setItem(KEY, '1');
@@ -2160,7 +2400,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show after QR interstitial is dismissed
     document.addEventListener('hdQrInterstitialClosed', function() {
         setTimeout(showPromote, 500);
-    }, { once: true });
+    }, {
+        once: true
+    });
     // Fallback: show after 10s if QR was never dismissed via button
     setTimeout(function() {
         if (el.style.display === 'none' || el.style.display === '') showPromote();
@@ -2175,14 +2417,20 @@ function closePromoteInterstitial() {
     var el = document.getElementById('promote-interstitial');
     if (!el) return;
     el.classList.add('hiding');
-    setTimeout(function() { el.style.display = 'none'; }, 300);
+    setTimeout(function() {
+        el.style.display = 'none';
+    }, 300);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     var el = document.getElementById('promote-interstitial');
     if (!el) return;
-    el.addEventListener('click', function(e) { if (e.target === el) closePromoteInterstitial(); });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closePromoteInterstitial(); });
+    el.addEventListener('click', function(e) {
+        if (e.target === el) closePromoteInterstitial();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closePromoteInterstitial();
+    });
 });
 </script>
 

@@ -22,3 +22,20 @@
 [03-Jun-2026 02:42:35 Asia/Kolkata] Title: Unlock Health Dial Now
 [03-Jun-2026 02:42:35 Asia/Kolkata] Body: Free with your health Dial plan
 [03-Jun-2026 02:42:35 Asia/Kolkata] Token count: 3296
+[08-Jun-2026 03:32:27 Asia/Kolkata] 🔥 Push notification trigger started
+[08-Jun-2026 03:32:27 Asia/Kolkata] Title: test
+[08-Jun-2026 03:32:27 Asia/Kolkata] Body: Test
+[08-Jun-2026 03:32:27 Asia/Kolkata] Token count: 2778
+[08-Jun-2026 03:34:28 Asia/Kolkata] PHP Fatal error:  Maximum execution time of 120 seconds exceeded in C:\projects\HealthDial\healthdialBackendUpdated\public_html\HealthDial\push_helper.php on line 95
+[08-Jun-2026 03:51:05 Asia/Kolkata] 🔥 Push notification trigger started
+[08-Jun-2026 03:51:05 Asia/Kolkata] Title: test 2
+[08-Jun-2026 03:51:05 Asia/Kolkata] Body: Test 2
+[08-Jun-2026 03:51:05 Asia/Kolkata] Token count: 2778
+[08-Jun-2026 03:51:35 Asia/Kolkata] ✅ Push complete: 2778 sent, 0 failed, 0 tokens cleaned
+[08-Jun-2026 03:51:35 Asia/Kolkata] [VAPID] No web push subscriptions found
+[08-Jun-2026 04:08:19 Asia/Kolkata] 🔥 Push notification trigger started
+[08-Jun-2026 04:08:19 Asia/Kolkata] Title: local test
+[08-Jun-2026 04:08:19 Asia/Kolkata] Body: test localhost
+[08-Jun-2026 04:08:19 Asia/Kolkata] Token count: 2778
+[08-Jun-2026 04:08:51 Asia/Kolkata] ✅ Push complete: 2778 sent, 0 failed, 0 tokens cleaned
+[08-Jun-2026 04:08:52 Asia/Kolkata] [VAPID] Web push complete: 1 sent, 0 failed, 0 cleaned

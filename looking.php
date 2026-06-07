@@ -151,5 +151,5 @@ window.LOOKING_CONFIG = {
 <script>
 window.EXPLORE_INLINE_BANNER = <?php echo json_encode(array_values($exploreBanners)); ?>;
 </script>
-<script src="assets/js/listings.js?v=2.4.0"></script>
+<script src="assets/js/listings.js?v=2.5.0"></script>
 <?php require_once 'includes/footer.php'; ?>

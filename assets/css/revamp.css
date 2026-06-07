@@ -386,13 +386,11 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
    LANDING HERO
    ================================================================ */
 .landing-hero {
-    min-height: 100vh;
-    min-height: 100dvh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     position: relative;
     overflow: hidden;
-    padding: 100px 0 40px;
+    padding: 100px 0 48px;
 }
 
 /* Stack hero text → search → categories in one column */
@@ -2145,7 +2143,7 @@ label {
     .hero-ctas          { display: none; }
 
     /* Hero layout */
-    .landing-hero { min-height: 100svh; padding: 90px 0 48px; }
+    .landing-hero { padding: 90px 0px 32px 0px; align-items: flex-start; }
     .hero-title   { font-size: clamp(2.3rem, 9vw, 3.6rem); }
     .hero-scroll-indicator { display: none; }
 
@@ -2154,7 +2152,7 @@ label {
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         gap: 8px;
-        justify-content: center;
+        justify-content: left;
         align-items: center;
     }
     .hero-stat-item        { text-align: center; min-width: 0; }

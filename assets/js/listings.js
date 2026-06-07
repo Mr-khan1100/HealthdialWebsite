@@ -38,7 +38,6 @@ function initGeolocation() {
     }
     updateLocationIndicator();
 
-    if (sessionStorage.getItem('hd_location_dismissed')) return;
     if (!navigator.geolocation) return;
 
     const applyPermState = (state) => {
@@ -49,9 +48,15 @@ function initGeolocation() {
             sessionStorage.removeItem('hd_location');
             sessionStorage.removeItem('hd_city');
             updateLocationIndicator();
+            // Signal notification flow immediately — no location popup will show
+            document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'denied' } }));
         } else if (state === 'granted') {
-            // Already allowed — fetch fresh coords if we have none cached
-            if (!userLat) requestLocation();
+            if (!userLat) {
+                requestLocation(); // will dispatch via onLocationGranted()
+            } else {
+                // Coords already cached — signal notification flow immediately
+                document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'granted' } }));
+            }
         } else {
             // 'prompt': never asked yet, OR user revoked then cleared site permission.
             // Clear stale cache so we don't silently use outdated position.
@@ -60,7 +65,7 @@ function initGeolocation() {
             sessionStorage.removeItem('hd_location');
             sessionStorage.removeItem('hd_city');
             updateLocationIndicator();
-            requestLocation(); // triggers native browser permission dialog
+            showLocationPrompt(); // show custom banner; native dialog fires on user click
         }
     };
 
@@ -138,19 +143,12 @@ function showLocationPrompt() {
             <button class="location-prompt-btn" onclick="requestLocation();document.getElementById('locationPrompt').remove();">
                 <i class="fas fa-location-crosshairs"></i> Allow
             </button>
-            <button class="location-prompt-close" onclick="dismissLocationBanner();document.getElementById('locationPrompt').remove();">
+            <button class="location-prompt-close" onclick="dismissLocationBanner();document.getElementById('locationPrompt').remove();document.dispatchEvent(new CustomEvent('hd:locationresult',{detail:{state:'dismissed'}}));">
                 <i class="fas fa-times"></i>
             </button>
         </div>
     `;
     document.body.appendChild(prompt);
-
-    // Auto-dismiss after 15 seconds
-    setTimeout(() => {
-        if (document.getElementById('locationPrompt')) {
-            document.getElementById('locationPrompt').remove();
-        }
-    }, 15000);
 }
 
 function requestLocation() {
@@ -177,6 +175,7 @@ function requestLocation() {
             sessionStorage.setItem('hd_location_dismissed', '1');
             const banner = document.getElementById('locationBanner');
             if (banner) banner.style.display = 'none';
+            document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'denied' } }));
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
@@ -209,6 +208,7 @@ function dismissLocationBanner() {
 
 function onLocationGranted() {
     updateLocationIndicator();
+    document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'granted' } }));
 
     // Update "View All Nearby" link
     const nearYouLink = document.getElementById('nearYouLink');

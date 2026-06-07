@@ -139,28 +139,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
 
                 $_SESSION['success'] = "Notification created successfully.";
-            
-                // 🚀 SEND PUSH IF STATUS = SENT
-                if ($status === 'sent') {
-            
-                    sendPushNotificationToAll(
-                        $conn,
-                        $title,
-                        $message,
-                        [
-                            "type" => "manual",
-                            "title" => $title,
-                            "target_type" => $target_type,
-                            "target_id" => $target_id,
-                            "image_url" => $image_url
-                        ]
-                    );
+                $stmt->close();
+
+                // Capture push params before session is closed
+                $doPush    = ($status === 'sent');
+                $pushTitle = $title;
+                $pushBody  = $message;
+                $pushData  = [
+                    "type"        => "manual",
+                    "title"       => $title,
+                    "target_type" => $target_type,
+                    "target_id"   => $target_id,
+                    "image_url"   => $image_url
+                ];
+
+                // Respond to admin immediately — do not block on thousands of push requests
+                session_write_close();
+                header("Location: Notification.php");
+                if (function_exists('fastcgi_finish_request')) {
+                    fastcgi_finish_request(); // PHP-FPM: send response, keep process alive
+                } else {
+                    ignore_user_abort(true);
+                    header('Connection: close');
+                    header('Content-Length: 0');
+                    flush();
                 }
-            
+
+                // Background: send push notifications after browser has navigated away
+                if ($doPush) {
+                    set_time_limit(0);
+                    ignore_user_abort(true);
+                    sendPushNotificationToAll($conn, $pushTitle, $pushBody, $pushData);
+                }
+
+                exit();
+
             } else {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
-            
+
             $stmt->close();
             
         } catch (Exception $e) {
@@ -209,31 +226,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
 
                 $_SESSION['success'] = "Notification status updated.";
-            
-                // 🚀 If changed to sent → trigger push
-                if ($status === 'sent') {
-            
-                    // Get notification details
-                    $res = $conn->query("SELECT title, message FROM notification_queue WHERE id = $id");
-                    $notif = $res->fetch_assoc();
-            
+
+                // Capture push params before session is closed
+                $doPush   = ($status === 'sent');
+                $pushTitle = '';
+                $pushBody  = '';
+                $pushData  = [];
+
+                if ($doPush) {
+                    $res   = $conn->query("SELECT title, message FROM notification_queue WHERE id = $id");
+                    $notif = $res ? $res->fetch_assoc() : null;
                     if ($notif) {
-                        sendPushNotificationToAll(
-                            $conn,
-                            $notif['title'],
-                            $notif['message'],
-                            [
-                                "type" => "manual",
-                                "title" => $notif['title']
-                            ]
-                        );
+                        $pushTitle = $notif['title'];
+                        $pushBody  = $notif['message'];
+                        $pushData  = ["type" => "manual", "title" => $notif['title']];
+                    } else {
+                        $doPush = false;
                     }
                 }
-            
+
+                $stmt->close();
+
+                // Respond to admin immediately — do not block on thousands of push requests
+                session_write_close();
+                header("Location: Notification.php");
+                if (function_exists('fastcgi_finish_request')) {
+                    fastcgi_finish_request();
+                } else {
+                    ignore_user_abort(true);
+                    header('Connection: close');
+                    header('Content-Length: 0');
+                    flush();
+                }
+
+                // Background: send push notifications after browser has navigated away
+                if ($doPush) {
+                    set_time_limit(0);
+                    ignore_user_abort(true);
+                    sendPushNotificationToAll($conn, $pushTitle, $pushBody, $pushData);
+                }
+
+                exit();
+
             } else {
                 throw new Exception("Execute failed: " . $stmt->error);
             }
-            
+
             $stmt->close();
             
         } catch (Exception $e) {
