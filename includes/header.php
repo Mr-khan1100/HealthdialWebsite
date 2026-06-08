@@ -145,6 +145,10 @@ if (function_exists('hd_asset_base')) {
             class="bottom-nav-item <?= $currentPage == 'looking' ? 'active' : '' ?>">
             <i class="fas fa-search"></i><span>Explore</span>
         </a>
+        <a href="<?= $assetBase ?>/news.php"
+            class="bottom-nav-item <?= $currentPage == 'news' ? 'active' : '' ?>">
+            <i class="fas fa-newspaper"></i><span>News</span>
+        </a>
         <a href="<?= $assetBase ?>/promote.php" class="bottom-nav-item <?= $currentPage == 'promote' ? 'active' : '' ?>"
             style="<?= $currentPage == 'promote' ? '' : 'color:#f59e0b;' ?>">
             <i class="fas fa-bolt"></i><span>Promote</span>
