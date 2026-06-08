@@ -1276,6 +1276,49 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
             left: 160%;
         }
     }
+
+    /* ===== CATEGORY PILLS ===== */
+    .al-cat-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .al-cat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 18px;
+        border-radius: 99px;
+        border: 1.5px solid var(--border-hover, rgba(255,255,255,0.18));
+        background: var(--glass, rgba(255,255,255,0.055));
+        color: var(--text-muted, rgba(240,246,255,0.55));
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: border-color .18s, background .18s, color .18s, box-shadow .18s;
+        backdrop-filter: blur(8px);
+    }
+
+    .al-cat-pill i { font-size: 13px; }
+
+    .al-cat-pill:hover {
+        border-color: #3b82f6;
+        color: #93c5fd;
+        background: rgba(59,130,246,0.09);
+    }
+
+    .al-cat-pill.active {
+        background: linear-gradient(135deg, #2563eb, #10b981);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+
+    @media (max-width: 480px) {
+        .al-cat-pill { padding: 9px 14px; font-size: 12px; }
+    }
 </style>
 
 <div class="al-banner-wrap">
@@ -1307,13 +1350,26 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
                     </div>
                     <div class="al-card-body">
                         <div class="al-f">
-                            <label class="al-lbl" for="alCat">Category <span class="req">*</span></label>
-                            <select class="al-sel" id="alCat" name="category_id" required>
-                                <option value="">— Select a Category —</option>
+                            <label class="al-lbl">Category <span class="req">*</span></label>
+                            <?php
+                            $alCatIconMap = [
+                                'Hospital'      => 'fa-hospital',
+                                'Clinic'        => 'fa-stethoscope',
+                                'Labs'          => 'fa-flask',
+                                'Medical store' => 'fa-pills',
+                                'Ambulance'     => 'fa-truck-medical',
+                                'Blood bank'    => 'fa-droplet',
+                            ];
+                            ?>
+                            <div class="al-cat-pills" id="alCatPills">
                                 <?php foreach ($categories as $cat): ?>
-                                    <option value="<?= intval($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></option>
+                                <button type="button" class="al-cat-pill" data-value="<?= intval($cat['id']) ?>">
+                                    <i class="fas <?= $alCatIconMap[$cat['name']] ?? 'fa-hospital' ?>"></i>
+                                    <?= htmlspecialchars($cat['name']) ?>
+                                </button>
                                 <?php endforeach; ?>
-                            </select>
+                            </div>
+                            <input type="hidden" id="alCat" name="category_id">
                         </div>
                         <div class="al-continue-wrap" id="alContinueWrap">
                             <button type="button" class="al-continue-btn" id="alContinueBtn" onclick="alContinueForm()">
@@ -1696,9 +1752,14 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
     let photos = []; // [{ file, dataUrl }]
     let _listingId = 0; // stored after successful submission
 
-    // ---- Progressive form reveal ----
-    document.getElementById('alCat').addEventListener('change', function () {
-        document.getElementById('alContinueBtn').classList.toggle('active', !!this.value);
+    // ---- Category pill selection ----
+    document.querySelectorAll('.al-cat-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.al-cat-pill').forEach(function (p) { p.classList.remove('active'); });
+            this.classList.add('active');
+            document.getElementById('alCat').value = this.dataset.value;
+            document.getElementById('alContinueBtn').classList.add('active');
+        });
     });
 
     function alContinueForm() {
@@ -2053,6 +2114,8 @@ if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
         const continueWrap = document.getElementById('alContinueWrap');
         continueWrap.style.display = 'block';
         document.getElementById('alContinueBtn').classList.remove('active');
+        document.getElementById('alCat').value = '';
+        document.querySelectorAll('.al-cat-pill').forEach(function (p) { p.classList.remove('active'); });
         const basicFields = document.getElementById('alBasicFields');
         basicFields.style.display = 'none';
         basicFields.classList.remove('al-reveal');
