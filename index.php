@@ -914,7 +914,7 @@ $catColorMap = [
         apiBase: '<?= API_BASE ?>'
     };
 </script>
-<script src="assets/js/listings.js?v=2.6.0"></script>
+<script src="assets/js/listings.js?v=2.7.0"></script>
 
 <?php
 // Web push — homepage only

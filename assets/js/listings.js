@@ -8,6 +8,8 @@ let userLng = null;
 let currentPage = 1;
 let isLoading = false;
 let hasMore = true;
+let userPickedSort = false;      // true once the user manually taps a sort pill
+let sponsoredIdSet = new Set();  // ids shown in the sponsored row (to dedupe the grid)
 
 document.addEventListener('DOMContentLoaded', () => {
     initGeolocation();
@@ -16,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If on a page that loads listings
     if (document.getElementById('listingsGrid')) {
+        // Default to "Nearest" when we already have the user's location cached
+        if (userLat && userLng) setDefaultSort('nearest');
         loadListings();
     }
 
@@ -56,6 +60,12 @@ function initGeolocation() {
             } else {
                 // Coords already cached — signal notification flow immediately
                 document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'granted' } }));
+                // Default to "Nearest" if the user hasn't chosen a sort yet
+                if (!userPickedSort && document.getElementById('sortSelect')?.value !== 'nearest') {
+                    setDefaultSort('nearest');
+                    currentPage = 1;
+                    loadListings();
+                }
             }
         } else {
             // 'prompt': never asked yet, OR user revoked then cleared site permission.
@@ -216,9 +226,14 @@ function onLocationGranted() {
         nearYouLink.href = `looking.php?lat=${userLat}&lng=${userLng}`;
     }
 
-    // Reload listings only if user already has 'nearest' selected
+    // Default to "Nearest" now that we have the user's location, unless they've
+    // already chosen a sort themselves.
     const sortSelect = document.getElementById('sortSelect');
-    if (sortSelect && sortSelect.value === 'nearest') {
+    if (!userPickedSort) {
+        setDefaultSort('nearest');
+        currentPage = 1;
+        loadListings();
+    } else if (sortSelect && sortSelect.value === 'nearest') {
         currentPage = 1;
         loadListings();
     }
@@ -237,7 +252,7 @@ async function loadOneFacilityRow(row, withLocation) {
 
     let url = `${API_BASE}get_filtered_listings.php?category_id=${row.catId}&limit=10`;
     if (withLocation && userLat && userLng) {
-        url += `&lat=${userLat}&lng=${userLng}&radius=100`;
+        url += `&lat=${userLat}&lng=${userLng}&radius=20`;
     }
 
     try {
@@ -315,6 +330,9 @@ async function loadListings(append = false) {
     const search = (document.getElementById('lookingSearchInput')?.value || '').trim();
     const sort = document.getElementById('sortSelect')?.value || 'rating';
 
+    // Skeleton loader on any fresh load (filter/sort/search change)
+    if (!append) showListingsLoader();
+
     // For text search, use search.php (live API supports it); skip on append (no pagination there)
     if (search && !append) {
         try {
@@ -329,6 +347,7 @@ async function loadListings(append = false) {
             if (searchData.success) {
                 const results = searchData.data.results || [];
                 const total = searchData.data.total || results.length;
+                if (!append) await ensureMinLoader();
                 grid.innerHTML = results.map(l => renderListingCard(l)).join('');
                 if (countEl) countEl.textContent = `${total} result${total !== 1 ? 's' : ''} found`;
                 if (emptyState) emptyState.style.display = results.length === 0 ? 'block' : 'none';
@@ -339,6 +358,7 @@ async function loadListings(append = false) {
             console.error('Search failed:', e);
         }
         isLoading = false;
+        setSortPillLoading(false);
         return;
     }
 
@@ -363,27 +383,37 @@ async function loadListings(append = false) {
             const total = data.data.pagination?.total || 0;
             const totalPages = data.data.pagination?.totalPages || 1;
 
-            // Combine sponsored + regular listings into one grid
-            // Sponsored go first on page 1
+            // Remember which listings are shown as sponsored so the same listing
+            // isn't repeated in the regular grid (a nearby sponsored listing also
+            // appears in the normal results).
+            if (!append) {
+                sponsoredIdSet = new Set(sponsored.map(s => String(s.id)));
+            }
+            const regularListings = listings.filter(l => !sponsoredIdSet.has(String(l.id)));
+
+            // Keep the skeleton on screen long enough to be seen on fast responses
+            if (!append) await ensureMinLoader();
+
+            // Combine sponsored + regular listings into one grid; sponsored first on page 1
             const combinedHtml = [];
             if (sponsored.length > 0 && currentPage === 1) {
                 combinedHtml.push(...sponsored.map(l => renderListingCard(l, true)));
             }
-            combinedHtml.push(...listings.map(l => renderListingCard(l)));
+            combinedHtml.push(...regularListings.map(l => renderListingCard(l)));
 
             // Render listings
             if (!append) {
                 grid.innerHTML = buildGridWithBanners(combinedHtml);
             } else {
                 const existingCards = grid.querySelectorAll('.listing-card').length;
-                grid.insertAdjacentHTML('beforeend', buildGridWithBanners(listings.map(l => renderListingCard(l)), existingCards));
+                grid.insertAdjacentHTML('beforeend', buildGridWithBanners(regularListings.map(l => renderListingCard(l)), existingCards));
             }
 
             // Update count
             if (countEl) countEl.textContent = `${total} listing${total !== 1 ? 's' : ''} found`;
 
-            // Show/hide empty state
-            if (emptyState) emptyState.style.display = listings.length === 0 && currentPage === 1 ? 'block' : 'none';
+            // Show/hide empty state (only when nothing at all to show)
+            if (emptyState) emptyState.style.display = (listings.length === 0 && sponsored.length === 0 && currentPage === 1) ? 'block' : 'none';
 
             // Show/hide load more
             hasMore = currentPage < totalPages;
@@ -400,6 +430,7 @@ async function loadListings(append = false) {
     }
 
     isLoading = false;
+    setSortPillLoading(false);
 }
 
 function loadMore() {
@@ -434,7 +465,68 @@ function searchListings(e) {
     }
 }
 
+// Set the active sort without marking it as a manual user choice (used for the
+// automatic "default to Nearest when location is available" behaviour).
+function setDefaultSort(value) {
+    const sel = document.getElementById('sortSelect');
+    if (sel) sel.value = value;
+    document.querySelectorAll('.sort-pill').forEach(p => p.classList.remove('active'));
+    const pill = document.querySelector(`.sort-pill[data-sort="${value}"]`);
+    if (pill) pill.classList.add('active');
+}
+
+// Minimum time the skeleton loader stays visible, so a fast API response still
+// produces a clearly perceptible "loading" state (otherwise it flashes and the
+// user can't tell the filter actually triggered a fetch).
+const MIN_LOADER_MS = 450;
+let loaderStartTs = 0;
+
+// Fill the grid with skeleton cards so a filter/sort change shows immediate feedback.
+function showListingsLoader() {
+    const grid = document.getElementById('listingsGrid');
+    if (!grid) return;
+    loaderStartTs = Date.now();
+    const card = '<div class="listing-card skeleton"><div class="skeleton-image"></div>'
+        + '<div class="skeleton-body"><div class="skeleton-line w70"></div>'
+        + '<div class="skeleton-line w50"></div><div class="skeleton-line w90"></div></div></div>';
+    grid.innerHTML = card.repeat(6);
+    const emptyState = document.getElementById('emptyState');
+    if (emptyState) emptyState.style.display = 'none';
+    const loadMoreWrap = document.getElementById('loadMoreWrap');
+    if (loadMoreWrap) loadMoreWrap.style.display = 'none';
+}
+
+// Resolve only once the skeleton has been visible for at least MIN_LOADER_MS.
+function ensureMinLoader() {
+    const elapsed = Date.now() - loaderStartTs;
+    if (elapsed >= MIN_LOADER_MS) return Promise.resolve();
+    return new Promise(resolve => setTimeout(resolve, MIN_LOADER_MS - elapsed));
+}
+
+// Toggle a spinning state on the sort pill the user just tapped (feedback at the
+// tap point). Tracks the exact pill so it's always restored, even if the active
+// pill changes meanwhile (e.g. location denied snaps the selection back).
+let _loadingPill = null;
+function setSortPillLoading(on) {
+    if (on) {
+        const pill = document.querySelector('.sort-pill.active');
+        const icon = pill && pill.querySelector('i');
+        if (!icon) return;
+        if (!pill.dataset.icon) pill.dataset.icon = icon.className;
+        icon.className = 'fas fa-spinner fa-spin';
+        _loadingPill = pill;
+    } else if (_loadingPill) {
+        const icon = _loadingPill.querySelector('i');
+        if (icon && _loadingPill.dataset.icon) {
+            icon.className = _loadingPill.dataset.icon;
+            delete _loadingPill.dataset.icon;
+        }
+        _loadingPill = null;
+    }
+}
+
 function setSortPill(btn, value) {
+    userPickedSort = true;   // the user has now explicitly chosen a sort
     // Update hidden select so changeSortAndReload reads the right value
     const sel = document.getElementById('sortSelect');
     if (sel) {
@@ -454,6 +546,8 @@ function setSortPill(btn, value) {
 
 function changeSortAndReload() {
     currentPage = 1;
+    showListingsLoader();   // instant feedback while we (maybe) resolve location + fetch
+    setSortPillLoading(true);
     const sortSelect = document.getElementById('sortSelect');
     const sort = sortSelect?.value || 'rating';
 

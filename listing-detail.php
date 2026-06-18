@@ -1409,7 +1409,7 @@ function submitDetailAppointment() {
 }
 window.submitDetailAppointment = submitDetailAppointment;
 </script>
-<script src="assets/js/listings.js?v=2.5.0"></script>
+<script src="assets/js/listings.js?v=2.7.0"></script>
 
 <?php if (!$qrPaid): ?>
 <!-- ===== QR UPSELL INTERSTITIAL ===== -->

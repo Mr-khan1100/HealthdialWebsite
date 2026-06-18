@@ -238,8 +238,26 @@ $total = $countResult->fetch_assoc()['total'] ?? 0;
 ============================== */
 
 $sponsored = [];
+$hasGeo = ($latitude !== null && $longitude !== null);
+
+// In "nearest" mode (GPS provided, no city text filter) compute each sponsored
+// listing's distance so we can keep only the ones actually near the user.
+$sponsoredDistanceSelect = "";
+if ($hasGeo) {
+    $latSql = sprintf('%.8f', (float) $latitude);
+    $lngSql = sprintf('%.8f', (float) $longitude);
+    $sponsoredDistanceSelect = ",
+        (6371 * acos(
+            cos(radians($latSql)) *
+            cos(radians(l.latitude)) *
+            cos(radians(l.longitude) - radians($lngSql)) +
+            sin(radians($latSql)) *
+            sin(radians(l.latitude))
+        )) AS distance_km";
+}
+
 $sponsoredSql = "
-SELECT 
+SELECT
     l.id,
     l.name,
     l.address,
@@ -254,12 +272,13 @@ SELECT
     COALESCE(AVG(r.rating), 0) AS avg_rating,
     COUNT(r.id) AS review_count,
     h.id AS highlight_id
+    $sponsoredDistanceSelect
 FROM listing_highlights h
 INNER JOIN listings l ON h.listing_id = l.id
 INNER JOIN categories c ON l.category_id = c.id
 LEFT JOIN listing_images li ON li.listing_id = l.id AND li.is_primary = 1
 LEFT JOIN reviews r ON r.listing_id = l.id
-WHERE h.is_active = 1 
+WHERE h.is_active = 1
   AND h.end_date > NOW()
   AND l.status = 'approved'
 ";
@@ -273,18 +292,26 @@ if ($category_id > 0) {
 if (!empty($city)) {
     $escapedCity = $conn->real_escape_string($city);
     $sponsoredSql .= " AND (
-        h.target_cities IS NULL 
-        OR h.target_cities = '' 
+        h.target_cities IS NULL
+        OR h.target_cities = ''
         OR h.target_cities LIKE '%" . $escapedCity . "%'
     )";
 }
 
-$sponsoredSql .= " GROUP BY l.id ORDER BY h.created_at DESC LIMIT 5";
+if ($hasGeo && empty($city)) {
+    // Nearest mode: only promote listings that are within the search radius,
+    // closest first — never far-away sponsored listings on top of nearby results.
+    $sponsoredSql .= " AND l.latitude IS NOT NULL AND l.longitude IS NOT NULL";
+    $sponsoredSql .= " GROUP BY l.id HAVING distance_km <= {$radius} ORDER BY distance_km ASC LIMIT 5";
+} else {
+    // Top-rated / city mode: sponsored first, most recently promoted first.
+    $sponsoredSql .= " GROUP BY l.id ORDER BY h.created_at DESC LIMIT 5";
+}
 
 $sponsoredResult = $conn->query($sponsoredSql);
 if ($sponsoredResult) {
     while ($row = $sponsoredResult->fetch_assoc()) {
-        $sponsored[] = [
+        $sp = [
             'id'          => $row['id'],
             'name'        => $row['name'],
             'category'    => $row['category_name'],
@@ -297,13 +324,17 @@ if ($sponsoredResult) {
             'image'       => trim($row['image'])
                 ? (
                     (strpos(trim($row['image']), 'http') !== false || $row['isExternalUrl'])
-                        ? trim($row['image']) 
+                        ? trim($row['image'])
                         : $baseUrl . trim($row['image'])
                   )
                 : null,
             'status'      => $row['status'],
             'is_sponsored' => true
         ];
+        if (isset($row['distance_km'])) {
+            $sp['distance'] = round($row['distance_km'], 2);
+        }
+        $sponsored[] = $sp;
     }
 } else {
     // Log the error but don't fail the entire request
