@@ -3880,15 +3880,6 @@ button {
     .footer {
         padding-bottom: 80px;
     }
-
-    /* Hide hamburger menu items on mobile - bottom nav replaces them */
-    .hamburger {
-        display: none !important;
-    }
-
-    .mobile-nav {
-        display: none !important;
-    }
 }
 
 .bottom-nav-item {

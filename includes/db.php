@@ -86,4 +86,38 @@ function fetch_api_data($url)
 
     return $data;
 }
+
+/**
+ * Returns the id of an existing listing that looks like a duplicate of the given
+ * business, or null if none exists.
+ *
+ * Match rule: same name + same mobile, AND (roughly) the same location. GPS
+ * readings jitter between submissions, so locations are matched within ~150 m
+ * rather than on exact coordinates. If either record has no coordinates (0,0),
+ * name + mobile alone is treated as the duplicate signal.
+ */
+function hd_find_duplicate_listing($conn, $name, $mobile, $latitude, $longitude)
+{
+    $lat = (float) $latitude;
+    $lng = (float) $longitude;
+    // ~0.0015 degrees ≈ 150 m — enough to absorb GPS jitter for the same place.
+    $sql = "SELECT id FROM listings
+            WHERE name = ? AND mobile = ?
+              AND (
+                    (? = 0 AND ? = 0)                       /* new submission has no GPS */
+                 OR (latitude = 0 AND longitude = 0)        /* existing has no GPS       */
+                 OR (ABS(latitude - ?) <= 0.0015 AND ABS(longitude - ?) <= 0.0015)
+              )
+            LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        return null; // fail open — don't block a real submission on a transient error
+    }
+    $stmt->bind_param('ssdddd', $name, $mobile, $lat, $lng, $lat, $lng);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+    return $row ? (int) $row['id'] : null;
+}
 ?>

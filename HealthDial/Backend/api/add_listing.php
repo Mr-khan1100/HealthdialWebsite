@@ -77,7 +77,30 @@ try {
     $close_time = isset($input['close_time']) && $input['close_time'] !== '' ? $input['close_time'] : '18:00:00';
     $is_24x7 = isset($input['is_24x7']) && $input['is_24x7'] == '1' ? 1 : 0;
     $status = 'pending';
-    
+
+    // Block duplicate submissions: same name + phone at (roughly) the same location.
+    // Locations match within ~150 m to absorb GPS jitter; missing coords (0,0) act
+    // as a wildcard so the same business isn't re-listed just because GPS varied.
+    $dup_sql = "SELECT id FROM listings
+                WHERE name = ? AND mobile = ?
+                  AND (
+                        (? = 0 AND ? = 0)
+                     OR (latitude = 0 AND longitude = 0)
+                     OR (ABS(latitude - ?) <= 0.0015 AND ABS(longitude - ?) <= 0.0015)
+                  )
+                LIMIT 1";
+    $dup_stmt = $conn->prepare($dup_sql);
+    if ($dup_stmt) {
+        $dup_stmt->bind_param("ssdddd", $name, $mobile, $latitude, $longitude, $latitude, $longitude);
+        $dup_stmt->execute();
+        $dup_found = $dup_stmt->get_result()->num_rows > 0;
+        $dup_stmt->close();
+        if ($dup_found) {
+            sendResponse(['success' => false, 'message' => 'This business is already listed with the same name, phone number and location.'], 409);
+            exit;
+        }
+    }
+
     // Start transaction
     $conn->begin_transaction();
     

@@ -67,6 +67,12 @@ $close_time  = $is_24x7 ? '00:00:00' : (!empty($input['close_time']) ? $input['c
 $user_id     = 0; // Guest — no auth required
 $status      = 'approved';
 
+// Block duplicate submissions: same name + phone + location already listed
+$dupId = hd_find_duplicate_listing($conn, $name, $mobile, $latitude, $longitude);
+if ($dupId) {
+    sendJson(['success' => false, 'message' => 'This business is already listed with the same name, phone number and location.'], 409);
+}
+
 $conn->begin_transaction();
 
 try {

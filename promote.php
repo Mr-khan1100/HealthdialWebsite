@@ -107,7 +107,8 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                         <div class="plan-duration"><i class="fas fa-calendar-alt"></i> <?= $plan['duration_days'] ?>
                             days</div>
                         <p class="plan-desc">
-                            <?= htmlspecialchars($plan['description'] ?? 'Boost your listing visibility') ?></p>
+                            <?= htmlspecialchars($plan['description'] ?? 'Boost your listing visibility') ?>
+                        </p>
                         <ul class="plan-features">
                             <li><i class="fas fa-check"></i> Top search position</li>
                             <li><i class="fas fa-check"></i> "Sponsored" badge</li>

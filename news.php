@@ -36,7 +36,7 @@ try {
 // ── RSS / live news ────────────────────────────────────────────
 $rssNews = [];
 try {
-    $rssNews = fetchHealthRssNews(6);
+    $rssNews = fetchHealthRssNews(15);
 } catch (Exception $e) {
     // silently skip if RSS fails
 }
@@ -52,19 +52,22 @@ $allNews = [...$adminNews, ...$rssNews];
                 <?= icon('news') ?> Latest News
             </span>
             <h2 class="section-title">Health <span class="gradient-text">News & Updates</span></h2>
-            <p class="section-subtitle">Stay informed with the latest health news from India — curated from Times of India, NDTV, Hindustan Times and more.</p>
+            <p class="section-subtitle">Stay informed with the latest health news from India — curated from Times of India, Hindustan Times, The Hindu, Indian Express and more.</p>
         </div>
 
         <?php if (!empty($allNews)): ?>
             <!-- Source filter tabs -->
             <div class="news-filter-tabs" id="newsFilterTabs">
                 <button class="news-filter-btn active" data-source="all">All</button>
+                <?php if (!empty($adminNews)): ?>
                 <button class="news-filter-btn" data-source="HealthDial">HealthDial</button>
-                <button class="news-filter-btn" data-source="Times of India">Times of India</button>
-                <button class="news-filter-btn" data-source="NDTV">NDTV</button>
-                <button class="news-filter-btn" data-source="Hindustan Times">Hindustan Times</button>
-                <button class="news-filter-btn" data-source="The Hindu">The Hindu</button>
-                <button class="news-filter-btn" data-source="India TV News">India TV News</button>
+                <?php endif; ?>
+                <?php
+                // Only show source tabs that actually have articles
+                $availableSources = array_values(array_unique(array_column($rssNews, 'source')));
+                foreach ($availableSources as $src): ?>
+                <button class="news-filter-btn" data-source="<?= htmlspecialchars($src) ?>"><?= htmlspecialchars($src) ?></button>
+                <?php endforeach; ?>
             </div>
 
             <div class="news-grid" id="news-grid">
@@ -113,6 +116,16 @@ $allNews = [...$adminNews, ...$rssNews];
                         </div>
                     </article>
                 <?php endforeach; ?>
+            </div>
+
+            <!-- Load More -->
+            <div style="text-align:center;margin-top:36px;">
+                <button id="loadMoreNewsBtn" class="btn btn-primary" style="display:none;gap:8px;padding:12px 32px;">
+                    <i class="fas fa-plus-circle"></i> Load More News
+                </button>
+                <p id="newsEndMsg" style="display:none;color:var(--text-muted);font-size:var(--fs-sm);margin-top:8px;">
+                    You're all caught up
+                </p>
             </div>
 
         <?php elseif ($newsError): ?>
@@ -204,22 +217,66 @@ $allNews = [...$adminNews, ...$rssNews];
 </style>
 
 <script>
-// ── Filter tabs ───────────────────────────────────────────────
+// ── Filter + pagination ───────────────────────────────────────
+var NEWS_INITIAL = 9;   // cards shown on first load
+var NEWS_BATCH   = 6;   // cards revealed per "Load More" click
+var newsFilter   = 'all';
+var newsVisible  = NEWS_INITIAL;
+
+function applyNewsView() {
+    var cards = document.querySelectorAll('#news-grid .news-card');
+    var shown = 0, matchTotal = 0;
+    cards.forEach(function (card) {
+        var matches = (newsFilter === 'all' || card.getAttribute('data-source') === newsFilter);
+        if (matches) {
+            matchTotal++;
+            if (shown < newsVisible) {
+                card.classList.remove('hidden');
+                card.classList.add('visible');  // bypass scroll-reveal so card is never stuck at opacity:0
+                shown++;
+            } else {
+                card.classList.add('hidden');
+            }
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+
+    var btn = document.getElementById('loadMoreNewsBtn');
+    var end = document.getElementById('newsEndMsg');
+    if (btn && end) {
+        if (shown < matchTotal) {
+            btn.style.display = 'inline-flex';
+            end.style.display = 'none';
+        } else {
+            btn.style.display = 'none';
+            end.style.display = matchTotal > NEWS_INITIAL ? 'block' : 'none';
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    // Filter tabs
     document.querySelectorAll('.news-filter-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
             document.querySelectorAll('.news-filter-btn').forEach(function (b) { b.classList.remove('active'); });
             btn.classList.add('active');
-            var filter = btn.getAttribute('data-source');
-            document.querySelectorAll('#news-grid .news-card').forEach(function (card) {
-                if (filter === 'all' || card.getAttribute('data-source') === filter) {
-                    card.classList.remove('hidden');
-                } else {
-                    card.classList.add('hidden');
-                }
-            });
+            newsFilter  = btn.getAttribute('data-source');
+            newsVisible = NEWS_INITIAL;   // reset pagination on filter change
+            applyNewsView();
         });
     });
+
+    // Load More
+    var loadBtn = document.getElementById('loadMoreNewsBtn');
+    if (loadBtn) {
+        loadBtn.addEventListener('click', function () {
+            newsVisible += NEWS_BATCH;
+            applyNewsView();
+        });
+    }
+
+    applyNewsView();
 });
 
 // ── Modal ─────────────────────────────────────────────────────

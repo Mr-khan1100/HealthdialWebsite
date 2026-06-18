@@ -2,12 +2,26 @@
 require_once 'connection.inc.php';
 requireLogin();
 
-// Fetch all tickets with user names
+// Ensure guest_* columns exist so website/app guest tickets are visible here too
+$cols = [];
+$colRes = $conn->query("SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'support_tickets'");
+if ($colRes) { while ($c = $colRes->fetch_assoc()) $cols[] = $c['COLUMN_NAME']; }
+$addCols = [];
+if (!in_array('guest_name', $cols))  $addCols[] = "ADD COLUMN guest_name VARCHAR(150) NULL";
+if (!in_array('guest_email', $cols)) $addCols[] = "ADD COLUMN guest_email VARCHAR(190) NULL";
+if (!in_array('guest_phone', $cols)) $addCols[] = "ADD COLUMN guest_phone VARCHAR(30) NULL";
+if (!in_array('source', $cols))      $addCols[] = "ADD COLUMN source VARCHAR(30) NULL";
+if ($addCols) { @$conn->query("ALTER TABLE support_tickets " . implode(', ', $addCols)); }
+
+// Fetch all tickets. LEFT JOIN + COALESCE so guest tickets (no user account,
+// e.g. from the website contact form) still appear with their name/phone.
 $tickets = [];
 $tRes = $conn->query("
-    SELECT t.*, u.name as user_name, u.mobile as user_mobile 
-    FROM support_tickets t 
-    JOIN users u ON t.user_id = u.id 
+    SELECT t.*,
+           COALESCE(NULLIF(u.name, ''), t.guest_name, 'Guest') AS user_name,
+           COALESCE(NULLIF(u.mobile, ''), t.guest_phone, '') AS user_mobile
+    FROM support_tickets t
+    LEFT JOIN users u ON t.user_id = u.id
     ORDER BY t.updated_at DESC
 ");
 if($tRes) {
@@ -158,8 +172,18 @@ if (isset($_GET['ajax_messages']) && isset($_GET['ticket_id'])) {
                                         <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500;">
                                             <?php echo htmlspecialchars(substr($t['subject'], 0, 40)) . (strlen($t['subject']) > 40 ? '...' : ''); ?>
                                         </div>
-                                        <div style="font-size: 11px; color: var(--text-muted); text-align: right;">
-                                            <?php echo date('M d, h:i A', strtotime($t['updated_at'])); ?>
+                                        <?php if (!empty($t['guest_email'])): ?>
+                                        <div style="font-size: 11px; color: var(--primary, #0782ca); margin-bottom: 6px;">
+                                            <i class="fas fa-envelope"></i> <?php echo htmlspecialchars($t['guest_email']); ?>
+                                        </div>
+                                        <?php endif; ?>
+                                        <div style="display:flex; justify-content: space-between; align-items:center; font-size: 11px; color: var(--text-muted);">
+                                            <?php if (($t['source'] ?? '') === 'contact_form'): ?>
+                                            <span style="background:#eef2ff; color:#4f46e5; padding:1px 8px; border-radius:10px; font-weight:600;"><i class="fas fa-globe"></i> Web</span>
+                                            <?php else: ?>
+                                            <span></span>
+                                            <?php endif; ?>
+                                            <span><?php echo date('M d, h:i A', strtotime($t['updated_at'])); ?></span>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -255,7 +279,11 @@ if (isset($_GET['ajax_messages']) && isset($_GET['ticket_id'])) {
             document.getElementById('ticketChat').style.display = 'flex';
             
             document.getElementById('chatSubject').innerText = '#' + ticket.id + ' - ' + ticket.subject;
-            document.getElementById('chatUserInfo').innerText = ticket.user_name + ' | ' + ticket.user_mobile;
+            let _info = ticket.user_name || 'Guest';
+            if (ticket.user_mobile) _info += ' | ' + ticket.user_mobile;
+            if (ticket.guest_email) _info += ' | ' + ticket.guest_email;
+            if (ticket.source === 'contact_form') _info += '  (via Website)';
+            document.getElementById('chatUserInfo').innerText = _info;
             document.getElementById('statusTicketId').value = ticket.id;
             document.getElementById('replyTicketId').value = ticket.id;
             

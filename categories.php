@@ -42,19 +42,20 @@ $catIcons = [
         </div>
         <div class="categories-grid categories-grid-listings">
             <?php if (!empty($categories)): ?>
-                <?php foreach ($categories as $i => $cat): 
+            <?php foreach ($categories as $i => $cat):
                     $iconKey = $catIcons[$cat['name']] ?? 'hospital';
-                ?>
-                <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?>" class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
-                    <div class="category-icon">
-                        <?= icon($iconKey) ?>
-                    </div>
-                    <div class="category-name"><?= htmlspecialchars($cat['name']) ?></div>
-                    <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span>
-                </a>
-                <?php endforeach; ?>
+                    ?>
+            <a href="looking.php?cat=<?= $cat['id'] ?>&name=<?= urlencode($cat['name']) ?>"
+                class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
+                <div class="category-icon">
+                    <?= icon($iconKey) ?>
+                </div>
+                <div class="category-name"><?= htmlspecialchars($cat['name']) ?></div>
+                <!-- <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span> -->
+            </a>
+            <?php endforeach; ?>
             <?php else: ?>
-                <?php
+            <?php
                 // Fallback to hardcoded categories if DB fails
                 $cats = [
                     ['icon' => 'hospital', 'name' => 'Hospital', 'desc' => 'Multi-specialty and general hospitals'],
@@ -69,14 +70,15 @@ $catIcons = [
                     ['icon' => 'cardiology', 'name' => 'Cardiology', 'desc' => 'Heart care and cardiac centers'],
                 ];
                 foreach ($cats as $i => $c): ?>
-                <a href="looking.php?name=<?= urlencode($c['name']) ?>" class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
-                    <div class="category-icon">
-                        <?= icon($c['icon']) ?>
-                    </div>
-                    <div class="category-name"><?= $c['name'] ?></div>
-                    <p class="card-text" style="font-size: 12px; margin-top: 4px;"><?= $c['desc'] ?></p>
-                </a>
-                <?php endforeach; ?>
+            <a href="looking.php?name=<?= urlencode($c['name']) ?>"
+                class="category-card category-card-link reveal delay-<?= ($i % 5) + 1 ?>">
+                <div class="category-icon">
+                    <?= icon($c['icon']) ?>
+                </div>
+                <div class="category-name"><?= $c['name'] ?></div>
+                <p class="card-text" style="font-size: 12px; margin-top: 4px;"><?= $c['desc'] ?></p>
+            </a>
+            <?php endforeach; ?>
             <?php endif; ?>
         </div>
     </div>

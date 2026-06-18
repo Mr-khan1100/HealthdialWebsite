@@ -7,10 +7,26 @@ require_once 'includes/db.php';
 require_once 'includes/header.php';
 require_once 'includes/website_banner.php';
 
+// Load categories directly from the DB instead of calling our own API over HTTP.
+// A server-side loopback request (page -> its own API on the same host) deadlocks
+// on PHP's single-worker built-in dev server. A direct query is faster and works
+// in every environment.
 $categories = [];
-$catData = fetch_api_data(API_BASE . 'get_categories.php');
-if ($catData && !empty($catData['success']) && !empty($catData['data'])) {
-    $categories = $catData['data'];
+$catConn = getDbConnection();
+if ($catConn) {
+    $catRes = $catConn->query("
+        SELECT c.id, c.name, c.icon, COUNT(l.id) AS listing_count
+        FROM categories c
+        LEFT JOIN listings l ON c.id = l.category_id AND l.status = 'approved'
+        WHERE c.status = 1
+        GROUP BY c.id
+        ORDER BY c.name
+    ");
+    if ($catRes) {
+        while ($row = $catRes->fetch_assoc()) {
+            $categories[] = $row;
+        }
+    }
 }
 ?>
 

@@ -90,7 +90,7 @@ $catIcons = [
                     <?= icon($iconKey) ?>
                 </div>
                 <div class="category-name"><?= htmlspecialchars($cat['name']) ?></div>
-                <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span>
+                <!-- <span class="category-count"><?= number_format($cat['listing_count']) ?> listings</span> -->
             </a>
             <?php endforeach; ?>
             <?php else: ?>

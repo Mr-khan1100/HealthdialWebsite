@@ -34,6 +34,32 @@ if ($catRes && $catRow = $catRes->fetch_assoc()) {
 
 // Fetch images
 $images = $conn->query("SELECT * FROM listing_images WHERE listing_id={$view_id} ORDER BY is_primary DESC, id ASC");
+
+// ── QR Code status ────────────────────────────────────────────
+$qrData  = null;
+$qrTable = $conn->query("SHOW TABLES LIKE 'listing_qr_payments'");
+if ($qrTable && $qrTable->num_rows > 0) {
+    $qrStmt = $conn->prepare("SELECT paid_at, razorpay_payment_id FROM listing_qr_payments WHERE listing_id = ? AND status = 'paid' LIMIT 1");
+    $qrStmt->bind_param("i", $view_id);
+    $qrStmt->execute();
+    $qrRes = $qrStmt->get_result();
+    if ($qrRes->num_rows > 0) $qrData = $qrRes->fetch_assoc();
+    $qrStmt->close();
+}
+
+// ── Active promotion ──────────────────────────────────────────
+$promoData    = null;
+$promoExpired = null;
+$promoStmt = $conn->prepare("SELECT start_date, end_date, amount, is_active, total_clicks, total_impressions FROM listing_highlights WHERE listing_id = ? ORDER BY end_date DESC LIMIT 2");
+$promoStmt->bind_param("i", $view_id);
+$promoStmt->execute();
+$promoRes = $promoStmt->get_result();
+while ($row = $promoRes->fetch_assoc()) {
+    $isActive = $row['is_active'] && strtotime($row['end_date']) > time();
+    if ($isActive && !$promoData)       $promoData    = $row;
+    elseif (!$isActive && !$promoExpired) $promoExpired = $row;
+}
+$promoStmt->close();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -61,6 +87,11 @@ $images = $conn->query("SELECT * FROM listing_images WHERE listing_id={$view_id}
         @media (max-width: 768px) {
             .detail-grid, .detail-grid-3 { grid-template-columns: 1fr; }
         }
+        .feature-badge { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:600; }
+        .feature-badge.yes  { background:#ECFDF5; color:#059669; border:1px solid #A7F3D0; }
+        .feature-badge.no   { background:#F9FAFB; color:#9CA3AF; border:1px solid #E5E7EB; }
+        .feature-badge.exp  { background:#FEF3C7; color:#D97706; border:1px solid #FDE68A; }
+        .promo-stat { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:#6B7280; margin-right:12px; }
     </style>
 </head>
 <body>
@@ -175,6 +206,84 @@ $images = $conn->query("SELECT * FROM listing_images WHERE listing_id={$view_id}
                                     <?php endif; ?>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code & Promotion Status -->
+                    <div class="detail-section">
+                        <div class="detail-section-title"><i class="fas fa-star"></i> QR Code &amp; Promotion</div>
+                        <div class="detail-grid">
+
+                            <!-- QR Code -->
+                            <div>
+                                <div class="detail-label" style="margin-bottom:8px;">QR Code</div>
+                                <?php if ($qrData): ?>
+                                    <span class="feature-badge yes">
+                                        <i class="fas fa-qrcode"></i> Unlocked
+                                    </span>
+                                    <div style="margin-top:8px; font-size:12px; color:#6B7280;">
+                                        <i class="fas fa-calendar-check" style="margin-right:4px;"></i>
+                                        Paid on <?php echo date('d M Y, h:i A', strtotime($qrData['paid_at'])); ?>
+                                    </div>
+                                    <?php if (!empty($qrData['razorpay_payment_id'])): ?>
+                                    <div style="margin-top:4px; font-size:11px; color:#9CA3AF; font-family:monospace;">
+                                        <?php echo htmlspecialchars($qrData['razorpay_payment_id']); ?>
+                                    </div>
+                                    <?php endif; ?>
+                                <?php else: ?>
+                                    <span class="feature-badge no">
+                                        <i class="fas fa-times-circle"></i> Not Purchased
+                                    </span>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Promotion -->
+                            <div>
+                                <div class="detail-label" style="margin-bottom:8px;">Promotion</div>
+                                <?php if ($promoData): ?>
+                                    <span class="feature-badge yes">
+                                        <i class="fas fa-bolt"></i> Active
+                                    </span>
+                                    <div style="margin-top:8px; font-size:12px; color:#6B7280;">
+                                        <i class="fas fa-calendar-alt" style="margin-right:4px;"></i>
+                                        <?php echo date('d M Y', strtotime($promoData['start_date'])); ?> &rarr;
+                                        <?php echo date('d M Y', strtotime($promoData['end_date'])); ?>
+                                        &nbsp;&bull;&nbsp;
+                                        <strong style="color:#059669;">
+                                            <?php $daysLeft = max(0, ceil((strtotime($promoData['end_date']) - time()) / 86400)); echo $daysLeft; ?> day<?php echo $daysLeft !== 1 ? 's' : ''; ?> left
+                                        </strong>
+                                    </div>
+                                    <div style="margin-top:6px;">
+                                        <span class="promo-stat"><i class="fas fa-rupee-sign"></i> ₹<?php echo number_format($promoData['amount'], 0); ?> paid</span>
+                                        <span class="promo-stat"><i class="fas fa-mouse-pointer"></i> <?php echo intval($promoData['total_clicks']); ?> clicks</span>
+                                        <span class="promo-stat"><i class="fas fa-eye"></i> <?php echo intval($promoData['total_impressions']); ?> impressions</span>
+                                    </div>
+                                    <a href="SponsoredListings.php" class="btn btn-secondary btn-sm" style="margin-top:10px;font-size:12px;">
+                                        <i class="fas fa-external-link-alt"></i> Manage
+                                    </a>
+                                <?php elseif ($promoExpired): ?>
+                                    <span class="feature-badge exp">
+                                        <i class="fas fa-clock"></i> Expired
+                                    </span>
+                                    <div style="margin-top:8px; font-size:12px; color:#6B7280;">
+                                        Last ran <?php echo date('d M Y', strtotime($promoExpired['start_date'])); ?> &rarr;
+                                        <?php echo date('d M Y', strtotime($promoExpired['end_date'])); ?>
+                                    </div>
+                                    <a href="SponsoredListings.php" class="btn btn-secondary btn-sm" style="margin-top:10px;font-size:12px;">
+                                        <i class="fas fa-bolt"></i> Promote Again
+                                    </a>
+                                <?php else: ?>
+                                    <span class="feature-badge no">
+                                        <i class="fas fa-times-circle"></i> Never Promoted
+                                    </span>
+                                    <div style="margin-top:10px;">
+                                        <a href="SponsoredListings.php" class="btn btn-secondary btn-sm" style="font-size:12px;">
+                                            <i class="fas fa-bolt"></i> Add Promotion
+                                        </a>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+
                         </div>
                     </div>
 

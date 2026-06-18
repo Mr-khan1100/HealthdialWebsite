@@ -29,8 +29,8 @@ if (function_exists('hd_asset_base')) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=3.1.3" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=3.1.4" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=3.1.5" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=3.1.5" />
 
 
     <meta name="google-site-verification" content="zUHx3csIxzeg0V6z14P2BJEJMLX8d8sse1grih5Kk2Y" />
@@ -79,8 +79,6 @@ if (function_exists('hd_asset_base')) {
                       echo 'class="active"'; ?>>Listings</a>
                 <a href="<?= $assetBase ?>/cities.php" <?php if ($currentPage == 'cities')
                       echo 'class="active"'; ?>>Cities</a>
-                <a href="<?= $assetBase ?>/blog.php" <?php if ($currentPage == 'blog')
-                      echo 'class="active"'; ?>>Blog</a>
                 <a href="<?= $assetBase ?>/news.php" <?php if ($currentPage == 'news')
                       echo 'class="active"'; ?>>News</a>
                 <a href="<?= $assetBase ?>/contact.php" <?php if ($currentPage == 'contact')
@@ -117,23 +115,16 @@ if (function_exists('hd_asset_base')) {
         </div>
     </nav>
 
-    <!-- Slide-down mobile menu -->
-    <div class="mobile-nav">
-        <a href="<?= $assetBase ?>/index.php">Home</a>
-        <a href="<?= $assetBase ?>/categories.php">Categories</a>
-        <a href="<?= $assetBase ?>/listings.php">Listings</a>
-        <a href="<?= $assetBase ?>/cities.php">Cities</a>
-        <a href="<?= $assetBase ?>/blog.php">Blog</a>
-        <a href="<?= $assetBase ?>/news.php">News</a>
-        <a href="<?= $assetBase ?>/contact.php">Contact</a>
-        <a href="<?= $assetBase ?>/promote.php" style="color:#f59e0b;font-weight:600;"><i class="fas fa-bolt"></i>
-            Promote
-            Listing</a>
-        <a href="<?= $assetBase ?>/add-listing.php" style="color:#059669;font-weight:600;"><i
-                class="fas fa-plus-circle"></i> Add Your Listing</a>
-        <a href="<?= $assetBase ?>/download.php" class="btn btn-primary" style="margin-top:12px;"><i
-                class="fas fa-download"></i> Download
-            App</a>
+    <!-- Slide-down hamburger menu -->
+    <div class="mobile-nav more-drawer">
+        <span class="more-drawer-label">Menu</span>
+        <a href="<?= $assetBase ?>/categories.php" <?php if ($currentPage == 'categories')
+              echo 'class="active"'; ?>><i class="fas fa-layer-group"></i> Categories</a>
+        <a href="<?= $assetBase ?>/cities.php" <?php if ($currentPage == 'cities')
+              echo 'class="active"'; ?>><i class="fas fa-city"></i> Cities</a>
+        <a href="<?= $assetBase ?>/contact.php" <?php if ($currentPage == 'contact')
+              echo 'class="active"'; ?>><i class="fas fa-headset"></i> Contact</a>
+        <a href="<?= $assetBase ?>/download.php" class="more-drawer-cta"><i class="fas fa-download"></i> Get App</a>
     </div>
 
     <!-- ===== MOBILE BOTTOM NAVIGATION ===== -->
@@ -145,10 +136,6 @@ if (function_exists('hd_asset_base')) {
             class="bottom-nav-item <?= $currentPage == 'looking' ? 'active' : '' ?>">
             <i class="fas fa-search"></i><span>Explore</span>
         </a>
-        <a href="<?= $assetBase ?>/news.php"
-            class="bottom-nav-item <?= $currentPage == 'news' ? 'active' : '' ?>">
-            <i class="fas fa-newspaper"></i><span>News</span>
-        </a>
         <a href="<?= $assetBase ?>/promote.php" class="bottom-nav-item <?= $currentPage == 'promote' ? 'active' : '' ?>"
             style="<?= $currentPage == 'promote' ? '' : 'color:#f59e0b;' ?>">
             <i class="fas fa-bolt"></i><span>Promote</span>
@@ -158,9 +145,9 @@ if (function_exists('hd_asset_base')) {
             style="<?= $currentPage == 'add-listing' ? '' : 'color:#059669;' ?>">
             <i class="fas fa-plus-circle"></i><span>Add</span>
         </a>
-        <a href="<?= $assetBase ?>/download.php"
-            class="bottom-nav-item <?= $currentPage == 'download' ? 'active' : '' ?>">
-            <i class="fas fa-mobile-alt"></i><span>Get App</span>
+        <a href="<?= $assetBase ?>/news.php"
+            class="bottom-nav-item <?= $currentPage == 'news' ? 'active' : '' ?>">
+            <i class="fas fa-newspaper"></i><span>News</span>
         </a>
     </div>
 

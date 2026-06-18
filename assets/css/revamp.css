@@ -340,6 +340,44 @@ button { cursor: pointer; font-family: inherit; border: none; background: none; 
     background: var(--glass);
     color: var(--text);
 }
+.mobile-nav a.active {
+    background: var(--glass);
+    color: var(--blue-light);
+}
+
+/* Hamburger slide-down menu (reuses .mobile-nav mechanics) */
+.more-drawer-label {
+    display: block;
+    padding: 6px 22px 2px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+.more-drawer a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.more-drawer a i {
+    width: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+.more-drawer a.more-drawer-cta {
+    margin-top: 8px;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 600;
+    justify-content: center;
+    gap: 8px;
+}
+.more-drawer a.more-drawer-cta:hover {
+    color: #fff;
+    filter: brightness(1.07);
+}
 
 /* Mobile bottom nav — only on mobile */
 .mobile-bottom-nav {

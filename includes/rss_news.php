@@ -3,9 +3,9 @@
  * Fetches health news from Indian media RSS feeds with 1-hour file cache.
  * Returns an array of article arrays compatible with the news.php card format.
  */
-function fetchHealthRssNews(int $maxPerFeed = 6): array
+function fetchHealthRssNews(int $maxPerFeed = 12): array
 {
-    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'hd_rss_health_v2.json';
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'hd_rss_health_v3.json';
     $cacheTTL  = 3600;
 
     if (is_readable($cacheFile) && (time() - filemtime($cacheFile)) < $cacheTTL) {
@@ -14,11 +14,11 @@ function fetchHealthRssNews(int $maxPerFeed = 6): array
     }
 
     $feeds = [
-        ['url' => 'https://timesofindia.indiatimes.com/rssfeeds/3908999.cms',            'source' => 'Times of India'],
+        ['url' => 'https://timesofindia.indiatimes.com/rssfeeds/3908999.cms',             'source' => 'Times of India'],
         ['url' => 'https://www.hindustantimes.com/feeds/rss/lifestyle/health/rssfeed.xml','source' => 'Hindustan Times'],
-        ['url' => 'https://www.ndtv.com/rss/health',                                     'source' => 'NDTV'],
-        ['url' => 'https://www.indiatvnews.com/rssfeed/health.xml',                      'source' => 'India TV News'],
-        ['url' => 'https://www.thehindu.com/sci-tech/health/feeder/default.rss',         'source' => 'The Hindu'],
+        ['url' => 'https://www.thehindu.com/sci-tech/health/feeder/default.rss',          'source' => 'The Hindu'],
+        ['url' => 'https://indianexpress.com/section/lifestyle/health/feed/',             'source' => 'Indian Express'],
+        ['url' => 'https://www.indiatvnews.com/rssnews/topstory-health.xml',              'source' => 'India TV News'],
     ];
 
     $articles = [];
@@ -43,6 +43,19 @@ function fetchHealthRssNews(int $maxPerFeed = 6): array
             $link    = trim((string)($item->link ?? ''));
             $rawDesc = (string)($item->description ?? '');
             $desc    = trim(strip_tags($rawDesc));
+
+            // Fallback: some feeds (e.g. Indian Express) leave <description> empty
+            // but populate <content:encoded>
+            if ($desc === '') {
+                $content = $item->children('content', true);
+                if (isset($content->encoded)) {
+                    $desc = trim(strip_tags((string)$content->encoded));
+                }
+            }
+            if ($desc === '') {
+                $desc = 'Read the latest health update from ' . $feed['source'] . '.';
+            }
+
             $pubDate = (string)($item->pubDate ?? '');
             $ts      = $pubDate ? strtotime($pubDate) : 0;
             $date    = $ts ? date('d M Y', $ts) : date('d M Y');
@@ -54,8 +67,8 @@ function fetchHealthRssNews(int $maxPerFeed = 6): array
             $articles[] = [
                 'id'               => 'rss_' . md5($link),
                 'title'            => $title,
-                'shortDescription' => mb_substr($desc, 0, 200) . (mb_strlen($desc) > 200 ? '…' : ''),
-                'fullContent'      => nl2br(htmlspecialchars(mb_substr($desc, 0, 1000), ENT_QUOTES, 'UTF-8')),
+                'shortDescription' => mb_substr($desc, 0, 200, 'UTF-8') . (mb_strlen($desc, 'UTF-8') > 200 ? '…' : ''),
+                'fullContent'      => nl2br(htmlspecialchars(mb_substr($desc, 0, 1000, 'UTF-8'), ENT_QUOTES, 'UTF-8')),
                 'image'            => $image,
                 'date'             => $date,
                 'readTime'         => '3 min read',
