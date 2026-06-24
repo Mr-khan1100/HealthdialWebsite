@@ -268,6 +268,159 @@ function hd_time_label($time)
     return $timestamp ? date('g:i A', $timestamp) : null;
 }
 
+// Ordered weekday keys → labels used across the per-day hours feature.
+function hd_day_labels()
+{
+    return [
+        'mon' => 'Monday',
+        'tue' => 'Tuesday',
+        'wed' => 'Wednesday',
+        'thu' => 'Thursday',
+        'fri' => 'Friday',
+        'sat' => 'Saturday',
+        'sun' => 'Sunday',
+    ];
+}
+
+// Today's weekday key (mon..sun) in the business timezone.
+function hd_today_day_key()
+{
+    return strtolower((new DateTime('now', new DateTimeZone('Asia/Kolkata')))->format('D'));
+}
+
+// Is "now" within [open, close] (24h "HH:MM"), handling overnight ranges?
+function hd_is_open_now($open24, $close24, DateTime $now = null)
+{
+    if (!$open24 || !$close24) {
+        return null;
+    }
+    $now = $now ?: new DateTime('now', new DateTimeZone('Asia/Kolkata'));
+    [$oh, $om] = array_map('intval', explode(':', $open24));
+    [$ch, $cm] = array_map('intval', explode(':', $close24));
+    $nowM   = intval($now->format('G')) * 60 + intval($now->format('i'));
+    $openM  = $oh * 60 + $om;
+    $closeM = $ch * 60 + $cm;
+    if ($closeM <= $openM) { // overnight (e.g. 22:00 – 06:00)
+        return $nowM >= $openM || $nowM <= $closeM;
+    }
+    return $nowM >= $openM && $nowM <= $closeM;
+}
+
+/**
+ * Parse a stored opening_hours value (JSON string or array) into a normalized
+ * map keyed by weekday: ['mon' => ['closed'=>bool,'open'=>'HH:MM','close'=>'HH:MM'], ...].
+ * Returns null when there is no usable per-day data.
+ */
+function hd_parse_opening_hours($raw)
+{
+    if (is_string($raw)) {
+        $raw = json_decode($raw, true);
+    }
+    if (!is_array($raw) || empty($raw)) {
+        return null;
+    }
+    $out = [];
+    $hasOpen = false;
+    foreach (hd_day_labels() as $key => $label) {
+        $day = isset($raw[$key]) && is_array($raw[$key]) ? $raw[$key] : null;
+        if (!$day || !empty($day['closed'])) {
+            $out[$key] = ['closed' => true, 'slots' => []];
+            continue;
+        }
+
+        // Accept the multi-slot format {"slots":[{open,close},...]} and the legacy
+        // single-slot format {"open":..,"close":..}.
+        $rawSlots = [];
+        if (isset($day['slots']) && is_array($day['slots'])) {
+            $rawSlots = $day['slots'];
+        } elseif (isset($day['open']) || isset($day['close'])) {
+            $rawSlots = [['open' => $day['open'] ?? '', 'close' => $day['close'] ?? '']];
+        }
+
+        $slots = [];
+        foreach ($rawSlots as $s) {
+            if (!is_array($s)) {
+                continue;
+            }
+            $open  = hd_time_24h($s['open'] ?? '');
+            $close = hd_time_24h($s['close'] ?? '');
+            if ($open && $close) {
+                $slots[] = ['open' => $open, 'close' => $close];
+            }
+        }
+
+        if (empty($slots)) {
+            $out[$key] = ['closed' => true, 'slots' => []];
+        } else {
+            $out[$key] = ['closed' => false, 'slots' => $slots];
+            $hasOpen = true;
+        }
+    }
+    return $hasOpen ? $out : null;
+}
+
+// "9:00 AM – 1:00 PM" style label for a single slot.
+function hd_slot_label($slot)
+{
+    return hd_time_label($slot['open']) . ' – ' . hd_time_label($slot['close']);
+}
+
+/**
+ * Display-ready 7-day schedule for the detail page, or null if no per-day hours.
+ * Each entry: key, label, closed, slots, lines (slot labels), display, is_today.
+ */
+function hd_listing_week_hours($listing)
+{
+    $parsed = hd_parse_opening_hours($listing['opening_hours'] ?? null);
+    if (!$parsed) {
+        return null;
+    }
+    $todayKey = hd_today_day_key();
+    $week = [];
+    foreach (hd_day_labels() as $key => $label) {
+        $day = $parsed[$key];
+        $lines = [];
+        if (empty($day['closed'])) {
+            foreach ($day['slots'] as $s) {
+                $lines[] = hd_slot_label($s);
+            }
+        }
+        $week[] = [
+            'key'      => $key,
+            'label'    => $label,
+            'closed'   => !empty($day['closed']),
+            'slots'    => $day['slots'],
+            'lines'    => $lines,
+            'display'  => empty($lines) ? 'Closed' : implode(', ', $lines),
+            'is_today' => ($key === $todayKey),
+        ];
+    }
+    return $week;
+}
+
+/**
+ * Normalize incoming opening-hours input (array from the form) to a compact JSON
+ * string for storage, or null when nothing usable was provided.
+ */
+function hd_opening_hours_to_json($input)
+{
+    $parsed = hd_parse_opening_hours($input);
+    if (!$parsed) {
+        return null;
+    }
+    $out = [];
+    foreach ($parsed as $key => $day) {
+        if (!empty($day['closed'])) {
+            $out[$key] = ['closed' => true];
+        } else {
+            $out[$key] = ['slots' => array_map(function ($s) {
+                return ['open' => $s['open'], 'close' => $s['close']];
+            }, $day['slots'])];
+        }
+    }
+    return json_encode($out);
+}
+
 function hd_listing_hours_info($listing)
 {
     if (!empty($listing['is_24x7'])) {
@@ -278,6 +431,31 @@ function hd_listing_hours_info($listing)
         ];
     }
 
+    // Per-day schedule takes precedence when present
+    $parsed = hd_parse_opening_hours($listing['opening_hours'] ?? null);
+    if ($parsed) {
+        $now      = new DateTime('now', new DateTimeZone('Asia/Kolkata'));
+        $todayKey = strtolower($now->format('D'));
+        $today    = $parsed[$todayKey] ?? ['closed' => true, 'slots' => []];
+
+        if (!empty($today['closed']) || empty($today['slots'])) {
+            return ['label' => 'Closed today', 'status' => 'Closed now', 'is_open' => false];
+        }
+        $isOpen = false;
+        foreach ($today['slots'] as $s) {
+            if (hd_is_open_now($s['open'], $s['close'], $now)) {
+                $isOpen = true;
+                break;
+            }
+        }
+        return [
+            'label'   => implode(', ', array_map('hd_slot_label', $today['slots'])),
+            'status'  => $isOpen ? 'Open now' : 'Closed now',
+            'is_open' => $isOpen,
+        ];
+    }
+
+    // Legacy single open/close fallback
     $openLabel = hd_time_label($listing['open_time'] ?? '');
     $closeLabel = hd_time_label($listing['close_time'] ?? '');
 
@@ -291,23 +469,7 @@ function hd_listing_hours_info($listing)
 
     $open = hd_time_24h($listing['open_time']);
     $close = hd_time_24h($listing['close_time']);
-    $isOpen = null;
-
-    if ($open && $close) {
-        $timezone = new DateTimeZone('Asia/Kolkata');
-        $now = new DateTime('now', $timezone);
-        [$openHour, $openMinute] = array_map('intval', explode(':', $open));
-        [$closeHour, $closeMinute] = array_map('intval', explode(':', $close));
-        $nowMinutes = intval($now->format('G')) * 60 + intval($now->format('i'));
-        $openMinutes = $openHour * 60 + $openMinute;
-        $closeMinutes = $closeHour * 60 + $closeMinute;
-
-        if ($closeMinutes <= $openMinutes) {
-            $isOpen = $nowMinutes >= $openMinutes || $nowMinutes <= $closeMinutes;
-        } else {
-            $isOpen = $nowMinutes >= $openMinutes && $nowMinutes <= $closeMinutes;
-        }
-    }
+    $isOpen = hd_is_open_now($open, $close);
 
     return [
         'label' => $openLabel . ' - ' . $closeLabel,

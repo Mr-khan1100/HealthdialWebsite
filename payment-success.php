@@ -1,32 +1,56 @@
 <?php
-$pageTitle = 'Payment Successful — HealthDial';
-$pageDesc = 'Your listing promotion payment was successful.';
+$pageTitle = 'Payment Status — HealthDial';
+$pageDesc = 'Your listing promotion payment status.';
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
-require_once 'includes/header.php';
 
-$orderId = isset($_GET['order_id']) ? htmlspecialchars($_GET['order_id']) : '';
+$orderId = isset($_GET['order_id']) ? trim($_GET['order_id']) : '';
+$urlStatus = isset($_GET['status']) ? strtolower(trim($_GET['status'])) : '';
+
+// Look up the stored payment result (PayU callback already verified + activated it).
+$payment = null;
+if ($orderId) {
+    $conn = getDbConnection();
+    if ($conn) {
+        $stmt = $conn->prepare("SELECT pp.*, l.name AS listing_name, hp.name AS plan_name, hp.duration_days
+                                FROM promotion_payments pp
+                                JOIN listings l ON pp.listing_id = l.id
+                                JOIN highlight_plans hp ON pp.plan_id = hp.id
+                                WHERE pp.cashfree_order_id = ? LIMIT 1");
+        if ($stmt) {
+            $stmt->bind_param('s', $orderId);
+            $stmt->execute();
+            $payment = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
+        }
+    }
+}
+
+$isPaid    = $payment && $payment['payment_status'] === 'PAID';
+$isPending = $payment && $payment['payment_status'] === 'PENDING' && $urlStatus !== 'failed';
+
+require_once 'includes/header.php';
 ?>
 
 <section class="payment-result-section">
     <div class="container">
         <div class="payment-result-card" id="paymentResultCard">
-            <div class="payment-loader" id="paymentLoader">
-                <div class="payment-spinner"></div>
-                <h2>Verifying Payment...</h2>
-                <p>Please wait while we confirm your payment with Razorpay.</p>
-            </div>
 
-            <!-- Success State (hidden initially) -->
-            <div class="payment-success" id="paymentSuccess" style="display:none;">
+            <?php if ($isPaid): ?>
+            <!-- Success -->
+            <div class="payment-success">
                 <div class="success-icon-ring">
                     <i class="fas fa-check"></i>
                 </div>
                 <h2>Payment Successful!</h2>
                 <p class="payment-msg">Your listing has been promoted and is now visible to thousands of patients.</p>
-                
-                <div class="promotion-details" id="promotionDetails">
-                    <!-- Filled by JS -->
+
+                <div class="promotion-details">
+                    <div class="promo-detail-row"><span>Listing</span><strong><?= htmlspecialchars($payment['listing_name']) ?></strong></div>
+                    <div class="promo-detail-row"><span>Plan</span><strong><?= htmlspecialchars($payment['plan_name']) ?></strong></div>
+                    <div class="promo-detail-row"><span>Duration</span><strong><?= intval($payment['duration_days']) ?> days</strong></div>
+                    <div class="promo-detail-row"><span>Amount Paid</span><strong>₹<?= number_format((float)$payment['amount'], 0) ?></strong></div>
+                    <div class="promo-detail-row"><span>Order ID</span><strong style="font-size:12px;color:var(--text-muted);"><?= htmlspecialchars($orderId) ?></strong></div>
                 </div>
 
                 <div class="payment-actions">
@@ -35,71 +59,39 @@ $orderId = isset($_GET['order_id']) ? htmlspecialchars($_GET['order_id']) : '';
                 </div>
             </div>
 
-            <!-- Failure State (hidden initially) -->
-            <div class="payment-failure" id="paymentFailure" style="display:none;">
+            <?php elseif ($isPending): ?>
+            <!-- Pending -->
+            <div class="payment-failure">
+                <div class="failure-icon-ring" style="background:#f59e0b;">
+                    <i class="fas fa-hourglass-half"></i>
+                </div>
+                <h2>Payment Processing</h2>
+                <p class="payment-msg">Your payment is still being confirmed. This can take a few minutes — we'll
+                    activate your promotion automatically once PayU confirms it.</p>
+                <div class="payment-actions">
+                    <a href="promote.php" class="btn btn-secondary"><i class="fas fa-bolt"></i> Back to Promote</a>
+                    <a href="contact.php" class="btn btn-secondary"><i class="fas fa-headset"></i> Contact Support</a>
+                </div>
+            </div>
+
+            <?php else: ?>
+            <!-- Failure -->
+            <div class="payment-failure">
                 <div class="failure-icon-ring">
                     <i class="fas fa-times"></i>
                 </div>
                 <h2>Payment Not Completed</h2>
-                <p class="payment-msg" id="failureMsg">Your payment could not be processed. No amount was deducted.</p>
-                
+                <p class="payment-msg">Your payment could not be processed. If any amount was deducted, it will be
+                    refunded automatically within 5–7 business days.</p>
                 <div class="payment-actions">
                     <a href="promote.php" class="btn btn-primary"><i class="fas fa-redo"></i> Try Again</a>
                     <a href="contact.php" class="btn btn-secondary"><i class="fas fa-headset"></i> Contact Support</a>
                 </div>
             </div>
+            <?php endif; ?>
+
         </div>
     </div>
 </section>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const orderId = '<?= addslashes($orderId) ?>';
-    if (!orderId) {
-        document.getElementById('paymentLoader').style.display = 'none';
-        document.getElementById('paymentFailure').style.display = 'block';
-        document.getElementById('failureMsg').textContent = 'No order ID found. Please try promoting again.';
-        return;
-    }
-
-    // Get Razorpay params from URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const razorpayPaymentId = urlParams.get('razorpay_payment_id') || '';
-    const razorpaySignature = urlParams.get('razorpay_signature') || '';
-
-    // Verify payment
-    let verifyUrl = '<?= API_BASE ?>verify_promotion_payment.php?order_id=' + encodeURIComponent(orderId);
-    if (razorpayPaymentId) verifyUrl += '&razorpay_payment_id=' + encodeURIComponent(razorpayPaymentId);
-    if (razorpaySignature) verifyUrl += '&razorpay_signature=' + encodeURIComponent(razorpaySignature);
-
-    fetch(verifyUrl)
-        .then(r => r.json())
-        .then(data => {
-            document.getElementById('paymentLoader').style.display = 'none';
-
-            if (data.success && data.payment_status === 'PAID') {
-                document.getElementById('paymentSuccess').style.display = 'block';
-                const promo = data.promotion || {};
-                document.getElementById('promotionDetails').innerHTML = `
-                    <div class="promo-detail-row"><span>Listing</span><strong>${promo.listing_name || ''}</strong></div>
-                    <div class="promo-detail-row"><span>Plan</span><strong>${promo.plan_name || ''}</strong></div>
-                    <div class="promo-detail-row"><span>Duration</span><strong>${promo.duration_days || ''} days</strong></div>
-                    <div class="promo-detail-row"><span>Amount Paid</span><strong>₹${parseInt(promo.amount || 0).toLocaleString('en-IN')}</strong></div>
-                    <div class="promo-detail-row"><span>Order ID</span><strong style="font-size:12px;color:var(--text-muted);">${orderId}</strong></div>
-                `;
-            } else {
-                document.getElementById('paymentFailure').style.display = 'block';
-                if (data.payment_status === 'PENDING') {
-                    document.getElementById('failureMsg').textContent = 'Payment is still processing. Please check back in a few minutes.';
-                }
-            }
-        })
-        .catch(err => {
-            console.error('Verification error:', err);
-            document.getElementById('paymentLoader').style.display = 'none';
-            document.getElementById('paymentFailure').style.display = 'block';
-        });
-});
-</script>
 
 <?php require_once 'includes/footer.php'; ?>

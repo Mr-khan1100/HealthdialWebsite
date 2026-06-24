@@ -120,4 +120,32 @@ function hd_find_duplicate_listing($conn, $name, $mobile, $latitude, $longitude)
     $stmt->close();
     return $row ? (int) $row['id'] : null;
 }
+
+/**
+ * Read a single value from the `settings` table, returning $default when the
+ * key is missing or empty.
+ */
+function hd_get_setting($conn, $key, $default = null)
+{
+    if (!$conn) {
+        return $default;
+    }
+    $stmt = $conn->prepare("SELECT setting_value FROM settings WHERE setting_key = ? LIMIT 1");
+    if (!$stmt) {
+        return $default;
+    }
+    $stmt->bind_param('s', $key);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return ($row && $row['setting_value'] !== null && $row['setting_value'] !== '') ? $row['setting_value'] : $default;
+}
+
+/**
+ * QR-code unlock price in ₹ (admin-configurable via settings key `qr_code_price`).
+ */
+function hd_qr_price($conn)
+{
+    return (float) hd_get_setting($conn, 'qr_code_price', 200);
+}
 ?>

@@ -914,7 +914,7 @@ $catColorMap = [
         apiBase: '<?= API_BASE ?>'
     };
 </script>
-<script src="assets/js/listings.js?v=2.7.0"></script>
+<script src="assets/js/listings.js?v=2.8.1"></script>
 
 <?php
 // Web push — homepage only
@@ -933,6 +933,6 @@ if (file_exists($_hd_vapid_config)) {
         saveEndpoint: '/HealthDial/Backend/api/save_web_push.php'
     };
 </script>
-<script src="assets/js/push-notifications.js?v=1.3.0"></script>
+<script src="assets/js/push-notifications.js?v=1.4.0"></script>
 
 <?php require_once 'includes/footer.php'; ?>

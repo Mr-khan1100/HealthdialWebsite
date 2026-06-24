@@ -28,6 +28,10 @@ if ($catConn) {
         }
     }
 }
+
+// Admin-configurable QR unlock price (settings key `qr_code_price`).
+$qrPrice = function_exists('hd_qr_price') ? hd_qr_price($catConn) : 200;
+$qrPriceLabel = number_format($qrPrice, 0);
 ?>
 
 <style>
@@ -1505,16 +1509,71 @@ if ($catConn) {
                                 <small>Tick for 24x7 hospitals, emergency services, pharmacies</small>
                             </div>
                         </label>
-                        <div class="al-row" id="alHoursRow">
-                            <div>
-                                <label class="al-lbl" for="alOpen">Opening Time</label>
-                                <input class="al-input" type="time" id="alOpen" name="open_time" value="09:00" />
+
+                        <div id="alDaysWrap">
+                            <div class="al-days-tools">
+                                <span class="al-days-hint">Set hours for each day — untick a day to mark it
+                                    closed.</span>
+                                <button type="button" class="al-copy-btn" onclick="alCopyHoursToAll()">
+                                    <i class="fas fa-copy"></i> Apply 1st day to all
+                                </button>
                             </div>
-                            <div>
-                                <label class="al-lbl" for="alClose">Closing Time</label>
-                                <input class="al-input" type="time" id="alClose" name="close_time" value="18:00" />
+                            <?php
+                            $alDays = [
+                                'mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday',
+                                'thu' => 'Thursday', 'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday',
+                            ];
+                            foreach ($alDays as $dk => $dl):
+                                $defClosed = ($dk === 'sun');
+                                ?>
+                            <div class="al-day-row<?= $defClosed ? ' is-closed' : '' ?>" data-day="<?= $dk ?>">
+                                <label class="al-day-toggle">
+                                    <input type="checkbox" class="al-day-open" <?= $defClosed ? '' : 'checked' ?>
+                                        onchange="alToggleDay(this)" />
+                                    <span class="al-day-name"><?= $dl ?></span>
+                                </label>
+                                <div class="al-day-slots">
+                                    <div class="al-slot">
+                                        <input type="time" class="al-input al-slot-from" value="09:00" />
+                                        <span class="al-day-sep">to</span>
+                                        <input type="time" class="al-input al-slot-to" value="18:00" />
+                                        <button type="button" class="al-slot-rm" onclick="alRemoveSlot(this)"
+                                            title="Remove slot"><i class="fas fa-times"></i></button>
+                                    </div>
+                                    <button type="button" class="al-add-slot" onclick="alAddSlot(this)">
+                                        <i class="fas fa-plus"></i> Add hours
+                                    </button>
+                                </div>
+                                <span class="al-day-closed-tag">Closed</span>
                             </div>
+                            <?php endforeach; ?>
                         </div>
+                        <style>
+                        #alDaysWrap { margin-top: 4px; }
+                        .al-days-tools { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+                        .al-days-hint { font-size:12px; color: var(--text-secondary, rgba(240,246,255,0.6)); }
+                        .al-copy-btn { background: var(--glass, rgba(255,255,255,0.06)); border:1px solid var(--border-hover, rgba(255,255,255,0.18)); color:#60a5fa; font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+                        .al-copy-btn:hover { background:#2563eb; color:#fff; border-color:#2563eb; }
+                        .al-day-row { display:flex; align-items:flex-start; gap:12px; padding:12px 0; border-bottom:1px solid var(--glass-border, rgba(255,255,255,0.07)); }
+                        .al-day-row:last-child { border-bottom:none; }
+                        .al-day-toggle { display:flex; align-items:center; gap:8px; min-width:128px; cursor:pointer; user-select:none; padding-top:7px; }
+                        .al-day-toggle input { width:16px; height:16px; accent-color:#2563eb; cursor:pointer; flex-shrink:0; }
+                        .al-day-name { font-size:14px; font-weight:600; color: var(--text, #f0f6ff); }
+                        .al-day-slots { flex:1; display:flex; flex-direction:column; gap:8px; align-items:flex-start; }
+                        .al-slot { display:flex; align-items:center; gap:8px; width:100%; }
+                        .al-slot .al-input { width:auto; flex:1; padding:8px 10px; min-width:0; }
+                        .al-day-sep { font-size:12px; color: var(--text-muted, rgba(240,246,255,0.4)); flex-shrink:0; }
+                        .al-slot-rm { flex-shrink:0; width:30px; height:30px; border-radius:8px; border:1px solid var(--border-hover, rgba(255,255,255,0.18)); background:transparent; color:#f87171; cursor:pointer; font-size:12px; }
+                        .al-slot-rm:hover { background:rgba(239,68,68,0.15); border-color:#f87171; }
+                        .al-day-slots .al-slot:only-of-type .al-slot-rm { display:none; }
+                        .al-add-slot { background:transparent; border:1px dashed var(--border-hover, rgba(255,255,255,0.25)); color:#60a5fa; font-size:12px; font-weight:600; padding:6px 12px; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; }
+                        .al-add-slot:hover { border-color:#2563eb; background:rgba(37,99,235,0.08); }
+                        .al-day-closed-tag { display:none; font-size:13px; font-weight:600; color:#f87171; flex:1; padding-top:7px; }
+                        .al-day-row.is-closed .al-day-slots { display:none; }
+                        .al-day-row.is-closed .al-day-closed-tag { display:inline; }
+                        .al-day-row.is-closed .al-day-name { color: var(--text-muted, rgba(240,246,255,0.4)); }
+                        @media (max-width:480px){ .al-day-toggle{ min-width:88px; } .al-day-name{ font-size:13px; } }
+                        </style>
                     </div>
                 </div>
 
@@ -1713,7 +1772,7 @@ if ($catConn) {
                     <i class="fas fa-qrcode"></i>
                 </div>
                 <div class="al-qr-popup-badge">ONE-TIME</div>
-                <div class="al-qr-popup-price">₹200</div>
+                <div class="al-qr-popup-price">₹<?= $qrPriceLabel ?></div>
                 <div class="al-qr-popup-price-sub">Printed card delivery</div>
             </div>
             <div class="al-qr-popup-content">
@@ -1731,12 +1790,12 @@ if ($catConn) {
                 </ul>
                 <div class="al-qr-popup-actions">
                     <button class="al-qr-buy-btn" id="alQrBuyBtn" onclick="buyQrCode()">
-                        <i class="fas fa-qrcode"></i> Buy QR Code — ₹200
+                        <i class="fas fa-qrcode"></i> Buy QR Code — ₹<?= $qrPriceLabel ?>
                     </button>
                     <button class="al-qr-skip-btn" onclick="skipQr()">No, Thanks</button>
                 </div>
                 <p class="al-qr-popup-secure">
-                    <i class="fas fa-shield-alt"></i> Secure payment via Razorpay · No hidden charges
+                    <i class="fas fa-shield-alt"></i> Secure payment via PayU · No hidden charges
                 </p>
             </div>
         </div>
@@ -1762,7 +1821,6 @@ if ($catConn) {
     </div>
 </div>
 
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     /* ===== Add Listing JS ===== */
     let photos = []; // [{ file, dataUrl }]
@@ -1824,75 +1882,24 @@ if ($catConn) {
         }
     }
 
-    async function buyQrCode() {
+    function buyQrCode() {
         const btn = document.getElementById('alQrBuyBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order…';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
 
-        try {
-            const res = await fetch('qr_create_order.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    listing_id: _listingId
-                })
-            });
-            const data = await res.json();
-
-            if (!data.success) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-                alert(data.message || 'Could not create order. Please try again.');
-                return;
-            }
-
-            const rzp = new Razorpay({
-                key: data.razorpay_key_id,
-                amount: data.amount_paise,
-                currency: 'INR',
-                name: 'HealthDial',
-                description: 'QR Code for your listing',
-                order_id: data.razorpay_order_id,
-                theme: {
-                    color: '#2563eb'
-                },
-                handler: async function (response) {
-                    try {
-                        const vRes = await fetch('qr_verify_payment.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                listing_id: _listingId,
-                                razorpay_order_id: response.razorpay_order_id,
-                                razorpay_payment_id: response.razorpay_payment_id,
-                                razorpay_signature: response.razorpay_signature
-                            })
-                        });
-                        const vData = await vRes.json();
-                        document.getElementById('alQrOverlay').classList.remove('show');
-                        showSuccessPopup(vData.success);
-                    } catch {
-                        document.getElementById('alQrOverlay').classList.remove('show');
-                        showSuccessPopup(false);
-                    }
-                },
-                modal: {
-                    ondismiss: function () {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-                    }
-                }
-            });
-            rzp.open();
-        } catch {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-qrcode"></i> Buy QR Code — ₹200';
-            alert('Network error. Please try again.');
-        }
+        // PayU hosted checkout: POST to our server, which signs the order and
+        // redirects to PayU. After payment PayU returns to payu_qr_callback.php,
+        // which unlocks the QR and lands the user on the listing detail page.
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = 'payu_qr_initiate.php';
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'listing_id';
+        input.value = _listingId;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
     }
     // -----------------------
 
@@ -1901,9 +1908,88 @@ if ($catConn) {
         document.getElementById('alDescCount').textContent = this.value.length;
     });
 
-    // 24x7 toggle
+    // 24x7 toggle — hide the per-day schedule when "open 24 hours" is on
     function toggle24(cb) {
-        document.getElementById('alHoursRow').style.display = cb.checked ? 'none' : 'grid';
+        document.getElementById('alDaysWrap').style.display = cb.checked ? 'none' : 'block';
+    }
+
+    // Show/hide a day's time slots when its "open" checkbox changes
+    function alToggleDay(cb) {
+        cb.closest('.al-day-row').classList.toggle('is-closed', !cb.checked);
+    }
+
+    // Markup for one time slot (morning / evening / etc.)
+    function alSlotHtml(from, to) {
+        return '<div class="al-slot">'
+            + '<input type="time" class="al-input al-slot-from" value="' + from + '" />'
+            + '<span class="al-day-sep">to</span>'
+            + '<input type="time" class="al-input al-slot-to" value="' + to + '" />'
+            + '<button type="button" class="al-slot-rm" onclick="alRemoveSlot(this)" title="Remove slot"><i class="fas fa-times"></i></button>'
+            + '</div>';
+    }
+
+    // Add another time slot to a day
+    function alAddSlot(btn) {
+        btn.insertAdjacentHTML('beforebegin', alSlotHtml('09:00', '18:00'));
+    }
+
+    // Remove a time slot (always keep at least one)
+    function alRemoveSlot(btn) {
+        const wrap = btn.closest('.al-day-slots');
+        if (wrap.querySelectorAll('.al-slot').length > 1) {
+            btn.closest('.al-slot').remove();
+        }
+    }
+
+    // Copy the first open day's full set of slots to every other open day
+    function alCopyHoursToAll() {
+        const rows = document.querySelectorAll('#alDaysWrap .al-day-row');
+        let src = null;
+        rows.forEach(r => { if (!src && r.querySelector('.al-day-open').checked) src = r; });
+        if (!src) return;
+        const slots = [];
+        src.querySelectorAll('.al-slot').forEach(s => slots.push({
+            from: s.querySelector('.al-slot-from').value,
+            to: s.querySelector('.al-slot-to').value
+        }));
+        rows.forEach(r => {
+            if (r === src || !r.querySelector('.al-day-open').checked) return;
+            const wrap = r.querySelector('.al-day-slots');
+            wrap.querySelectorAll('.al-slot').forEach(s => s.remove());
+            const addBtn = wrap.querySelector('.al-add-slot');
+            slots.forEach(sl => addBtn.insertAdjacentHTML('beforebegin', alSlotHtml(sl.from, sl.to)));
+        });
+    }
+
+    // Build the opening_hours object (slots per day) + a derived first-open time
+    function alCollectHours(is24) {
+        const result = { opening_hours: null, openTime: '09:00', closeTime: '18:00', anyOpen: false };
+        if (is24) return result;
+        const oh = {};
+        let firstFrom = null, firstTo = null;
+        document.querySelectorAll('#alDaysWrap .al-day-row').forEach(row => {
+            const key = row.dataset.day;
+            if (row.querySelector('.al-day-open').checked) {
+                const slots = [];
+                row.querySelectorAll('.al-slot').forEach(s => {
+                    const from = s.querySelector('.al-slot-from').value;
+                    const to = s.querySelector('.al-slot-to').value;
+                    if (from && to) slots.push({ open: from, close: to });
+                });
+                if (slots.length) {
+                    oh[key] = { slots };
+                    result.anyOpen = true;
+                    if (!firstFrom) { firstFrom = slots[0].open; firstTo = slots[0].close; }
+                } else {
+                    oh[key] = { closed: true };
+                }
+            } else {
+                oh[key] = { closed: true };
+            }
+        });
+        result.opening_hours = oh;
+        if (firstFrom) { result.openTime = firstFrom; result.closeTime = firstTo; }
+        return result;
     }
 
     // GPS
@@ -2046,6 +2132,14 @@ if ($catConn) {
             const state = document.getElementById('alState').value.trim();
             const address = document.getElementById('alAddr').value.trim();
             const is24 = document.getElementById('al24').checked;
+            const hours = alCollectHours(is24);
+
+            if (!is24 && !hours.anyOpen) {
+                showError('Please set opening hours for at least one day, or tick "Open 24 Hours".');
+                btn.disabled = false;
+                btn.innerHTML = 'Next <i class="fas fa-arrow-right"></i>';
+                return;
+            }
 
             const payload = {
                 category_id: document.getElementById('alCat').value,
@@ -2059,9 +2153,10 @@ if ($catConn) {
                 mobile: document.getElementById('alMobile').value.trim(),
                 whatsapp: document.getElementById('alWA').value.trim(),
                 email: document.getElementById('alEmail').value.trim(),
-                open_time: is24 ? '00:00:00' : document.getElementById('alOpen').value,
-                close_time: is24 ? '00:00:00' : document.getElementById('alClose').value,
+                open_time: is24 ? '00:00:00' : hours.openTime,
+                close_time: is24 ? '00:00:00' : hours.closeTime,
                 is_24x7: is24 ? '1' : '0',
+                opening_hours: hours.opening_hours,
                 images: photos.map((p, i) => ({
                     data: p.dataUrl,
                     name: p.file.name,
@@ -2112,7 +2207,12 @@ if ($catConn) {
         document.getElementById('alForm').reset();
         photos = [];
         renderGrid();
-        document.getElementById('alHoursRow').style.display = 'grid';
+        document.getElementById('alDaysWrap').style.display = 'block';
+        // Drop any extra slots added during the previous entry, keep one per day
+        document.querySelectorAll('#alDaysWrap .al-day-slots').forEach(wrap => {
+            wrap.querySelectorAll('.al-slot:not(:first-of-type)').forEach(s => s.remove());
+        });
+        document.querySelectorAll('#alDaysWrap .al-day-open').forEach(alToggleDay);
         document.getElementById('alDescCount').textContent = '0';
         document.getElementById('alSubBtn').disabled = false;
         document.getElementById('alSubBtn').innerHTML = 'Next <i class="fas fa-arrow-right"></i>';

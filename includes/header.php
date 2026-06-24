@@ -30,7 +30,7 @@ if (function_exists('hd_asset_base')) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/style.css?v=3.1.5" />
-    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=3.1.5" />
+    <link rel="stylesheet" href="<?= $assetBase ?>/assets/css/revamp.css?v=3.1.9" />
 
 
     <meta name="google-site-verification" content="zUHx3csIxzeg0V6z14P2BJEJMLX8d8sse1grih5Kk2Y" />

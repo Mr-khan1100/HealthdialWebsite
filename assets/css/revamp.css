@@ -1668,12 +1668,25 @@ label {
 .empty-state h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-secondary); }
 .empty-state p  { color: var(--text-muted); font-size: 0.9rem; }
 
+/* Top-anchored, centered prompt that only occupies its own height.
+   !important is required to override the older .location-prompt rules in
+   style.css (incl. a max-width:600px @media block that forces top/left/
+   transform with !important). The key fix: bottom:auto — when a fixed element
+   has BOTH top and bottom set it stretches to full viewport height and blocks
+   every click underneath it. pointer-events keeps the wrapper click-through so
+   cards/links stay tappable; only the visible card is interactive. */
 .location-prompt {
-    position: fixed;
-    bottom: 80px; left: 50%;
-    transform: translateX(-50%);
-    z-index: 800;
-    animation: fadeInUp 0.4s var(--ease) both;
+    position: fixed !important;
+    top: 70px !important;          /* sits just below the header */
+    bottom: auto !important;       /* never stretch to full screen height */
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    width: max-content !important; /* only as wide as the banner content */
+    max-width: calc(100% - 24px) !important;
+    z-index: 999;
+    animation: none !important;    /* static — no slide-in */
+    pointer-events: none;          /* wrapper never intercepts taps */
 }
 .location-prompt-inner {
     display: flex;
@@ -1682,11 +1695,12 @@ label {
     background: rgba(5,10,25,0.94);
     backdrop-filter: blur(22px);
     border: 1px solid rgba(37,99,235,0.28);
-    border-radius: var(--radius-full);
-    padding: 10px 16px;
+    border-radius: var(--radius-lg);
+    padding: 12px 16px;
     box-shadow: var(--shadow-lg);
-    white-space: nowrap;
+    pointer-events: auto;          /* only the visible card is clickable */
 }
+.location-prompt-text { flex: 1; min-width: 0; }
 [data-theme="light"] .location-prompt-inner { background: rgba(255,255,255,0.96); }
 .location-prompt-icon {
     width: 36px; height: 36px;

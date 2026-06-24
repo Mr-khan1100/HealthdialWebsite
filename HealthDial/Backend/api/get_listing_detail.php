@@ -92,6 +92,7 @@ $listing = [
     'openTime' => date('h:i A', strtotime($row['open_time'])),
     'closeTime' => date('h:i A', strtotime($row['close_time'])),
     'is24x7' => $row['is_24x7'] == 1,
+    'openingHours' => $row['opening_hours'] ?? null,
     'latitude' => $row['latitude'],
     'longitude' => $row['longitude'],
     'images' => $images,

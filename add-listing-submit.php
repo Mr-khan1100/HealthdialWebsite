@@ -67,6 +67,16 @@ $close_time  = $is_24x7 ? '00:00:00' : (!empty($input['close_time']) ? $input['c
 $user_id     = 0; // Guest — no auth required
 $status      = 'approved';
 
+// Per-day opening hours (JSON). Self-heal the column so this works without a manual migration.
+$opening_hours_json = $is_24x7 ? null : hd_opening_hours_to_json($input['opening_hours'] ?? null);
+$hasOpeningHoursCol = false;
+$ohCol = $conn->query("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'listings' AND COLUMN_NAME = 'opening_hours'");
+if ($ohCol && $ohCol->num_rows > 0) {
+    $hasOpeningHoursCol = true;
+} elseif (@$conn->query("ALTER TABLE listings ADD COLUMN opening_hours TEXT NULL")) {
+    $hasOpeningHoursCol = true;
+}
+
 // Block duplicate submissions: same name + phone + location already listed
 $dupId = hd_find_duplicate_listing($conn, $name, $mobile, $latitude, $longitude);
 if ($dupId) {
@@ -94,6 +104,16 @@ try {
 
     $listing_id = $conn->insert_id;
     $stmt->close();
+
+    // Save per-day opening hours
+    if ($hasOpeningHoursCol && $opening_hours_json !== null) {
+        $ohStmt = $conn->prepare("UPDATE listings SET opening_hours = ? WHERE id = ?");
+        if ($ohStmt) {
+            $ohStmt->bind_param('si', $opening_hours_json, $listing_id);
+            $ohStmt->execute();
+            $ohStmt->close();
+        }
+    }
 
     // Auto-generate slug, city_slug, category_slug (non-fatal if columns don't exist yet)
     try {

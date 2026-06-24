@@ -64,6 +64,7 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
         'open_time' => $row['open_time'],
         'close_time' => $row['close_time'],
         'is_24x7' => intval($row['is_24x7']),
+        'opening_hours' => $row['opening_hours'] ?? null,
         'latitude' => $row['latitude'],
         'longitude' => $row['longitude'],
     ];

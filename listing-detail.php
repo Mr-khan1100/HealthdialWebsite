@@ -72,6 +72,7 @@ if ($listingId > 0 && !$listing) {
             'open_time' => $apiData['openTime'],
             'close_time' => $apiData['closeTime'],
             'is_24x7' => $apiData['is24x7'] ? 1 : 0,
+            'opening_hours' => $apiData['openingHours'] ?? null,
             'latitude' => $apiData['latitude'],
             'longitude' => $apiData['longitude']
         ];
@@ -113,10 +114,12 @@ if ($listingId > 0 && !$listing) {
 $canonicalUrl = null;
 $structuredData = [];
 $hoursInfo = null;
+$weekHours = null;
 $similarListings = [];
 
 if ($listing) {
     $hoursInfo = hd_listing_hours_info($listing);
+    $weekHours = hd_listing_week_hours($listing);
     if ($conn) {
         $similarListings = hd_fetch_similar_listings($conn, $listing, 6);
     }
@@ -151,6 +154,9 @@ if ($listing && $conn) {
         $qrCheck->close();
     }
 }
+// Admin-configurable QR unlock price (settings key `qr_code_price`).
+$qrPrice = function_exists('hd_qr_price') ? hd_qr_price($conn) : 200;
+$qrPriceLabel = number_format($qrPrice, 0);
 
 require_once 'includes/header.php';
 
@@ -382,6 +388,125 @@ if (!$listing): ?>
                     <p><?= nl2br(htmlspecialchars($listing['description'])) ?></p>
                 </div>
                 <?php endif; ?>
+
+                <!-- ===== OPENING HOURS ===== -->
+                <?php if (!empty($listing['is_24x7'])): ?>
+                <div class="detail-hours-card">
+                    <h3><i class="fas fa-clock"></i> Opening Hours</h3>
+                    <div class="detail-hours-247">
+                        <i class="fas fa-infinity"></i>
+                        <div>
+                            <strong>Open 24 Hours</strong>
+                            <span>Every day, all day</span>
+                        </div>
+                    </div>
+                </div>
+                <?php elseif (!empty($weekHours)): ?>
+                <div class="detail-hours-card">
+                    <h3>
+                        <i class="fas fa-clock"></i> Opening Hours
+                        <?php if (!empty($hoursInfo['status'])): ?>
+                        <span class="detail-hours-now <?= !empty($hoursInfo['is_open']) ? 'open' : 'closed' ?>">
+                            <?= htmlspecialchars($hoursInfo['status']) ?>
+                        </span>
+                        <?php endif; ?>
+                    </h3>
+                    <ul class="detail-hours-list">
+                        <?php foreach ($weekHours as $day): ?>
+                        <li class="detail-hours-row <?= $day['is_today'] ? 'is-today' : '' ?> <?= $day['closed'] ? 'is-closed' : '' ?>">
+                            <span class="detail-hours-day">
+                                <?= htmlspecialchars($day['label']) ?>
+                                <?php if ($day['is_today']): ?><em>Today</em><?php endif; ?>
+                            </span>
+                            <span class="detail-hours-time">
+                                <?php if ($day['closed']): ?>
+                                <span class="detail-hours-slot closed">Closed</span>
+                                <?php else: foreach ($day['lines'] as $ln): ?>
+                                <span class="detail-hours-slot"><?= htmlspecialchars($ln) ?></span>
+                                <?php endforeach; endif; ?>
+                            </span>
+                        </li>
+                        <?php endforeach; ?>
+                    </ul>
+                </div>
+                <?php endif; ?>
+
+                <style>
+                .detail-hours-card {
+                    margin: 24px 0;
+                    background: var(--surface, #fff);
+                    border: 1px solid var(--border, #e8ecf0);
+                    border-radius: 16px;
+                    padding: 20px 22px;
+                }
+                .detail-hours-card h3 {
+                    font-size: 17px;
+                    font-weight: 700;
+                    margin: 0 0 14px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .detail-hours-card h3 i { color: var(--blue, #2563eb); }
+                .detail-hours-now {
+                    margin-left: auto;
+                    font-size: 12px;
+                    font-weight: 700;
+                    padding: 3px 10px;
+                    border-radius: 20px;
+                }
+                .detail-hours-now.open   { background: rgba(16,185,129,.14); color: #059669; }
+                .detail-hours-now.closed { background: rgba(239,68,68,.14);  color: #dc2626; }
+                .detail-hours-list { list-style: none; margin: 0; padding: 0; }
+                .detail-hours-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    gap: 16px;
+                    padding: 10px 12px;
+                    border-radius: 10px;
+                    font-size: 14px;
+                }
+                .detail-hours-row + .detail-hours-row { margin-top: 2px; }
+                .detail-hours-day { color: var(--text-secondary, #5a6b80); font-weight: 500; padding-top: 1px; }
+                .detail-hours-day em {
+                    font-style: normal;
+                    font-size: 10px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: .04em;
+                    color: var(--blue, #2563eb);
+                    background: rgba(37,99,235,.12);
+                    padding: 1px 6px;
+                    border-radius: 20px;
+                    margin-left: 6px;
+                }
+                .detail-hours-time {
+                    color: var(--text, #1a1d26);
+                    font-weight: 600;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: flex-end;
+                    gap: 3px;
+                    text-align: right;
+                }
+                .detail-hours-slot.closed { color: #dc2626; }
+                .detail-hours-row.is-today { background: rgba(37,99,235,.07); }
+                .detail-hours-row.is-today .detail-hours-day { color: var(--text, #1a1d26); font-weight: 700; }
+                .detail-hours-row.is-closed .detail-hours-time { color: #dc2626; font-weight: 600; }
+                .detail-hours-247 {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    padding: 14px 16px;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, rgba(16,185,129,.12), rgba(5,150,105,.06));
+                    border: 1px solid rgba(16,185,129,.25);
+                }
+                .detail-hours-247 i { font-size: 26px; color: #10b981; }
+                .detail-hours-247 strong { display: block; font-size: 15px; }
+                .detail-hours-247 span { font-size: 13px; color: var(--text-secondary, #5a6b80); }
+                </style>
 
                 <!-- ===== QR CODE ===== -->
                 <style>
@@ -660,7 +785,7 @@ if (!$listing): ?>
                     <div class="detail-qr-card">
                         <div class="detail-qr-locked-placeholder">
                             <i class="fas fa-lock detail-qr-lock-icon"></i>
-                            <span class="detail-qr-lock-price">₹200</span>
+                            <span class="detail-qr-lock-price">₹<?= $qrPriceLabel ?></span>
                         </div>
                         <div class="detail-qr-info">
                             <div class="detail-qr-badge-locked"><i class="fas fa-star"></i> One-Time Unlock</div>
@@ -670,7 +795,7 @@ if (!$listing): ?>
                             <div class="detail-qr-actions">
                                 <button class="detail-qr-btn detail-qr-btn-pay" id="qrPayBtn"
                                     onclick="initiateQrPayment()">
-                                    <i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR
+                                    <i class="fas fa-lock-open"></i> Pay ₹<?= $qrPriceLabel ?> — Unlock QR
                                 </button>
                             </div>
                         </div>
@@ -1092,101 +1217,23 @@ function copyReviewLink() {
 function initiateQrPayment() {
     const btn = document.getElementById('qrPayBtn');
     if (btn) {
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order...';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
         btn.disabled = true;
     }
 
-    fetch('qr_create_order.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                listing_id: HD_LISTING_ID
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) throw new Error(data.message || 'Could not create order');
-            if (data.already_paid) {
-                location.reload();
-                return;
-            }
-            openRazorpayCheckout(data.razorpay_order_id, data.razorpay_key_id, data.amount_paise);
-        })
-        .catch(err => {
-            if (btn) {
-                btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
-                btn.disabled = false;
-            }
-            alert('Could not initiate payment. Please try again.\n' + err.message);
-        });
-}
-
-function openRazorpayCheckout(orderId, keyId, amountPaise) {
-    if (typeof Razorpay === 'undefined') {
-        const s = document.createElement('script');
-        s.src = 'https://checkout.razorpay.com/v1/checkout.js';
-        s.onload = () => openRazorpayCheckout(orderId, keyId, amountPaise);
-        s.onerror = () => {
-            const btn = document.getElementById('qrPayBtn');
-            if (btn) {
-                btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
-                btn.disabled = false;
-            }
-            alert('Could not load payment gateway. Please check your connection.');
-        };
-        document.head.appendChild(s);
-        return;
-    }
-    new Razorpay({
-        key: keyId,
-        amount: amountPaise,
-        currency: 'INR',
-        name: 'HealthDial',
-        description: 'QR Code Unlock',
-        order_id: orderId,
-        handler: function(response) {
-            verifyQrPayment(response.razorpay_order_id, response.razorpay_payment_id, response
-                .razorpay_signature);
-        },
-        theme: {
-            color: '#2563eb'
-        },
-        modal: {
-            ondismiss: function() {
-                const btn = document.getElementById('qrPayBtn');
-                if (btn) {
-                    btn.innerHTML = '<i class="fas fa-lock-open"></i> Pay ₹200 — Unlock QR';
-                    btn.disabled = false;
-                }
-            }
-        }
-    }).open();
-}
-
-function verifyQrPayment(rzpOrderId, rzpPaymentId, rzpSignature) {
-    fetch('qr_verify_payment.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                listing_id: HD_LISTING_ID,
-                razorpay_order_id: rzpOrderId,
-                razorpay_payment_id: rzpPaymentId,
-                razorpay_signature: rzpSignature
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showQrUnlocked();
-            } else {
-                alert('Payment verification failed. Please contact support with payment ID: ' + rzpPaymentId);
-            }
-        })
-        .catch(() => alert('Verification error. Please contact support.'));
+    // PayU hosted checkout: POST to our server, which signs the order and
+    // redirects to PayU. On success PayU returns to payu_qr_callback.php, which
+    // marks the QR paid and sends the user back here with the QR unlocked.
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'payu_qr_initiate.php';
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'listing_id';
+    input.value = HD_LISTING_ID;
+    form.appendChild(input);
+    document.body.appendChild(form);
+    form.submit();
 }
 
 function showQrUnlocked() {
@@ -1409,7 +1456,7 @@ function submitDetailAppointment() {
 }
 window.submitDetailAppointment = submitDetailAppointment;
 </script>
-<script src="assets/js/listings.js?v=2.7.0"></script>
+<script src="assets/js/listings.js?v=2.8.1"></script>
 
 <?php if (!$qrPaid): ?>
 <!-- ===== QR UPSELL INTERSTITIAL ===== -->
@@ -1445,7 +1492,7 @@ window.submitDetailAppointment = submitDetailAppointment;
             </div>
 
             <div class="qri-badge-tag">
-                <i class="fas fa-lock-open"></i> One-Time ₹200 Unlock
+                <i class="fas fa-lock-open"></i> One-Time ₹<?= $qrPriceLabel ?> Unlock
             </div>
         </div>
 
@@ -1466,14 +1513,14 @@ window.submitDetailAppointment = submitDetailAppointment;
             <div class="qri-price-row">
                 <div class="qri-price">
                     <span class="qri-price-old">₹999</span>
-                    <span class="qri-price-current">₹200</span>
+                    <span class="qri-price-current">₹<?= $qrPriceLabel ?></span>
                     <span class="qri-price-tag">Launch Offer</span>
                 </div>
             </div>
 
             <div class="qri-ctas">
                 <button class="qri-btn-primary" onclick="closeQrInterstitial(); initiateQrPayment();">
-                    <i class="fas fa-qrcode"></i> Unlock My QR Code — ₹200
+                    <i class="fas fa-qrcode"></i> Unlock My QR Code — ₹<?= $qrPriceLabel ?>
                 </button>
                 <button class="qri-btn-skip" onclick="closeQrInterstitial()">Maybe Later</button>
             </div>

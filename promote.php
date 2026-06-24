@@ -1,7 +1,7 @@
 <?php
 $currentPage = 'promote';
 $pageTitle = 'Promote Your Listing — HealthDial';
-$pageDesc = 'Boost your hospital, clinic or pharmacy visibility on HealthDial. Choose a promotion plan and pay securely via Razorpay.';
+$pageDesc = 'Boost your hospital, clinic or pharmacy visibility on HealthDial. Choose a promotion plan and pay securely via PayU.';
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
 require_once 'includes/header.php';
@@ -164,7 +164,7 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                     </button>
                 </div>
                 <p class="promote-secure-note">
-                    <i class="fas fa-shield-alt"></i> Secured by <strong>Razorpay</strong> Payment Gateway. Your payment
+                    <i class="fas fa-shield-alt"></i> Secured by <strong>PayU</strong> Payment Gateway. Your payment
                     details are never stored on our servers.
                 </p>
             </div>
@@ -189,7 +189,7 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
             <div class="promote-trust-item">
                 <div class="trust-icon"><i class="fas fa-shield-alt"></i></div>
                 <h4>Secure Payments</h4>
-                <p>PCI-DSS compliant payments via Razorpay</p>
+                <p>PCI-DSS compliant payments via PayU</p>
             </div>
             <div class="promote-trust-item">
                 <div class="trust-icon"><i class="fas fa-headset"></i></div>
@@ -199,9 +199,6 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
         </div>
     </div>
 </section>
-
-<!-- Razorpay Checkout JS -->
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
 const API_BASE = '<?= API_BASE ?>';
@@ -370,74 +367,31 @@ function initiatePayment() {
     }
 
     const btn = document.getElementById('payNowBtn');
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating order...';
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
     btn.disabled = true;
 
-    fetch(API_BASE + 'create_promotion_order.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                listing_id: parseInt(document.getElementById('selectedListingId').value),
-                plan_id: parseInt(document.getElementById('selectedPlanId').value),
-                customer_name: name,
-                customer_phone: phone,
-                customer_email: email
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success && data.razorpay_order_id) {
-                const options = {
-                    key: data.razorpay_key_id,
-                    amount: data.amount_paise,
-                    currency: 'INR',
-                    name: 'HealthDial',
-                    description: 'Listing Promotion — ' + selectedPlan.name,
-                    order_id: data.razorpay_order_id,
-                    handler: function(response) {
-                        // Payment successful — redirect to success page with verification params
-                        const params = new URLSearchParams({
-                            order_id: data.receipt_id,
-                            razorpay_payment_id: response.razorpay_payment_id,
-                            razorpay_order_id: response.razorpay_order_id,
-                            razorpay_signature: response.razorpay_signature
-                        });
-                        window.location.href = 'payment-success.php?' + params.toString();
-                    },
-                    prefill: {
-                        name: data.customer_name,
-                        contact: data.customer_phone,
-                        email: data.customer_email || ''
-                    },
-                    theme: {
-                        color: '#0782ca'
-                    },
-                    modal: {
-                        ondismiss: function() {
-                            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById(
-                                'payAmount').textContent + ' Securely';
-                            btn.disabled = false;
-                        }
-                    }
-                };
-                const rzp = new Razorpay(options);
-                rzp.open();
-            } else {
-                alert('Error: ' + (data.message || 'Could not create payment order'));
-                btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount')
-                    .textContent + ' Securely';
-                btn.disabled = false;
-            }
-        })
-        .catch(err => {
-            console.error('Payment error:', err);
-            alert('Network error. Please try again.');
-            btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹' + document.getElementById('payAmount').textContent +
-                ' Securely';
-            btn.disabled = false;
-        });
+    // PayU hosted checkout: POST the order to our server, which signs it and
+    // redirects the browser to PayU's secure payment page. On completion PayU
+    // returns the user to payu_promotion_callback.php → payment-success.php.
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = 'payu_promotion_initiate.php';
+    const fields = {
+        listing_id: document.getElementById('selectedListingId').value,
+        plan_id: document.getElementById('selectedPlanId').value,
+        customer_name: name,
+        customer_phone: phone,
+        customer_email: email
+    };
+    for (const k in fields) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = k;
+        input.value = fields[k];
+        form.appendChild(input);
+    }
+    document.body.appendChild(form);
+    form.submit();
 }
 </script>
 

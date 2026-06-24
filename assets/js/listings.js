@@ -58,13 +58,19 @@ function initGeolocation() {
             if (!userLat) {
                 requestLocation(); // will dispatch via onLocationGranted()
             } else {
-                // Coords already cached — signal notification flow immediately
+                // Coords already cached (returning user, permission already granted) —
+                // signal notification flow immediately.
                 document.dispatchEvent(new CustomEvent('hd:locationresult', { detail: { state: 'granted' } }));
                 // Default to "Nearest" if the user hasn't chosen a sort yet
                 if (!userPickedSort && document.getElementById('sortSelect')?.value !== 'nearest') {
                     setDefaultSort('nearest');
                     currentPage = 1;
                     loadListings();
+                }
+                // Refresh nearby facility rows with the cached location. Without this the
+                // homepage's location filtering only worked on the *first* permission grant.
+                if (window.HD_FACILITY_ROWS) {
+                    loadTopFacilities(true);
                 }
             }
         } else {
@@ -75,7 +81,10 @@ function initGeolocation() {
             sessionStorage.removeItem('hd_location');
             sessionStorage.removeItem('hd_city');
             updateLocationIndicator();
-            showLocationPrompt(); // show custom banner; native dialog fires on user click
+            // Wait for the first-visit promo interstitial (a full-screen modal) to be
+            // dismissed before showing the location banner — otherwise both compete on
+            // first load and the page feels "stuck" behind the modal.
+            hdWhenInterstitialClosed(showLocationPrompt);
         }
     };
 
@@ -134,6 +143,42 @@ function toggleLocationPermission() {
         // Turn location ON — fires browser permission prompt
         requestLocation();
     }
+}
+
+// Run `cb` once any full-screen interstitial modal on the page is gone (or
+// immediately if the page has none). Different pages use different modals —
+// home/explore show #promo-interstitial, while the listing-detail page shows
+// #qr-interstitial then #promote-interstitial on a ~3s timer — so we wait for
+// whichever exist. This keeps the location banner from competing with a modal,
+// so its timing is consistent on every page. Falls back after 20s as a safety net.
+function hdWhenInterstitialClosed(cb) {
+    const IDS = ['promo-interstitial', 'qr-interstitial', 'promote-interstitial'];
+    const isVisible  = (el) => el && el.offsetParent !== null && getComputedStyle(el).display !== 'none';
+    const anyVisible = () => IDS.some(id => isVisible(document.getElementById(id)));
+    const anyPresent = () => IDS.some(id => document.getElementById(id));
+
+    // Page has no interstitial at all → nothing to wait for.
+    if (!anyPresent()) { cb(); return; }
+
+    let done = false;
+    const finish = () => { if (done) return; done = true; clearInterval(iv); clearTimeout(safety); cb(); };
+
+    const start = Date.now();
+    let everVisible = anyVisible();
+    let lastVisible = everVisible ? Date.now() : 0;
+
+    const iv = setInterval(() => {
+        if (anyVisible()) { everVisible = true; lastVisible = Date.now(); return; }
+        // A modal exists but hasn't popped yet (detail page's ~3s timer): give it
+        // a grace window to appear before we show the banner.
+        if (!everVisible) { if (Date.now() - start < 6000) return; finish(); return; }
+        // We've seen a modal; wait for a brief quiet gap so the qr→promote hand-off
+        // (promote shows ~0.5s after qr closes) doesn't flash the banner in between.
+        if (Date.now() - lastVisible < 1300) return;
+        finish();
+    }, 250);
+
+    const safety = setTimeout(finish, 20000);
 }
 
 function showLocationPrompt() {

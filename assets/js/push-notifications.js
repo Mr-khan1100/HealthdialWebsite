@@ -212,13 +212,13 @@
         setTimeout(showNotificationBanner, 1500);
     });
 
-    // ---- Fallback: show banner if location event never fires AND no location popup is visible ----
+    // ---- Fallback: make sure the banner still gets a chance even if the location
+    //      result never arrived (e.g. the user ignored the location prompt). Shows
+    //      once the page has had time to settle, regardless of the location flow. ----
     window.addEventListener('load', function () {
         setTimeout(function () {
-            if (!locationFired && !document.getElementById('locationPrompt')) {
-                showNotificationBanner();
-            }
-        }, 10000);
+            if (!bannerShown) showNotificationBanner();
+        }, 12000);
     });
 
 })();

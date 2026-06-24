@@ -149,6 +149,11 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             Sponsored Listings
         </a>
 
+        <a href="QrCodeConfig.php" class="sidebar-link <?php echo isActive('QrCodeConfig.php'); ?>">
+            <i class="fas fa-qrcode"></i>
+            QR Codes
+        </a>
+
         <a href="Banners.php" class="sidebar-link <?php echo isActive('Banners.php'); ?>">
             <i class="fas fa-images"></i>
             Banners
