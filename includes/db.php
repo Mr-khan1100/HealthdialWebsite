@@ -22,10 +22,25 @@ function getDbConnection()
     }
 }
 
-// Base URL for listing images
+// Base URL for listing images (stay on the live CDN — static files).
 define('LISTING_IMAGE_BASE', 'https://healthdial.com/HealthDial/uploads/listings/');
 define('NEWS_IMAGE_BASE', 'https://healthdial.com/HealthDial/uploads/news/');
-define('API_BASE', 'https://healthdial.com/HealthDial/Backend/api/');
+
+// API base URL.
+// On localhost we call the LOCAL backend (HealthDial/Backend/api/) so dev work
+// doesn't depend on the live site — the live Hostinger WAF blocks cross-origin /
+// flagged-IP requests with a 403 challenge page. In production we use the live API.
+if (!defined('API_BASE')) {
+    $__hd_host = $_SERVER['HTTP_HOST'] ?? '';
+    $__hd_is_local = ($__hd_host !== '') &&
+        (strpos($__hd_host, 'localhost') !== false || strpos($__hd_host, '127.0.0.1') !== false);
+    if ($__hd_is_local) {
+        $__hd_scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        define('API_BASE', $__hd_scheme . '://' . $__hd_host . '/HealthDial/Backend/api/');
+    } else {
+        define('API_BASE', 'https://healthdial.com/HealthDial/Backend/api/');
+    }
+}
 
 /**
  * Fetch data from HealthDial API using cURL.

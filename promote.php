@@ -4,6 +4,9 @@ $pageTitle = 'Promote Your Listing — HealthDial';
 $pageDesc = 'Boost your hospital, clinic or pharmacy visibility on HealthDial. Choose a promotion plan and pay securely via PayU.';
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
+require_once 'includes/user_auth.php';
+// Only logged-in, phone-verified users/vendors can purchase a promotion (2-step).
+$hdUser = hd_require_phone_verified();
 require_once 'includes/header.php';
 require_once 'includes/website_banner.php';
 
@@ -141,17 +144,20 @@ $preselectedName = isset($_GET['listing_name']) ? htmlspecialchars($_GET['listin
                 <div class="promote-form">
                     <div class="promote-field">
                         <label><i class="fas fa-user"></i> Your Name</label>
-                        <input type="text" id="promoName" placeholder="Enter your full name" />
+                        <input type="text" id="promoName" placeholder="Enter your full name"
+                            value="<?= htmlspecialchars($hdUser['name'] ?? '') ?>" />
                     </div>
                     <div class="promote-field-row">
                         <div class="promote-field">
                             <label><i class="fas fa-phone"></i> Phone Number</label>
-                            <input type="tel" id="promoPhone" placeholder="10-digit phone" maxlength="10" />
+                            <input type="tel" id="promoPhone" placeholder="10-digit phone" maxlength="10"
+                                value="<?= htmlspecialchars(substr(preg_replace('/\D/', '', $hdUser['mobile'] ?? ''), -10)) ?>" />
                         </div>
                         <div class="promote-field">
                             <label><i class="fas fa-envelope"></i> Email <span
                                     style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
-                            <input type="email" id="promoEmail" placeholder="your@email.com" />
+                            <input type="email" id="promoEmail" placeholder="your@email.com"
+                                value="<?= htmlspecialchars($hdUser['email'] ?? '') ?>" />
                         </div>
                     </div>
                 </div>
@@ -370,12 +376,12 @@ function initiatePayment() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
     btn.disabled = true;
 
-    // PayU hosted checkout: POST the order to our server, which signs it and
-    // redirects the browser to PayU's secure payment page. On completion PayU
-    // returns the user to payu_promotion_callback.php → payment-success.php.
+    // POST the order to our server, which records it and hands off to the active
+    // payment gateway (Cashfree or PayU). On completion the gateway returns the
+    // user to its callback/return handler → payment-success.php.
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'payu_promotion_initiate.php';
+    form.action = 'promotion_initiate.php';
     const fields = {
         listing_id: document.getElementById('selectedListingId').value,
         plan_id: document.getElementById('selectedPlanId').value,

@@ -76,6 +76,24 @@ if ($eventType === 'PAYMENT_SUCCESS_WEBHOOK' || $eventType === 'PAYMENT_FAILED_W
     $payment = $stmt->get_result()->fetch_assoc();
 
     if (!$payment) {
+        // Not a promotion order — it may be a QR-unlock order. Activate via the
+        // shared helper (self-contained: only needs $conn).
+        require_once __DIR__ . '/../../../includes/qr_activate.php';
+        $qrStmt = $conn->prepare("SELECT id FROM listing_qr_payments WHERE razorpay_order_id = ? LIMIT 1");
+        $qrStmt->bind_param("s", $orderId);
+        $qrStmt->execute();
+        $qrRow = $qrStmt->get_result()->fetch_assoc();
+        $qrStmt->close();
+
+        if ($qrRow) {
+            if ($paymentStatus === 'SUCCESS' || $orderStatus === 'PAID') {
+                hd_mark_qr_paid($conn, $orderId, $cfPaymentId);
+            }
+            http_response_code(200);
+            echo json_encode(['status' => 'ok', 'flow' => 'qr']);
+            exit();
+        }
+
         http_response_code(404);
         exit('Payment record not found');
     }

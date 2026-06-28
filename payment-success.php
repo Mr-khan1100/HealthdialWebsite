@@ -67,7 +67,7 @@ require_once 'includes/header.php';
                 </div>
                 <h2>Payment Processing</h2>
                 <p class="payment-msg">Your payment is still being confirmed. This can take a few minutes — we'll
-                    activate your promotion automatically once PayU confirms it.</p>
+                    activate your promotion automatically once the payment gateway confirms it.</p>
                 <div class="payment-actions">
                     <a href="promote.php" class="btn btn-secondary"><i class="fas fa-bolt"></i> Back to Promote</a>
                     <a href="contact.php" class="btn btn-secondary"><i class="fas fa-headset"></i> Contact Support</a>

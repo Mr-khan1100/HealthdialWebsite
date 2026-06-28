@@ -105,26 +105,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         exit();
     }
     
-    // Handle Cashfree Payment Gateway settings
-    if (isset($_POST['update_cashfree'])) {
-        $cfFields = ['cashfree_app_id', 'cashfree_secret_key', 'cashfree_environment'];
-        foreach($cfFields as $key) {
-            $value = trim($_POST[$key] ?? '');
-            $stmt = $conn->prepare("INSERT INTO settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?");
-            $stmt->bind_param("sss", $key, $value, $value);
-            $stmt->execute();
-            $stmt->close();
-        }
-        
-        $logStmt = $conn->prepare("INSERT INTO activity_logs (admin_id, action, details, ip_address) VALUES (?, 'update_cashfree', 'Updated Cashfree payment gateway settings', ?)");
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-        $logStmt->bind_param("is", $_SESSION['admin_id'], $ip);
-        $logStmt->execute();
-        
-        $_SESSION['success'] = "Payment gateway settings saved!";
-        header("Location: Settings.php");
-        exit();
-    }
+    // NOTE: Payment-gateway settings (Cashfree + PayU + active-gateway switch)
+    // now live on their own admin page: PaymentGateway.php
 }
 
 // Get current admin details
@@ -388,46 +370,14 @@ if($catListRes) while($c = $catListRes->fetch_assoc()) $categoriesList[] = $c;
                 <div class="card fade-in fade-in-delay-2" style="margin-top:20px;">
                     <div class="card-header">
                         <div>
-                            <h3 class="card-title"><i class="fas fa-credit-card" style="margin-right:8px;color:#22c55e;"></i>Payment Gateway (Cashfree)</h3>
-                            <p style="font-size:12px;color:var(--text-muted);margin:0;">Configure Cashfree payment gateway for listing promotions</p>
+                            <h3 class="card-title"><i class="fas fa-credit-card" style="margin-right:8px;color:#22c55e;"></i>Payment Gateway</h3>
+                            <p style="font-size:12px;color:var(--text-muted);margin:0;">Choose the active gateway (Cashfree / PayU) and manage credentials on the dedicated page.</p>
                         </div>
                     </div>
                     <div class="card-body">
-                        <form method="POST">
-                            <input type="hidden" name="update_cashfree" value="1">
-                            
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-key" style="margin-right:4px;color:#f59e0b;"></i> App ID (x-client-id)</label>
-                                <input type="text" name="cashfree_app_id" value="<?php echo htmlspecialchars(getSetting('cashfree_app_id')); ?>" class="form-input" placeholder="Enter Cashfree App ID">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-lock" style="margin-right:4px;color:#ef4444;"></i> Secret Key (x-client-secret)</label>
-                                <input type="password" name="cashfree_secret_key" value="<?php echo htmlspecialchars(getSetting('cashfree_secret_key')); ?>" class="form-input" placeholder="Enter Cashfree Secret Key">
-                                <small style="color:var(--text-muted);font-size:11px;">Never share this key publicly</small>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-server" style="margin-right:4px;"></i> Environment</label>
-                                <select name="cashfree_environment" class="form-select">
-                                    <option value="sandbox" <?php echo getSetting('cashfree_environment','sandbox')==='sandbox'?'selected':''; ?>>Sandbox (Testing)</option>
-                                    <option value="production" <?php echo getSetting('cashfree_environment')==='production'?'selected':''; ?>>Production (Live)</option>
-                                </select>
-                                <small style="color:var(--text-muted);font-size:11px;">Use Sandbox for testing, switch to Production when ready to accept real payments</small>
-                            </div>
-                            
-                            <div style="background:rgba(43,125,233,0.05);border:1px solid rgba(43,125,233,0.15);border-radius:8px;padding:14px;margin-bottom:16px;">
-                                <p style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:8px;"><i class="fas fa-link" style="margin-right:4px;"></i> Webhook URL (configure in Cashfree Dashboard)</p>
-                                <code style="font-size:11px;background:rgba(0,0,0,0.05);padding:6px 10px;border-radius:4px;display:block;word-break:break-all;">
-                                    https://healthdial.com/HealthDial/Backend/api/cashfree_webhook.php
-                                </code>
-                                <p style="font-size:11px;color:var(--text-muted);margin-top:6px;">Go to Cashfree Dashboard → Developers → Webhooks → Add this URL</p>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-primary" style="width:100%;background:#22c55e;">
-                                <i class="fas fa-save"></i> Save Payment Settings
-                            </button>
-                        </form>
+                        <a href="PaymentGateway.php" class="btn btn-primary" style="width:100%;background:#22c55e;">
+                            <i class="fas fa-credit-card"></i> Open Payment Gateway Settings
+                        </a>
                     </div>
                 </div>
 

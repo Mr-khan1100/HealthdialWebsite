@@ -3,6 +3,9 @@ $currentPage = 'contact';
 $pageTitle = 'Contact Us | Book Diagnostic Tests Online | Pharmacies Across India | Health Dial';
 $pageDesc = 'Healthdial is One Stop Source for finding , Doctors, Pharmacies, medical labs, Hospitals and clinics, all at your fingertips. Download Health dial app for registration.';
 require_once 'includes/db.php';
+require_once 'includes/user_auth.php';
+// Support contact must come from a logged-in, phone-verified user (2-step).
+$hdUser = hd_require_phone_verified();
 
 /**
  * Ensures support_tickets has guest_* columns so website visitors (who have no
@@ -31,7 +34,13 @@ function hd_ensure_support_guest_columns($conn)
 
 // ── Handle contact form submission → create a support ticket ──
 $contactErrors = [];
-$old = ['name' => '', 'email' => '', 'phone' => '', 'subject' => '', 'message' => ''];
+$old = [
+    'name'    => $hdUser['name'] ?? '',
+    'email'   => $hdUser['email'] ?? '',
+    'phone'   => $hdUser['mobile'] ?? '',
+    'subject' => '',
+    'message' => '',
+];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
     // Honeypot: real users never fill the hidden "website" field
@@ -63,11 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
             hd_ensure_support_guest_columns($conn);
             $conn->begin_transaction();
             try {
+                $uid = (int) $hdUser['id'];
                 $ins = $conn->prepare(
                     "INSERT INTO support_tickets (user_id, subject, status, guest_name, guest_email, guest_phone, source)
-                     VALUES (NULL, ?, 'open', ?, ?, ?, 'contact_form')"
+                     VALUES (?, ?, 'open', ?, ?, ?, 'contact_form')"
                 );
-                $ins->bind_param('ssss', $old['subject'], $old['name'], $old['email'], $old['phone']);
+                $ins->bind_param('issss', $uid, $old['subject'], $old['name'], $old['email'], $old['phone']);
                 $ins->execute();
                 $ticketId = $conn->insert_id;
                 $ins->close();

@@ -73,7 +73,8 @@ if (!function_exists('payu_mark_promotion_paid')) {
                 $nameStmt->close();
             }
             $notifTitle = 'New Promotion Payment';
-            $notifMsg   = '₹' . number_format($amount, 0) . " payment received for promoting '$listingName' via PayU.";
+            $gatewayLabel = ($method === 'cashfree') ? 'Cashfree' : (($method === 'payu') ? 'PayU' : ucfirst($method));
+            $notifMsg   = '₹' . number_format($amount, 0) . " payment received for promoting '$listingName' via $gatewayLabel.";
             $notif = $conn->prepare("INSERT INTO admin_notifications (title, message, type) VALUES (?, ?, 'promotion_payment')");
             if ($notif) {
                 $notif->bind_param('ss', $notifTitle, $notifMsg);

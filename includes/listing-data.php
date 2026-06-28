@@ -46,6 +46,7 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
 
     $listing = [
         'id' => $row['id'],
+        'user_id' => isset($row['user_id']) ? (int) $row['user_id'] : 0,
         'category_id' => $row['category_id'],
         'name' => $row['name'],
         'category_name' => $row['category_name'],

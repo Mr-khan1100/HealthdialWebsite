@@ -99,10 +99,22 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         <a href="SupportTickets.php" class="sidebar-link <?php echo isActive('SupportTickets.php'); ?>">
             <i class="fas fa-headset"></i>
             Support Tickets
-            <?php 
+            <?php
             $openTickets = (int)$conn->query("SELECT COUNT(*) as c FROM support_tickets WHERE status='open'")->fetch_assoc()['c'];
             if($openTickets > 0): ?>
             <span class="sidebar-link-badge"><?php echo $openTickets; ?></span>
+            <?php endif; ?>
+        </a>
+
+        <a href="ListingClaims.php" class="sidebar-link <?php echo isActive('ListingClaims.php'); ?>">
+            <i class="fas fa-handshake"></i>
+            Listing Claims
+            <?php
+            $pendingClaims = 0;
+            $pcRes = @$conn->query("SELECT COUNT(*) as c FROM listing_claims WHERE status='pending'");
+            if($pcRes && ($pcRow = $pcRes->fetch_assoc())) $pendingClaims = (int)$pcRow['c'];
+            if($pendingClaims > 0): ?>
+            <span class="sidebar-link-badge"><?php echo $pendingClaims; ?></span>
             <?php endif; ?>
         </a>
 
@@ -152,6 +164,18 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         <a href="QrCodeConfig.php" class="sidebar-link <?php echo isActive('QrCodeConfig.php'); ?>">
             <i class="fas fa-qrcode"></i>
             QR Codes
+        </a>
+
+        <a href="PaymentGateway.php" class="sidebar-link <?php echo isActive('PaymentGateway.php'); ?>">
+            <i class="fas fa-credit-card"></i>
+            Payment Gateway
+            <?php
+            $pgActive = 'cashfree';
+            $pgRes = @$conn->query("SELECT setting_value FROM settings WHERE setting_key='payment_gateway' LIMIT 1");
+            if($pgRes && ($pgRow = $pgRes->fetch_assoc()) && $pgRow['setting_value']) $pgActive = strtolower($pgRow['setting_value']);
+            $pgLabel = $pgActive === 'payu' ? 'PayU' : 'CF';
+            ?>
+            <span class="sidebar-link-badge" style="background:#22c55e;"><?php echo $pgLabel; ?></span>
         </a>
 
         <a href="Banners.php" class="sidebar-link <?php echo isActive('Banners.php'); ?>">

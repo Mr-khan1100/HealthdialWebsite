@@ -1,6 +1,12 @@
 <?php
 if (!isset($currentPage))
     $currentPage = 'home';
+
+// Website user session (shared with the mobile app's users table).
+require_once __DIR__ . '/user_auth.php';
+$hdUser = hd_current_user();
+$hdReturn = urlencode($_SERVER['REQUEST_URI'] ?? 'index.php');
+
 $titleText = isset($pageTitle) ? $pageTitle . ' | HealthDial' : 'HealthDial - Find Medical Help Instantly';
 $descriptionText = isset($pageDesc) ? $pageDesc : 'Find Hospitals, Clinics, Labs & Doctors Near You - Instantly.';
 $assetBase = '';
@@ -86,6 +92,21 @@ if (function_exists('hd_asset_base')) {
                 <a href="<?= $assetBase ?>/promote.php" <?php if ($currentPage == 'promote')
                       echo 'class="active"'; ?> style="color:#f59e0b;font-weight:700;"><i class="fas fa-bolt"
                         style="margin-right:3px;"></i>Promote</a>
+                <?php if ($hdUser): ?>
+                <a href="<?= $assetBase ?>/profile.php" class="nav-user-icon"
+                    title="My Profile — <?= htmlspecialchars($hdUser['name'] ?: 'Account') ?>" aria-label="My Profile">
+                    <?php if (!empty($hdUser['profile_image'])): ?>
+                    <img src="<?= htmlspecialchars($hdUser['profile_image']) ?>" alt="" />
+                    <?php else: ?>
+                    <span><?= strtoupper(substr(trim($hdUser['name']) !== '' ? $hdUser['name'] : 'U', 0, 1)) ?></span>
+                    <?php endif; ?>
+                </a>
+                <?php else: ?>
+                <a href="<?= $assetBase ?>/login.php?return=<?= $hdReturn ?>" class="nav-user-icon nav-user-icon--guest"
+                    title="Login / Sign Up" aria-label="Login or Sign Up">
+                    <i class="fas fa-user"></i>
+                </a>
+                <?php endif; ?>
                 <!-- Dark Mode Toggle -->
                 <button class="dark-mode-toggle" id="darkModeToggle" onClick="toggleDarkMode()"
                     aria-label="Toggle dark mode">
@@ -108,6 +129,22 @@ if (function_exists('hd_asset_base')) {
                     <i class="fas fa-moon"></i>
                 </button>
 
+                <?php if ($hdUser): ?>
+                <a href="<?= $assetBase ?>/profile.php" class="nav-user-icon nav-user-icon--mobile"
+                    aria-label="My Profile">
+                    <?php if (!empty($hdUser['profile_image'])): ?>
+                    <img src="<?= htmlspecialchars($hdUser['profile_image']) ?>" alt="" />
+                    <?php else: ?>
+                    <span><?= strtoupper(substr(trim($hdUser['name']) !== '' ? $hdUser['name'] : 'U', 0, 1)) ?></span>
+                    <?php endif; ?>
+                </a>
+                <?php else: ?>
+                <a href="<?= $assetBase ?>/login.php?return=<?= $hdReturn ?>"
+                    class="nav-user-icon nav-user-icon--guest nav-user-icon--mobile" aria-label="Login or Sign Up">
+                    <i class="fas fa-user"></i>
+                </a>
+                <?php endif; ?>
+
                 <button class="hamburger" aria-label="Menu">
                     <span></span><span></span><span></span>
                 </button>
@@ -124,8 +161,88 @@ if (function_exists('hd_asset_base')) {
               echo 'class="active"'; ?>><i class="fas fa-city"></i> Cities</a>
         <a href="<?= $assetBase ?>/contact.php" <?php if ($currentPage == 'contact')
               echo 'class="active"'; ?>><i class="fas fa-headset"></i> Contact</a>
+        <!-- <?php if ($hdUser): ?>
+        <a href="<?= $assetBase ?>/profile.php" <?php if ($currentPage == 'profile')
+              echo 'class="active"'; ?>><i
+                class="fas fa-circle-user"></i> My Profile</a>
+        <a href="<?= $assetBase ?>/logout.php?return=<?= $hdReturn ?>"><i class="fas fa-right-from-bracket"></i>
+            Logout (<?= htmlspecialchars(strtok($hdUser['name'] ?: 'Account', ' ')) ?>)</a>
+        <?php else: ?>
+        <a href="<?= $assetBase ?>/login.php?return=<?= $hdReturn ?>"><i class="fas fa-right-to-bracket"></i> Login /
+            Sign Up</a>
+        <?php endif; ?> -->
         <a href="<?= $assetBase ?>/download.php" class="more-drawer-cta"><i class="fas fa-download"></i> Get App</a>
     </div>
+
+    <!-- Account / login user-icon styling -->
+    <style>
+    .nav-user-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        border-radius: 50%;
+        overflow: hidden;
+        flex: 0 0 auto;
+        margin-left: 4px;
+        font-weight: 800;
+        font-size: .95rem;
+        text-decoration: none;
+        border: 2px solid var(--glass-border, rgba(255, 255, 255, 0.18));
+        transition: transform .15s, box-shadow .15s;
+    }
+
+    .nav-user-icon img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .nav-user-icon--mobile {
+        width: 34px;
+        height: 34px;
+        margin-left: 0;
+    }
+
+    .nav-user-icon:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+    }
+
+    /* color/background scoped to also beat the generic ".nav-links a" rule */
+    .nav-user-icon,
+    .nav-links a.nav-user-icon,
+    .nav-links a.nav-user-icon:hover {
+        padding: 0;
+        color: #fff;
+        background: linear-gradient(135deg, #2563eb, #10b981);
+    }
+
+    .nav-user-icon--guest,
+    .nav-links a.nav-user-icon--guest,
+    .nav-links a.nav-user-icon--guest:hover {
+        color: var(--text-secondary, #cbd5e1);
+        background: var(--glass, rgba(255, 255, 255, 0.06));
+        border-color: var(--glass-border, rgba(255, 255, 255, 0.14));
+    }
+
+    [data-theme="light"] .nav-user-icon--guest,
+    [data-theme="light"] .nav-links a.nav-user-icon--guest {
+        color: #334155;
+        background: #eef2f7;
+    }
+    </style>
+    <script>
+    // Expose auth state for inline gating (QR unlock, claim, etc.)
+    window.HD_AUTH = {
+        loggedIn: <?= $hdUser ? 'true' : 'false' ?>,
+        phoneVerified: <?= ($hdUser && !empty($hdUser['phone_verified'])) ? 'true' : 'false' ?>,
+        loginUrl: '<?= $assetBase ?>/login.php',
+        verifyUrl: '<?= $assetBase ?>/profile.php?verify=required'
+    };
+    </script>
 
     <!-- ===== MOBILE BOTTOM NAVIGATION ===== -->
     <div class="mobile-bottom-nav" id="mobileBottomNav">
@@ -145,8 +262,7 @@ if (function_exists('hd_asset_base')) {
             style="<?= $currentPage == 'add-listing' ? '' : 'color:#059669;' ?>">
             <i class="fas fa-plus-circle"></i><span>Add</span>
         </a>
-        <a href="<?= $assetBase ?>/news.php"
-            class="bottom-nav-item <?= $currentPage == 'news' ? 'active' : '' ?>">
+        <a href="<?= $assetBase ?>/news.php" class="bottom-nav-item <?= $currentPage == 'news' ? 'active' : '' ?>">
             <i class="fas fa-newspaper"></i><span>News</span>
         </a>
     </div>

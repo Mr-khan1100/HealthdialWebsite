@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/db.php';
 require_once 'includes/seo.php';
+require_once 'includes/user_auth.php';
 
 header('Content-Type: application/json; charset=UTF-8');
 header('Access-Control-Allow-Origin: *');
@@ -8,6 +9,24 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
+
+// Listings must belong to a verified user/vendor.
+$hdUser = hd_current_user();
+if (!$hdUser) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'message' => 'Please log in to add a listing.', 'auth_required' => true]);
+    exit;
+}
+if (empty($hdUser['phone_verified'])) {
+    http_response_code(403);
+    echo json_encode([
+        'success'        => false,
+        'message'        => 'Please verify your phone number before adding a listing.',
+        'phone_required' => true,
+        'redirect'       => 'profile.php?verify=required',
+    ]);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
@@ -64,7 +83,7 @@ $email       = !empty($input['email'])    ? trim($input['email']) : '';
 $is_24x7     = ($input['is_24x7'] == '1' || $input['is_24x7'] === true) ? 1 : 0;
 $open_time   = $is_24x7 ? '00:00:00' : (!empty($input['open_time'])  ? $input['open_time']  : '09:00:00');
 $close_time  = $is_24x7 ? '00:00:00' : (!empty($input['close_time']) ? $input['close_time'] : '18:00:00');
-$user_id     = 0; // Guest — no auth required
+$user_id     = (int) $hdUser['id']; // Listing belongs to the logged-in user/vendor
 $status      = 'approved';
 
 // Per-day opening hours (JSON). Self-heal the column so this works without a manual migration.

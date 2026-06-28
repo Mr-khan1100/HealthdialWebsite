@@ -4,6 +4,9 @@ $pageTitle = 'Add Your Medical Listing | HealthDial';
 $pageDesc = 'List your hospital, clinic, pharmacy, lab or medical facility on HealthDial for free. Reach thousands of patients searching for healthcare near them.';
 require_once 'includes/icons.php';
 require_once 'includes/db.php';
+require_once 'includes/user_auth.php';
+// Only logged-in, phone-verified users/vendors can list a business (2-step).
+$hdUser = hd_require_phone_verified();
 require_once 'includes/header.php';
 require_once 'includes/website_banner.php';
 
@@ -1887,12 +1890,12 @@ $qrPriceLabel = number_format($qrPrice, 0);
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
 
-        // PayU hosted checkout: POST to our server, which signs the order and
-        // redirects to PayU. After payment PayU returns to payu_qr_callback.php,
-        // which unlocks the QR and lands the user on the listing detail page.
+        // POST to our server, which records the order and hands off to the active
+        // payment gateway (Cashfree or PayU). After payment the gateway's
+        // callback/return handler unlocks the QR and lands the user on the listing.
         const form = document.createElement('form');
         form.method = 'POST';
-        form.action = 'payu_qr_initiate.php';
+        form.action = 'qr_initiate.php';
         const input = document.createElement('input');
         input.type = 'hidden';
         input.name = 'listing_id';
@@ -2175,6 +2178,8 @@ $qrPriceLabel = number_format($qrPrice, 0);
 
             if (data.success) {
                 showQrPopup(data.data.listing_id);
+            } else if (data.auth_required) {
+                window.location.href = 'login.php?return=' + encodeURIComponent('add-listing.php');
             } else {
                 showError(data.message || 'Submission failed. Please try again.');
                 btn.disabled = false;

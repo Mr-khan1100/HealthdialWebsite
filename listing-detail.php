@@ -160,6 +160,50 @@ $qrPriceLabel = number_format($qrPrice, 0);
 
 require_once 'includes/header.php';
 
+// ── "Claim this listing" state (only for guest listings not yet owned) ──
+// States: 'claimed' (owned → hide button), 'unclaimed', 'pending' (this user already asked).
+$hdClaimState = 'claimed';
+if ($listing && empty($listing['user_id'])) {
+    $hdClaimState = 'unclaimed';
+    if ($hdUser && $conn) {
+        // Self-heal the claims table so this works before the migration is run.
+        $conn->query("CREATE TABLE IF NOT EXISTS listing_claims (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            listing_id INT NOT NULL, user_id INT NOT NULL,
+            status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+            claimant_name VARCHAR(150) NULL, claimant_phone VARCHAR(30) NULL,
+            claimant_email VARCHAR(190) NULL, note TEXT NULL, admin_note VARCHAR(255) NULL,
+            reviewed_by INT NULL, reviewed_at DATETIME NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_listing (listing_id), INDEX idx_user (user_id), INDEX idx_status (status)
+        )");
+        $pcLid = (int) $listing['id'];
+        $pcUid = (int) $hdUser['id'];
+        $pc = $conn->prepare("SELECT id FROM listing_claims WHERE listing_id = ? AND user_id = ? AND status = 'pending' LIMIT 1");
+        if ($pc) {
+            $pc->bind_param('ii', $pcLid, $pcUid);
+            $pc->execute();
+            if ($pc->get_result()->num_rows > 0) {
+                $hdClaimState = 'pending';
+            }
+            $pc->close();
+        }
+    }
+}
+
+// Pre-render the claim button once; echoed in both the mobile and desktop contact cards.
+$claimBtnStyle = 'width:100%; margin-top:8px; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600; text-decoration:none;';
+$hdClaimButtonHtml = '';
+if ($hdClaimState === 'unclaimed') {
+    if ($hdUser) {
+        $hdClaimButtonHtml = '<button type="button" class="btn detail-btn-claim" onclick="openClaimModal()" style="' . $claimBtnStyle . '"><i class="fas fa-circle-check"></i> Claim this listing</button>';
+    } else {
+        $hdClaimButtonHtml = '<a href="login.php?return=' . $hdReturn . '" class="btn detail-btn-claim" style="' . $claimBtnStyle . '"><i class="fas fa-circle-check"></i> Claim this listing</a>';
+    }
+} elseif ($hdClaimState === 'pending') {
+    $hdClaimButtonHtml = '<button type="button" class="btn detail-btn-claim detail-btn-claim--pending" disabled style="' . $claimBtnStyle . '"><i class="fas fa-hourglass-half"></i> Claim pending review</button>';
+}
+
 if (!$listing): ?>
 <section class="section" style="padding-top:140px; min-height:60vh;">
     <div class="container" style="text-align:center;">
@@ -366,6 +410,7 @@ if (!$listing): ?>
                         style="width:100%; margin-top:8px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600;">
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
+                    <?= $hdClaimButtonHtml ?>
                 </div>
 
                 <!-- MOBILE ONLY: Map (reordered for mobile) -->
@@ -888,6 +933,7 @@ if (!$listing): ?>
                         style="width:100%; margin-top:8px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600;">
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
+                    <?= $hdClaimButtonHtml ?>
                 </div>
 
                 <!-- Map -->
@@ -1076,6 +1122,52 @@ if (!$listing): ?>
     </div>
 </section>
 <style>
+/* "Claim this listing" button — filled blue so it stays clearly visible on the
+   dark theme (and on light). Pending state is a muted, readable amber. */
+.btn.detail-btn-claim {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+    transition: transform .15s, box-shadow .15s, filter .15s;
+}
+
+.btn.detail-btn-claim i {
+    color: #fff;
+}
+
+.btn.detail-btn-claim:hover {
+    color: #fff;
+    transform: translateY(-1px);
+    filter: brightness(1.07);
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+}
+
+.btn.detail-btn-claim.detail-btn-claim--pending,
+.btn.detail-btn-claim.detail-btn-claim--pending:hover {
+    background: rgba(245, 158, 11, 0.16);
+    color: #fbbf24;
+    border: 1px solid #f59e0b;
+    box-shadow: none;
+    transform: none;
+    filter: none;
+    cursor: default;
+}
+
+.btn.detail-btn-claim.detail-btn-claim--pending i {
+    color: #fbbf24;
+}
+
+[data-theme="light"] .btn.detail-btn-claim.detail-btn-claim--pending,
+[data-theme="light"] .btn.detail-btn-claim.detail-btn-claim--pending:hover {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+[data-theme="light"] .btn.detail-btn-claim.detail-btn-claim--pending i {
+    color: #b45309;
+}
+
 .dm-app-mobile {
     display: none;
 }
@@ -1215,18 +1307,30 @@ function copyReviewLink() {
 }
 
 function initiateQrPayment() {
+    // Require a verified user before any payment.
+    if (window.HD_AUTH && !window.HD_AUTH.loggedIn) {
+        window.location.href = (window.HD_AUTH.loginUrl || 'login.php') +
+            '?return=' + encodeURIComponent('listing-detail.php?id=' + HD_LISTING_ID);
+        return;
+    }
+    // 2nd factor: a verified phone is required before paying.
+    if (window.HD_AUTH && window.HD_AUTH.loggedIn && !window.HD_AUTH.phoneVerified) {
+        window.location.href = (window.HD_AUTH.verifyUrl || 'profile.php?verify=required') +
+            '&return=' + encodeURIComponent('listing-detail.php?id=' + HD_LISTING_ID);
+        return;
+    }
     const btn = document.getElementById('qrPayBtn');
     if (btn) {
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redirecting to secure payment…';
         btn.disabled = true;
     }
 
-    // PayU hosted checkout: POST to our server, which signs the order and
-    // redirects to PayU. On success PayU returns to payu_qr_callback.php, which
-    // marks the QR paid and sends the user back here with the QR unlocked.
+    // POST to our server, which records the order and hands off to the active
+    // payment gateway (Cashfree or PayU). On success the gateway's callback/return
+    // handler marks the QR paid and sends the user back here with the QR unlocked.
     const form = document.createElement('form');
     form.method = 'POST';
-    form.action = 'payu_qr_initiate.php';
+    form.action = 'qr_initiate.php';
     const input = document.createElement('input');
     input.type = 'hidden';
     input.name = 'listing_id';
@@ -2480,6 +2584,116 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<?php if ($hdUser && $hdClaimState === 'unclaimed'): ?>
+<!-- ===== CLAIM LISTING MODAL ===== -->
+<div id="claimModal" class="claim-overlay" style="display:none;" role="dialog" aria-modal="true"
+    aria-label="Claim this listing">
+    <div class="claim-card">
+        <button class="claim-close" onclick="closeClaimModal()" aria-label="Close"><i class="fas fa-times"></i></button>
+        <div id="claimForm">
+            <div class="claim-icon"><i class="fas fa-circle-check"></i></div>
+            <h3>Claim this listing</h3>
+            <p>Tell us you own or manage <strong><?= htmlspecialchars($listing['name']) ?></strong>. Our team will review
+                and link it to your account. Once approved you'll be able to manage and promote it.</p>
+            <label class="claim-label" for="claimNote">Message / proof (optional)</label>
+            <textarea id="claimNote" class="claim-textarea" rows="3"
+                placeholder="e.g. I am the owner / manager. Here's how you can verify…"></textarea>
+            <div id="claimError" class="claim-error" style="display:none;"></div>
+            <button class="btn btn-primary" id="claimSubmitBtn" onclick="submitClaim()"
+                style="width:100%; justify-content:center; margin-top:6px;">
+                <i class="fas fa-paper-plane"></i> Submit claim
+            </button>
+        </div>
+        <div id="claimDone" style="display:none; text-align:center;">
+            <div class="claim-icon" style="color:#10b981;"><i class="fas fa-check-circle"></i></div>
+            <h3>Claim submitted!</h3>
+            <p>Thanks — our team will review your claim and link this listing to your account once approved.</p>
+            <button class="btn btn-secondary" onclick="closeClaimModal()" style="width:100%; justify-content:center;">Close</button>
+        </div>
+    </div>
+</div>
+<style>
+.claim-overlay { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.72); backdrop-filter:blur(6px); padding:16px; }
+.claim-card { position:relative; width:100%; max-width:460px; border-radius:18px; padding:28px 26px;
+    background:var(--glass,rgba(8,16,40,0.98)); border:1px solid var(--glass-border,rgba(255,255,255,0.1));
+    box-shadow:0 28px 70px rgba(0,0,0,.5); }
+[data-theme="light"] .claim-card { background:#fff; }
+.claim-close { position:absolute; top:12px; right:12px; width:32px; height:32px; border-radius:50%; cursor:pointer;
+    background:rgba(255,255,255,.08); border:1px solid var(--glass-border,rgba(255,255,255,.12)); color:var(--text-muted,#94a3b8); }
+.claim-icon { font-size:2.2rem; color:#2563eb; margin-bottom:10px; }
+.claim-card h3 { font-size:1.25rem; font-weight:800; margin-bottom:8px; }
+.claim-card p { font-size:.88rem; color:var(--text-secondary,#94a3b8); line-height:1.55; margin-bottom:16px; }
+.claim-label { display:block; font-size:.8rem; font-weight:600; color:var(--text-secondary,#94a3b8); margin-bottom:6px; }
+.claim-textarea { width:100%; padding:12px 14px; border-radius:10px; font-family:inherit; font-size:.9rem;
+    background:rgba(255,255,255,.04); border:1px solid var(--glass-border,rgba(255,255,255,.14)); color:var(--text,#f1f5f9);
+    resize:vertical; margin-bottom:14px; }
+[data-theme="light"] .claim-textarea { background:#f8fafc; color:#0f172a; }
+.claim-error { background:rgba(239,68,68,.1); border:1px solid rgba(239,68,68,.3); color:#fca5a5;
+    padding:10px 12px; border-radius:9px; font-size:.82rem; margin-bottom:12px; }
+</style>
+<script>
+function openClaimModal() {
+    if (window.HD_AUTH && !window.HD_AUTH.loggedIn) {
+        window.location.href = (window.HD_AUTH.loginUrl || 'login.php') +
+            '?return=' + encodeURIComponent('listing-detail.php?id=' + <?= (int) $listing['id'] ?>);
+        return;
+    }
+    // 2nd factor: a verified phone is required before claiming.
+    if (window.HD_AUTH && window.HD_AUTH.loggedIn && !window.HD_AUTH.phoneVerified) {
+        window.location.href = (window.HD_AUTH.verifyUrl || 'profile.php?verify=required') +
+            '&return=' + encodeURIComponent('listing-detail.php?id=' + <?= (int) $listing['id'] ?>);
+        return;
+    }
+    document.getElementById('claimModal').style.display = 'flex';
+}
+function closeClaimModal() {
+    var m = document.getElementById('claimModal');
+    if (m) m.style.display = 'none';
+}
+function submitClaim() {
+    var btn = document.getElementById('claimSubmitBtn');
+    var err = document.getElementById('claimError');
+    err.style.display = 'none';
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting…';
+    fetch('claim-listing.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+            listing_id: <?= (int) $listing['id'] ?>,
+            note: document.getElementById('claimNote').value.trim()
+        })
+    }).then(function (r) { return r.json(); }).then(function (res) {
+        if (res.success) {
+            document.getElementById('claimForm').style.display = 'none';
+            document.getElementById('claimDone').style.display = 'block';
+        } else if (res.auth_required) {
+            window.location.href = (window.HD_AUTH.loginUrl || 'login.php') +
+                '?return=' + encodeURIComponent('listing-detail.php?id=' + <?= (int) $listing['id'] ?>);
+        } else if (res.phone_required) {
+            window.location.href = (window.HD_AUTH.verifyUrl || 'profile.php?verify=required') +
+                '&return=' + encodeURIComponent('listing-detail.php?id=' + <?= (int) $listing['id'] ?>);
+        } else {
+            err.textContent = res.message || 'Could not submit claim. Please try again.';
+            err.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit claim';
+        }
+    }).catch(function () {
+        err.textContent = 'Network error. Please try again.';
+        err.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit claim';
+    });
+}
+document.getElementById('claimModal').addEventListener('click', function (e) {
+    if (e.target === this) closeClaimModal();
+});
+</script>
+<?php endif; ?>
 
 <?php endif; ?>
 <?php require_once 'includes/footer.php'; ?>
