@@ -10,6 +10,7 @@
  * Request  (JSON): { phone: "<10-digit>" }
  * Response (JSON): { ok:true } | { ok:false, error, retry_after? }
  */
+require_once __DIR__ . '/includes/json_guard.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/user_auth.php';
 require_once __DIR__ . '/includes/otp_throttle.php';

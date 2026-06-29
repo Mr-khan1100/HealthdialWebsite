@@ -10,6 +10,13 @@ $DB_NAME = "u961861187_HealthDialNew";
 function getDbConnection()
 {
     global $DB_HOST, $DB_USER, $DB_PASS, $DB_NAME;
+    // This codebase checks return values (if (!$stmt) …) and uses @ on optional
+    // DDL. PHP 8.1+ defaults mysqli to THROW exceptions, which those guards don't
+    // catch — an uncaught exception then prints HTML and corrupts JSON responses.
+    // Force the classic return-false behaviour so the guards work everywhere.
+    if (function_exists('mysqli_report')) {
+        mysqli_report(MYSQLI_REPORT_OFF);
+    }
     try {
         $conn = new mysqli($DB_HOST, $DB_USER, $DB_PASS, $DB_NAME);
         if ($conn->connect_error) {

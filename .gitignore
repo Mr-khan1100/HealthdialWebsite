@@ -3,3 +3,4 @@ HealthDial/Backend/config.php
 HealthDial/Backend/uploads/
 HealthDial/uploads/
 HealthDial/Backend/*.log
+includes/firebase_config.php

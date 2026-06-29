@@ -201,10 +201,8 @@ require_once 'includes/header.php';
                         'city' => $row['city'],
                         'slug' => $row['slug'] ?? null,
                     ], false) : null;
-                    $cardTag = $url ? 'a' : 'div';
-                    $href = $url ? ' href="' . htmlspecialchars($url) . '"' : '';
                 ?>
-                <<?= $cardTag ?><?= $href ?> class="profile-listing-card">
+                <div class="profile-listing-card">
                     <div class="plc-image">
                         <?php if (!empty($row['image_url'])): ?>
                         <img src="<?= htmlspecialchars($row['image_url']) ?>"
@@ -222,8 +220,16 @@ require_once 'includes/header.php';
                         <?php if (!empty($row['city'])): ?>
                         <small><i class="fas fa-location-dot"></i> <?= htmlspecialchars($row['city']) ?></small>
                         <?php endif; ?>
+                        <div class="plc-actions">
+                            <?php if ($url): ?>
+                            <a href="<?= htmlspecialchars($url) ?>" class="plc-btn plc-btn-view"><i class="fas fa-eye"></i>
+                                View</a>
+                            <?php endif; ?>
+                            <a href="<?= $assetBase ?>/edit-listing.php?id=<?= (int) $row['id'] ?>"
+                                class="plc-btn plc-btn-edit"><i class="fas fa-pen"></i> Edit</a>
+                        </div>
                     </div>
-                </<?= $cardTag ?>>
+                </div>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>
@@ -516,6 +522,46 @@ a.profile-listing-card:hover {
 .plc-body small i {
     width: 14px;
     margin-right: 3px;
+}
+
+.plc-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.plc-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: .8rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+.plc-btn-view {
+    background: rgba(255, 255, 255, .05);
+    color: var(--text, #e2e8f0);
+    border-color: var(--glass-border, rgba(255, 255, 255, .14));
+}
+
+[data-theme="light"] .plc-btn-view {
+    background: #f1f5f9;
+    color: #0f172a;
+}
+
+.plc-btn-edit {
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    color: #fff;
+}
+
+.plc-btn:hover {
+    transform: translateY(-1px);
 }
 
 @media (max-width: 640px) {

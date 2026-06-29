@@ -204,6 +204,13 @@ if ($hdClaimState === 'unclaimed') {
     $hdClaimButtonHtml = '<button type="button" class="btn detail-btn-claim detail-btn-claim--pending" disabled style="' . $claimBtnStyle . '"><i class="fas fa-hourglass-half"></i> Claim pending review</button>';
 }
 
+// Owner edit button — only the listing's owner sees it.
+$isOwner = ($hdUser && !empty($listing['user_id']) && (int) $listing['user_id'] === (int) $hdUser['id']);
+$hdEditButtonHtml = '';
+if ($isOwner) {
+    $hdEditButtonHtml = '<a href="edit-listing.php?id=' . (int) $listing['id'] . '" class="btn detail-btn-edit" style="' . $claimBtnStyle . '"><i class="fas fa-pen"></i> Edit listing</a>';
+}
+
 if (!$listing): ?>
 <section class="section" style="padding-top:140px; min-height:60vh;">
     <div class="container" style="text-align:center;">
@@ -411,6 +418,7 @@ if (!$listing): ?>
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
                     <?= $hdClaimButtonHtml ?>
+                    <?= $hdEditButtonHtml ?>
                 </div>
 
                 <!-- MOBILE ONLY: Map (reordered for mobile) -->
@@ -934,6 +942,7 @@ if (!$listing): ?>
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
                     <?= $hdClaimButtonHtml ?>
+                    <?= $hdEditButtonHtml ?>
                 </div>
 
                 <!-- Map -->
@@ -1141,6 +1150,28 @@ if (!$listing): ?>
     transform: translateY(-1px);
     filter: brightness(1.07);
     box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+}
+
+.btn.detail-btn-edit {
+    background: rgba(37, 99, 235, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(37, 99, 235, 0.45);
+    transition: transform .15s, box-shadow .15s, filter .15s;
+}
+
+.btn.detail-btn-edit i {
+    color: inherit;
+}
+
+.btn.detail-btn-edit:hover {
+    transform: translateY(-1px);
+    background: rgba(37, 99, 235, 0.2);
+    color: #93c5fd;
+}
+
+[data-theme="light"] .btn.detail-btn-edit {
+    background: rgba(37, 99, 235, 0.08);
+    color: #2563eb;
 }
 
 .btn.detail-btn-claim.detail-btn-claim--pending,
