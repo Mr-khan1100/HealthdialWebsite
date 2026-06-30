@@ -3,13 +3,14 @@
 if(!isset($_SESSION)) session_start();
 
 function canAccess($key){
+    // Full admins can access everything.
     if(isset($_SESSION['admin_role']) && $_SESSION['admin_role'] == 'admin'){
         return true;
     }
-    if(isset($_SESSION['permissions'])){
-        return in_array($key, $_SESSION['permissions']);
-    }
-    return false;
+    // Uniform staff role: every staff member gets the same fixed set of sections.
+    // (Admin-only sections are gated separately via isAdmin()/requireAdmin().)
+    $staffAllowed = ['dashboard','listings','categories','reviews','notification','documents','news'];
+    return in_array($key, $staffAllowed, true);
 }
 
 $currentPage = basename($_SERVER['PHP_SELF']);
@@ -118,7 +119,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             <?php endif; ?>
         </a>
 
-        <?php if(canAccess('users')): ?>
+        <?php if(isAdmin()): ?>
         <a href="Users.php" class="sidebar-link <?php echo isActive('Users.php'); ?>">
             <i class="fas fa-users"></i>
             Users
@@ -156,6 +157,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         </a>
         <?php endif; ?>
 
+        <?php if(isAdmin()): ?>
         <a href="SponsoredListings.php" class="sidebar-link <?php echo isActive('SponsoredListings.php'); ?>">
             <i class="fas fa-bolt"></i>
             Sponsored Listings
@@ -177,6 +179,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             ?>
             <span class="sidebar-link-badge" style="background:#22c55e;"><?php echo $pgLabel; ?></span>
         </a>
+        <?php endif; ?>
 
         <a href="Banners.php" class="sidebar-link <?php echo isActive('Banners.php'); ?>">
             <i class="fas fa-images"></i>
@@ -186,6 +189,11 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         <a href="WebsiteBanners.php" class="sidebar-link <?php echo isActive('WebsiteBanners.php'); ?>">
             <i class="fas fa-globe"></i>
             Website Banners
+        </a>
+
+        <a href="Popups.php" class="sidebar-link <?php echo isActive('Popups.php'); ?>">
+            <i class="fas fa-window-restore"></i>
+            Popups
         </a>
 
         <?php /* Enquiries hidden from sidebar
@@ -201,6 +209,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             Medications
         </a>
 
+        <?php if(isAdmin()): ?>
         <div class="sidebar-section-label">Insights</div>
 
         <a href="Analytics.php" class="sidebar-link <?php echo isActive('Analytics.php'); ?>">
@@ -222,7 +231,9 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             <i class="fas fa-map-marked-alt"></i>
             Geo Map
         </a>
+        <?php endif; ?>
 
+        <?php if(isAdmin()): ?>
         <div class="sidebar-section-label">System</div>
 
         <?php if(canAccess('staff')): ?>
@@ -261,6 +272,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             <i class="fas fa-mobile-alt"></i>
             Mobile Config
         </a>
+        <?php endif; // System (admin only) ?>
     </nav>
     
     <div class="sidebar-footer">

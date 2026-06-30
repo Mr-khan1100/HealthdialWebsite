@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // === USER GROWTH (30 days) ===
 $growthLabels = [];

@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // Save handler
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_payment'])) {

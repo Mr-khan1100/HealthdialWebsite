@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // Handle delete
 if (isset($_GET['delete_id']) && is_numeric($_GET['delete_id'])) {

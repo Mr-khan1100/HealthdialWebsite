@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // === OVERALL ENGAGEMENT METRICS ===
 

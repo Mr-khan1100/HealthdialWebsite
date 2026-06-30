@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // Handle settings update
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

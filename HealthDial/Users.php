@@ -1,23 +1,66 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin(); // Users section is admin-only (not staff).
 
-// Delete user (using prepared statement)
-if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {
-    $id = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM users WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    if($stmt->execute()) {
-        // Log activity
-        $logStmt = $conn->prepare("INSERT INTO activity_logs (admin_id, action, details, ip_address) VALUES (?, 'delete_user', ?, ?)");
-        $detail = "Deleted user ID: $id";
+/** Does a table have a given column? (avoids errors on optional/self-healed cols) */
+function hd_admin_col_exists(mysqli $conn, string $table, string $col): bool
+{
+    $t = $conn->real_escape_string($table);
+    $c = $conn->real_escape_string($col);
+    $res = $conn->query("SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '$t' AND COLUMN_NAME = '$c' LIMIT 1");
+    return $res && $res->num_rows > 0;
+}
+
+// Remove a user AND release their listings for claiming (admin-only, POST + confirm).
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['remove_user'])) {
+    $id = intval($_POST['remove_user']);
+    if ($id <= 0) {
+        $_SESSION['error'] = "Invalid user.";
+        header("Location: Users.php");
+        exit();
+    }
+
+    $conn->begin_transaction();
+    try {
+        // 1) Release this user's listings → user_id 0 = unclaimed, so "Claim" returns.
+        $rel = $conn->prepare("UPDATE listings SET user_id = 0 WHERE user_id = ?");
+        $rel->bind_param("i", $id);
+        $rel->execute();
+        $releasedListings = $rel->affected_rows;
+        $rel->close();
+
+        // 2) Detach payment records but keep them for audit (only if the column exists).
+        foreach (['promotion_payments', 'listing_qr_payments'] as $payTbl) {
+            if (hd_admin_col_exists($conn, $payTbl, 'user_id')) {
+                $conn->query("UPDATE $payTbl SET user_id = NULL WHERE user_id = " . (int) $id);
+            }
+        }
+
+        // 3) Remove their claim requests + login tokens.
+        $conn->query("DELETE FROM listing_claims WHERE user_id = " . (int) $id);
+        $conn->query("DELETE FROM user_tokens WHERE user_id = " . (int) $id);
+
+        // 4) Delete the user record (email, phone, all details) — frees email/mobile for reuse.
+        $del = $conn->prepare("DELETE FROM users WHERE id = ?");
+        $del->bind_param("i", $id);
+        $del->execute();
+        $del->close();
+
+        $conn->commit();
+
+        // Log it.
+        $logStmt = $conn->prepare("INSERT INTO activity_logs (admin_id, action, details, ip_address) VALUES (?, 'remove_user', ?, ?)");
+        $detail = "Removed user ID $id; released $releasedListings listing(s) for claiming";
         $ip = $_SERVER['REMOTE_ADDR'] ?? '';
         $logStmt->bind_param("iss", $_SESSION['admin_id'], $detail, $ip);
         $logStmt->execute();
-        
-        $_SESSION['success'] = "User deleted successfully!";
-    } else {
-        $_SESSION['error'] = "Error deleting user.";
+        $logStmt->close();
+
+        $_SESSION['success'] = "User removed. $releasedListings listing(s) released and available to claim again.";
+    } catch (Throwable $e) {
+        $conn->rollback();
+        error_log('remove_user failed: ' . $e->getMessage());
+        $_SESSION['error'] = "Could not remove user (a linked record may be blocking it). Nothing was changed.";
     }
     header("Location: Users.php");
     exit();
@@ -181,9 +224,13 @@ $result = $mainStmt->get_result();
                                             <button onclick="viewUser(<?php echo $row['id']; ?>)" class="btn btn-ghost btn-icon btn-sm" title="Quick View">
                                                 <i class="fas fa-eye"></i>
                                             </button>
-                                            <a href="?delete=<?php echo $row['id']; ?>" class="btn btn-ghost btn-icon btn-sm" style="color:var(--status-danger);" title="Delete" onclick="return confirm('Delete this user? This action cannot be undone.')">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
+                                            <form method="POST" style="display:inline;margin:0;"
+                                                onsubmit="return confirm('Remove this user AND release their listings for claiming?\n\nThis permanently deletes their account (email, phone, details) and frees those for reuse. Their listings are NOT deleted — they become claimable again. This cannot be undone.');">
+                                                <input type="hidden" name="remove_user" value="<?php echo $row['id']; ?>">
+                                                <button type="submit" class="btn btn-ghost btn-icon btn-sm" style="color:var(--status-danger);" title="Remove user & release listings">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 // Handle resend failed
 if(isset($_GET['resend']) && intval($_GET['resend']) > 0) {

@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 if (session_status() === PHP_SESSION_NONE) session_start();
 

@@ -70,4 +70,22 @@ function requireRole($role)
         exit();
     }
 }
+
+// True only for the full 'admin' role (not staff).
+function isAdmin()
+{
+    return isAdminLoggedIn() && (($_SESSION['admin_role'] ?? '') === 'admin');
+}
+
+// Gate an entire page to admins only. Staff are bounced to the Dashboard.
+// Use on admin-only sections (Users, Payment Gateway, Settings, Staff, etc.).
+function requireAdmin()
+{
+    requireLogin();
+    if (!isAdmin()) {
+        $_SESSION['error'] = 'You do not have permission to access that section.';
+        header("Location: Dashboard.php");
+        exit();
+    }
+}
 ?>

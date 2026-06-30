@@ -1,7 +1,7 @@
 <?php
 session_start();
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 /* ---------------- ERROR REPORTING ---------------- */
 error_reporting(E_ALL);
@@ -56,9 +56,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);   // no hash as you said
 
-    $permissions = isset($_POST['permissions'])
-        ? implode(',', $_POST['permissions'])
-        : '';
+    // Username must be an email-style id (must contain '@').
+    if (strpos($username, '@') === false) {
+        $_SESSION['error'] = "Username must contain '@' ❌";
+        header("Location: staff.php");
+        exit();
+    }
+
+    // Uniform staff role — access is fixed (see sidebar canAccess), no per-staff permissions.
+    $permissions = '';
 
     $role = 'manager';
         $name = 'User';
@@ -138,8 +144,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- USER INFO -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        <input type="text" name="username" placeholder="Username"
+        <input type="email" name="username" placeholder="Username (must contain @)"
                required
+               title="Username must contain '@'"
                class="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500">
                <p class="form-text text-danger">Add '@' in username</p>
 
@@ -148,69 +155,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                class="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <!-- TITLE -->
-    <h2 class="text-2xl font-bold tracking-wide">Assign Permissions</h2>
-
-    <!-- PERMISSIONS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 text-lg">
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="dashboard" class="w-5 h-5">
-            Dashboard
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="listings" class="w-5 h-5">
-            Listings Management
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="categories" class="w-5 h-5">
-            Categories
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="users" class="w-5 h-5">
-            Users
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="reviews" class="w-5 h-5">
-            Reviews
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="notification" class="w-5 h-5">
-            Notification Maintain
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="documents" class="w-5 h-5">
-            Documents
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="news" class="w-5 h-5">
-            News
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="enquiry" class="w-5 h-5">
-            Enquiry
-        </label>
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="staff" class="w-5 h-5">
-            Staff Management
-        </label>
-
-        
-
-        <label class="flex items-center gap-3">
-            <input type="checkbox" name="permissions[]" value="settings" class="w-5 h-5">
-            Settings
-        </label>
-
+    <!-- ACCESS INFO -->
+    <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-gray-700">
+        <h2 class="text-lg font-bold mb-2"><i class="fas fa-user-shield text-blue-600 mr-1"></i> Staff access</h2>
+        <p class="text-sm leading-relaxed">Staff accounts get a fixed set of sections: <strong>Dashboard, Listings,
+            Verification, Categories, Support Tickets, Listing Claims, Reviews, Notifications, Documents, News, Banners,
+            Website Banners, Popups and Medications</strong>. Admin-only areas (Users, Payment Gateway, Sponsored,
+            Analytics, Settings, Staff, etc.) are never available to staff.</p>
     </div>
 
     <!-- BUTTON -->
@@ -262,7 +213,7 @@ $result = $conn->query("
             </td>
 
             <td style="padding:8px;border:1px solid #ddd;font-size:13px;">
-                <?= $row['permissions']; ?>
+                <?= $row['role'] === 'admin' ? 'All sections' : 'Staff sections (14)'; ?>
             </td>
 
             <td style="padding:8px;border:1px solid #ddd;">

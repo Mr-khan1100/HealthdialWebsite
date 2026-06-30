@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin();
 
 if($_SESSION['admin_role'] !== 'admin') {
     header("Location: Dashboard.php");

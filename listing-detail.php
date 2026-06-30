@@ -211,6 +211,16 @@ if ($isOwner) {
     $hdEditButtonHtml = '<a href="edit-listing.php?id=' . (int) $listing['id'] . '" class="btn detail-btn-edit" style="' . $claimBtnStyle . '"><i class="fas fa-pen"></i> Edit listing</a>';
 }
 
+// Built-in popup config (admin-managed on HealthDial/Popups.php).
+require_once 'includes/popups.php';
+$popupCtx     = ['is_owner' => $isOwner, 'logged_in' => (bool) $hdUser];
+$qrPopupCfg   = ($listing && $conn) ? hd_popup_config($conn, 'qr_upsell') : null;
+$promoPopupCfg = ($listing && $conn) ? hd_popup_config($conn, 'promote') : null;
+$qrPopupOn    = $qrPopupCfg && hd_popup_in_window($qrPopupCfg) && hd_popup_audience_ok($qrPopupCfg, $popupCtx);
+$promoPopupOn = $promoPopupCfg && hd_popup_in_window($promoPopupCfg) && hd_popup_audience_ok($promoPopupCfg, $popupCtx);
+$qrPopupDelayMs    = $qrPopupCfg ? max(0, (int) $qrPopupCfg['delay_seconds']) * 1000 : 1000;
+$promoPopupDelayMs = $promoPopupCfg ? max(0, (int) $promoPopupCfg['delay_seconds']) * 1000 : 10000;
+
 if (!$listing): ?>
 <section class="section" style="padding-top:140px; min-height:60vh;">
     <div class="container" style="text-align:center;">
@@ -412,11 +422,13 @@ if (!$listing): ?>
                         style="width:100%; margin-top:8px;">
                         <i class="fas fa-calendar-check"></i> Request Appointment
                     </button>
+                    <?php if ($isOwner): ?>
                     <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>"
                         class="btn"
                         style="width:100%; margin-top:8px; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600;">
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
+                    <?php endif; ?>
                     <?= $hdClaimButtonHtml ?>
                     <?= $hdEditButtonHtml ?>
                 </div>
@@ -814,6 +826,7 @@ if (!$listing): ?>
 
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
+                <?php if ($isOwner): ?>
                 <div class="detail-qr-section" id="qrSection">
                     <?php if ($qrPaid): ?>
                     <div class="detail-qr-card">
@@ -855,6 +868,7 @@ if (!$listing): ?>
                     </div>
                     <?php endif; ?>
                 </div>
+                <?php endif; ?>
 
                 <!-- MOBILE ONLY: Get App (after QR on mobile) -->
                 <div class="dm-app">
@@ -936,11 +950,13 @@ if (!$listing): ?>
                         <i class="fas fa-calendar-check"></i> Request Appointment
                     </button>
                     <!-- Promote This Listing -->
+                    <?php if ($isOwner): ?>
                     <a href="promote.php?listing_id=<?= $listing['id'] ?>&listing_name=<?= urlencode($listing['name']) ?>"
                         class="btn"
                         style="width:100%; margin-top:8px; background:linear-gradient(135deg, #f59e0b, #d97706); color:#fff; display:flex; align-items:center; justify-content:center; gap:6px; font-weight:600;">
                         <i class="fas fa-bolt"></i> Promote This Listing
                     </a>
+                    <?php endif; ?>
                     <?= $hdClaimButtonHtml ?>
                     <?= $hdEditButtonHtml ?>
                 </div>
@@ -1593,7 +1609,7 @@ window.submitDetailAppointment = submitDetailAppointment;
 </script>
 <script src="assets/js/listings.js?v=2.8.1"></script>
 
-<?php if (!$qrPaid): ?>
+<?php if ($qrPopupOn && !$qrPaid): ?>
 <!-- ===== QR UPSELL INTERSTITIAL ===== -->
 <div id="qr-interstitial" class="qri-overlay" aria-modal="true" role="dialog" aria-label="Unlock QR Code">
     <div class="qri-card">
@@ -1633,10 +1649,10 @@ window.submitDetailAppointment = submitDetailAppointment;
 
         <!-- Body -->
         <div class="qri-body">
-            <h2 class="qri-title">Let Patients <span class="gradient-text">Review You</span> in One Scan</h2>
-            <p class="qri-sub">Get a personal QR code for <strong><?= htmlspecialchars($listing['name']) ?></strong>.
+            <h2 class="qri-title"><?php if (!empty($qrPopupCfg['title'])): ?><?= htmlspecialchars($qrPopupCfg['title']) ?><?php else: ?>Let Patients <span class="gradient-text">Review You</span> in One Scan<?php endif; ?></h2>
+            <p class="qri-sub"><?php if (!empty($qrPopupCfg['body'])): ?><?= nl2br(htmlspecialchars($qrPopupCfg['body'])) ?><?php else: ?>Get a personal QR code for <strong><?= htmlspecialchars($listing['name']) ?></strong>.
                 Patients scan once → land on your review page. No app needed. Reviews build trust, trust brings more
-                patients.</p>
+                patients.<?php endif; ?></p>
 
             <div class="qri-benefits">
                 <div class="qri-benefit"><i class="fas fa-bolt"></i> Instant review access — one scan</div>
@@ -1655,7 +1671,7 @@ window.submitDetailAppointment = submitDetailAppointment;
 
             <div class="qri-ctas">
                 <button class="qri-btn-primary" onclick="closeQrInterstitial(); initiateQrPayment();">
-                    <i class="fas fa-qrcode"></i> Unlock My QR Code — ₹<?= $qrPriceLabel ?>
+                    <i class="fas fa-qrcode"></i> <?= !empty($qrPopupCfg['cta_text']) ? htmlspecialchars($qrPopupCfg['cta_text']) : 'Unlock My QR Code' ?> — ₹<?= $qrPriceLabel ?>
                 </button>
                 <button class="qri-btn-skip" onclick="closeQrInterstitial()">Maybe Later</button>
             </div>
@@ -2133,11 +2149,11 @@ window.submitDetailAppointment = submitDetailAppointment;
         return;
     }
     sessionStorage.setItem(KEY, '1');
-    // Show after 3 seconds so user can first read the listing
+    // Show after the admin-configured delay so the user can first read the listing.
     el.style.display = 'none';
     setTimeout(function() {
         el.style.display = 'flex';
-    }, 3000);
+    }, <?= (int) $qrPopupDelayMs ?>);
 })();
 
 function closeQrInterstitial() {
@@ -2163,7 +2179,8 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 <?php endif; ?>
 
-<!-- ===== PROMOTE INTERSTITIAL ===== -->
+<!-- ===== PROMOTE INTERSTITIAL (admin-managed popup) ===== -->
+<?php if ($promoPopupOn): ?>
 <div id="promote-interstitial" class="pmi-overlay" style="display:none;" aria-modal="true" role="dialog"
     aria-label="Promote This Listing">
     <div class="pmi-card">
@@ -2191,9 +2208,9 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
 
         <div class="pmi-body">
-            <h2 class="pmi-title">Reach More Patients with <span class="pmi-gradient-text">HealthDial Pro</span></h2>
-            <p class="pmi-sub">Put <strong><?= htmlspecialchars($listing['name']) ?></strong> at the top of search
-                results. Thousands of patients search for care nearby every day — make sure they find you first.</p>
+            <h2 class="pmi-title"><?php if (!empty($promoPopupCfg['title'])): ?><?= htmlspecialchars($promoPopupCfg['title']) ?><?php else: ?>Reach More Patients with <span class="pmi-gradient-text">HealthDial Pro</span><?php endif; ?></h2>
+            <p class="pmi-sub"><?php if (!empty($promoPopupCfg['body'])): ?><?= nl2br(htmlspecialchars($promoPopupCfg['body'])) ?><?php else: ?>Put <strong><?= htmlspecialchars($listing['name']) ?></strong> at the top of search
+                results. Thousands of patients search for care nearby every day — make sure they find you first.<?php endif; ?></p>
 
             <div class="pmi-benefits">
                 <div class="pmi-benefit"><i class="fas fa-arrow-up"></i> Top of search results</div>
@@ -2212,6 +2229,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+<?php endif; ?>
 
 <style>
 .pmi-overlay {
@@ -2578,20 +2596,20 @@ document.addEventListener('DOMContentLoaded', function() {
         el.style.display = 'flex';
     }
 
-    <?php if (!$qrPaid): ?>
-    // Show after QR interstitial is dismissed
+    <?php if ($qrPopupOn && !$qrPaid): ?>
+    // QR popup is showing first — appear right after it's dismissed…
     document.addEventListener('hdQrInterstitialClosed', function() {
         setTimeout(showPromote, 500);
     }, {
         once: true
     });
-    // Fallback: show after 10s if QR was never dismissed via button
+    // …with a fallback at the configured delay if the QR popup was never dismissed.
     setTimeout(function() {
         if (el.style.display === 'none' || el.style.display === '') showPromote();
-    }, 10000);
+    }, <?= (int) $promoPopupDelayMs ?>);
     <?php else: ?>
-    // QR is already paid, no QR popup — show after 3s
-    setTimeout(showPromote, 3000);
+    // No QR popup ahead of it — show after the configured delay.
+    setTimeout(showPromote, <?= (int) $promoPopupDelayMs ?>);
     <?php endif; ?>
 })();
 
@@ -2727,4 +2745,14 @@ document.getElementById('claimModal').addEventListener('click', function (e) {
 <?php endif; ?>
 
 <?php endif; ?>
+
+<?php
+// Admin-managed custom popups for this page.
+if ($listing) {
+    $hdPopupPage  = 'listing_detail';
+    $hdPopupScope = (string) $listing['id'];
+    $hdPopupCtx   = ['is_owner' => $isOwner, 'logged_in' => (bool) $hdUser];
+    require __DIR__ . '/includes/popup_render.php';
+}
+?>
 <?php require_once 'includes/footer.php'; ?>

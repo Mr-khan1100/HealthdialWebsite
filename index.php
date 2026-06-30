@@ -935,4 +935,10 @@ window.HD_PUSH_CONFIG = {
 </script>
 <script src="assets/js/push-notifications.js?v=1.4.0"></script>
 
+<?php
+// Admin-managed custom popups for the home page.
+$hdPopupPage = 'home';
+$hdPopupCtx  = ['is_owner' => false];
+require __DIR__ . '/includes/popup_render.php';
+?>
 <?php require_once 'includes/footer.php'; ?>

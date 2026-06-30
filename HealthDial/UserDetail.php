@@ -1,6 +1,6 @@
 <?php
 require_once 'connection.inc.php';
-requireLogin();
+requireAdmin(); // Users section is admin-only (not staff).
 
 $id = intval($_GET['id'] ?? 0);
 if($id <= 0) { header("Location: Users.php"); exit(); }
