@@ -36,10 +36,19 @@ $pendingR = (int)$conn->query("SELECT COUNT(*) as c FROM reviews WHERE status = 
 $approvedR = (int)$conn->query("SELECT COUNT(*) as c FROM reviews WHERE status = 1")->fetch_assoc()['c'];
 $rejectedR = (int)$conn->query("SELECT COUNT(*) as c FROM reviews WHERE status = 2")->fetch_assoc()['c'];
 
+// Website + app-guest reviews store the reviewer in reviews.guest_name with user_id NULL,
+// so fall back to guest_name (matches the mobile API's COALESCE) before showing "Deleted User".
+$hasGuestName = false;
+$gnRes = @$conn->query("SHOW COLUMNS FROM reviews LIKE 'guest_name'");
+if ($gnRes && $gnRes->num_rows > 0) { $hasGuestName = true; }
+$nameExpr = $hasGuestName
+    ? "COALESCE(NULLIF(u.name,''), NULLIF(r.guest_name,'')) as user_name"
+    : "u.name as user_name";
+
 $result = $conn->query("
-    SELECT r.*, u.name as user_name, u.email as user_email, l.name as listing_name
+    SELECT r.*, $nameExpr, u.email as user_email, l.name as listing_name
     FROM reviews r
-    LEFT JOIN users u ON r.user_id = u.id
+    LEFT JOIN users u ON r.user_id = u.id AND r.user_id > 0
     LEFT JOIN listings l ON r.listing_id = l.id
     ORDER BY r.created_at DESC
 ");
@@ -124,20 +133,24 @@ $result = $conn->query("
                                 </tr>
                             </thead>
                             <tbody id="reviewsBody">
-                                <?php while($row = $result->fetch_assoc()): 
+                                <?php while($row = $result->fetch_assoc()):
                                     $statusMap = ['0'=>'pending','1'=>'approved','2'=>'rejected'];
                                     $badgeMap = ['0'=>'badge-warning','1'=>'badge-success','2'=>'badge-danger'];
                                     $st = (string)$row['status'];
+                                    // Resolved name, else "Guest" (no linked user) / "Deleted User" (user id gone).
+                                    $displayName = $row['user_name'] !== null && $row['user_name'] !== ''
+                                        ? $row['user_name']
+                                        : (empty($row['user_id']) ? 'Guest' : 'Deleted User');
                                 ?>
                                 <tr class="review-row" data-status="<?php echo $st; ?>" data-rating="<?php echo $row['rating']; ?>">
                                     <td><input type="checkbox" class="review-cb" value="<?php echo $row['id']; ?>" style="accent-color:var(--primary);"></td>
                                     <td>
                                         <div style="display:flex;align-items:flex-start;gap:10px;max-width:320px;">
                                             <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent));display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;flex-shrink:0;">
-                                                <?php echo strtoupper(substr($row['user_name'] ?? '?', 0, 1)); ?>
+                                                <?php echo strtoupper(substr($displayName, 0, 1)); ?>
                                             </div>
                                             <div style="min-width:0;">
-                                                <div style="font-weight:600;font-size:13px;"><?php echo htmlspecialchars($row['user_name'] ?: 'Deleted User'); ?></div>
+                                                <div style="font-weight:600;font-size:13px;"><?php echo htmlspecialchars($displayName); ?></div>
                                                 <div style="font-size:12px;color:var(--text-muted);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
                                                     <?php echo htmlspecialchars($row['review']); ?>
                                                 </div>
