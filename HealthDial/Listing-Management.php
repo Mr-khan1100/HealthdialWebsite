@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('listings');
 
 $current_page = filter_input(INPUT_GET, 'page', FILTER_VALIDATE_INT);
 $current_page = ($current_page && $current_page > 0) ? $current_page : 1;

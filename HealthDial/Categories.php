@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('categories');
 
 // Handle category actions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

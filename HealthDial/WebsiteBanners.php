@@ -1,4 +1,4 @@
-<?php require_once 'connection.inc.php'; requireLogin(); ?>
+<?php require_once 'connection.inc.php'; requireLogin(); requireAccess('website_banners'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

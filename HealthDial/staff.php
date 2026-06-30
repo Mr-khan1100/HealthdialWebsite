@@ -50,25 +50,48 @@ if (isset($_GET['delete'])) {
 
 
 
-/* ---------------- CREATE USER ---------------- */
+/* ---------------- CREATE / UPDATE STAFF ---------------- */
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);   // no hash as you said
+    $editId   = isset($_POST['edit_id']) ? (int)$_POST['edit_id'] : 0;
+    $username = trim($_POST['username'] ?? '');
+    $password = trim($_POST['password'] ?? '');   // no hash as you said
 
+    // Admin ticks the sidebar sections this staff can access. Whitelist the posted
+    // keys against the registry (admin_sections.php) so only real keys are stored.
+    $selected = (isset($_POST['perms']) && is_array($_POST['perms'])) ? $_POST['perms'] : [];
+    $selected = array_values(array_intersect($selected, admin_section_keys()));
+    $permissions = implode(',', $selected);   // CSV — matches index.php login explode()
+
+    $role = 'manager';
+    $name = 'User';
+
+    /* ----- UPDATE existing staff (role<>'admin' guard: never touch an admin) ----- */
+    if ($editId > 0) {
+        try {
+            if ($password !== '') {
+                $stmt = $conn->prepare("UPDATE admin_users SET permissions=?, password=? WHERE id=? AND role<>'admin'");
+                $stmt->bind_param("ssi", $permissions, $password, $editId);
+            } else {
+                $stmt = $conn->prepare("UPDATE admin_users SET permissions=? WHERE id=? AND role<>'admin'");
+                $stmt->bind_param("si", $permissions, $editId);
+            }
+            $stmt->execute();
+            $_SESSION['success'] = "Staff permissions updated ✔";
+        } catch (mysqli_sql_exception $e) {
+            $_SESSION['error'] = "Database error ❌";
+        }
+        header("Location: staff.php");
+        exit();
+    }
+
+    /* ----- CREATE new staff ----- */
     // Username must be an email-style id (must contain '@').
     if (strpos($username, '@') === false) {
         $_SESSION['error'] = "Username must contain '@' ❌";
         header("Location: staff.php");
         exit();
     }
-
-    // Uniform staff role — access is fixed (see sidebar canAccess), no per-staff permissions.
-    $permissions = '';
-
-    $role = 'manager';
-        $name = 'User';
-
 
     try {
 
@@ -102,6 +125,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     header("Location: staff.php");
     exit();
 }
+
+/* ---------------- EDIT PREFILL ---------------- */
+// ?edit=<id> loads an existing staff member into the form (admins are not editable here).
+$editStaff = null;
+if (isset($_GET['edit'])) {
+    $eid = (int)$_GET['edit'];
+    $stmt = $conn->prepare("SELECT id, email, permissions FROM admin_users WHERE id=? AND role<>'admin' LIMIT 1");
+    $stmt->bind_param("i", $eid);
+    $stmt->execute();
+    $editStaff = $stmt->get_result()->fetch_assoc();
+    if (!$editStaff) {
+        $_SESSION['error'] = "Staff not found ❌";
+        header("Location: staff.php");
+        exit();
+    }
+}
+$editPerms = $editStaff ? array_filter(array_map('trim', explode(',', $editStaff['permissions']))) : [];
+$isEdit    = (bool)$editStaff;
 ?>
 
 
@@ -138,38 +179,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <?php endif; ?>
 
                 
-                <form method="POST" 
+                <form method="POST"
       class="bg-white rounded-2xl shadow p-8 space-y-8 font-sans text-gray-800">
+
+    <?php if($isEdit): ?>
+        <input type="hidden" name="edit_id" value="<?= (int)$editStaff['id']; ?>">
+    <?php endif; ?>
+
+    <h2 class="text-xl font-bold"><?= $isEdit ? 'Edit Staff Permissions' : 'Create Staff Account'; ?></h2>
 
     <!-- USER INFO -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        <input type="email" name="username" placeholder="Username (must contain @)"
-               required
-               title="Username must contain '@'"
-               class="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500">
-               <p class="form-text text-danger">Add '@' in username</p>
 
-        <input type="password" name="password" placeholder="Password"
-               required
+        <div>
+            <input type="email" name="username" placeholder="Username (must contain @)"
+                   value="<?= $isEdit ? htmlspecialchars($editStaff['email']) : ''; ?>"
+                   <?= $isEdit ? 'readonly' : 'required'; ?>
+                   title="Username must contain '@'"
+                   class="w-full border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500 <?= $isEdit ? 'bg-gray-100 text-gray-500' : ''; ?>">
+            <p class="text-sm text-gray-500 mt-1">Add '@' in username</p>
+        </div>
+
+        <input type="password" name="password"
+               placeholder="<?= $isEdit ? 'New password (leave blank to keep)' : 'Password'; ?>"
+               <?= $isEdit ? '' : 'required'; ?>
                class="border rounded-xl px-4 py-3 text-lg focus:ring-2 focus:ring-blue-500">
     </div>
 
-    <!-- ACCESS INFO -->
+    <!-- SECTION ACCESS (auto-built from admin_sections.php) -->
     <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-gray-700">
-        <h2 class="text-lg font-bold mb-2"><i class="fas fa-user-shield text-blue-600 mr-1"></i> Staff access</h2>
-        <p class="text-sm leading-relaxed">Staff accounts get a fixed set of sections: <strong>Dashboard, Listings,
-            Verification, Categories, Support Tickets, Listing Claims, Reviews, Notifications, Documents, News, Banners,
-            Website Banners, Popups and Medications</strong>. Admin-only areas (Users, Payment Gateway, Sponsored,
-            Analytics, Settings, Staff, etc.) are never available to staff.</p>
+        <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg font-bold"><i class="fas fa-user-shield text-blue-600 mr-1"></i> Section access</h2>
+            <div class="text-sm">
+                <button type="button" onclick="togglePerms(true)" class="text-blue-600 hover:underline">Select all</button>
+                <span class="text-gray-400 mx-1">|</span>
+                <button type="button" onclick="togglePerms(false)" class="text-blue-600 hover:underline">Clear</button>
+            </div>
+        </div>
+        <p class="text-sm leading-relaxed mb-4">Tick the sidebar sections this staff member can access. Admin-only areas
+            (Users, Payment Gateway, Sponsored, Analytics, Settings, Staff, etc.) are never available to staff.</p>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <?php foreach(admin_sections() as $key => $sec):
+                $checked = in_array($key, $editPerms, true) ? 'checked' : ''; ?>
+            <label class="flex items-center gap-2 bg-white border rounded-lg px-3 py-2 cursor-pointer hover:border-blue-400">
+                <input type="checkbox" name="perms[]" value="<?= htmlspecialchars($key); ?>" <?= $checked; ?>
+                       class="perm-cb" style="accent-color:#2563eb;">
+                <i class="fas <?= htmlspecialchars($sec['icon']); ?> text-blue-500" style="width:16px;text-align:center;"></i>
+                <span class="text-sm"><?= htmlspecialchars($sec['label']); ?></span>
+            </label>
+            <?php endforeach; ?>
+        </div>
     </div>
 
     <!-- BUTTON -->
-    <div class="text-center pt-6">
+    <div class="text-center pt-2 flex items-center justify-center gap-3">
         <button type="submit"
                 class="bg-blue-600 text-white px-10 py-3 text-lg rounded-xl hover:bg-blue-700 shadow">
-            Register Staff
+            <?= $isEdit ? 'Update Staff' : 'Register Staff'; ?>
         </button>
+        <?php if($isEdit): ?>
+        <a href="staff.php" class="px-6 py-3 text-lg rounded-xl border hover:bg-gray-100">Cancel</a>
+        <?php endif; ?>
     </div>
 
 </form>
@@ -212,8 +283,22 @@ $result = $conn->query("
                 <?= $row['role']; ?>
             </td>
 
-            <td style="padding:8px;border:1px solid #ddd;font-size:13px;">
-                <?= $row['role'] === 'admin' ? 'All sections' : 'Staff sections (14)'; ?>
+            <td style="padding:8px;border:1px solid #ddd;font-size:13px;text-align:left;">
+                <?php
+                if ($row['role'] === 'admin') {
+                    echo 'All sections';
+                } else {
+                    $keys = array_filter(array_map('trim', explode(',', $row['permissions'])));
+                    if (empty($keys)) {
+                        echo '<span style="color:#b91c1c;">No access</span>';
+                    } else {
+                        $secs = admin_sections();
+                        $labels = [];
+                        foreach ($keys as $k) { if (isset($secs[$k])) $labels[] = $secs[$k]['label']; }
+                        echo htmlspecialchars(implode(', ', $labels));
+                    }
+                }
+                ?>
             </td>
 
             <td style="padding:8px;border:1px solid #ddd;">
@@ -221,6 +306,13 @@ $result = $conn->query("
             </td>
 
             <td style="padding:8px;border:1px solid #ddd;">
+                <?php if($row['role'] !== 'admin'): ?>
+                <a href="?edit=<?= $row['id']; ?>"
+                   title="Edit permissions"
+                   style="font-size:18px;text-decoration:none;margin-right:8px;">
+                   ✏️
+                </a>
+                <?php endif; ?>
                 <a href="?delete=<?= $row['id']; ?>"
                    onclick="return confirm('Delete this user?')"
                    style="color:red;font-size:18px;text-decoration:none;">
@@ -239,6 +331,11 @@ $result = $conn->query("
  
 
     <script>
+        // Bulk-toggle the section-access checkboxes on the create/edit form.
+        function togglePerms(state) {
+            document.querySelectorAll('.perm-cb').forEach(cb => cb.checked = state);
+        }
+
         function viewUser(id) {
             fetch('ajax.php?action=get_user&id=' + id)
                 .then(response => response.json())

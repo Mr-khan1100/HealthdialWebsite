@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('medications');
 
 // Handle delete medication
 if (isset($_GET['delete']) && intval($_GET['delete']) > 0) {

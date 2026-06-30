@@ -6,6 +6,7 @@ ini_set('display_errors', 1);
 require_once 'connection.inc.php';
 require_once 'push_helper.php';
 requireLogin();
+requireAccess('notification');
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

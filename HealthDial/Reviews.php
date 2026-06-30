@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('reviews');
 
 // Handle approval/rejection with prepared statements
 if (isset($_GET['approve']) && intval($_GET['approve']) > 0) {

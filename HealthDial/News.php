@@ -2,6 +2,7 @@
 require_once 'connection.inc.php';
 require_once 'push_helper.php';
 requireLogin();
+requireAccess('news');
 
 // Handle form actions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {

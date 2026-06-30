@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('verification');
 
 $section = $_GET['section'] ?? 'listings';
 

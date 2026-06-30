@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('support');
 
 // Ensure guest_* columns exist so website/app guest tickets are visible here too
 $cols = [];

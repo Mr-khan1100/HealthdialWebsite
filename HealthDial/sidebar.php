@@ -2,16 +2,7 @@
 <?php
 if(!isset($_SESSION)) session_start();
 
-function canAccess($key){
-    // Full admins can access everything.
-    if(isset($_SESSION['admin_role']) && $_SESSION['admin_role'] == 'admin'){
-        return true;
-    }
-    // Uniform staff role: every staff member gets the same fixed set of sections.
-    // (Admin-only sections are gated separately via isAdmin()/requireAdmin().)
-    $staffAllowed = ['dashboard','listings','categories','reviews','notification','documents','news'];
-    return in_array($key, $staffAllowed, true);
-}
+// canAccess() now lives in connection.inc.php (per-staff section permissions).
 
 $currentPage = basename($_SERVER['PHP_SELF']);
 function isActive($page) {
@@ -76,7 +67,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         </a>
         <?php endif; ?>
 
-        <?php if(canAccess('listings')): ?>
+        <?php if(canAccess('verification')): ?>
         <a href="ListingVerification.php" class="sidebar-link <?php echo isActive('ListingVerification.php'); ?>">
             <i class="fas fa-clipboard-check"></i>
             Verification
@@ -97,6 +88,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         
         <div class="sidebar-section-label">Management</div>
 
+        <?php if(canAccess('support')): ?>
         <a href="SupportTickets.php" class="sidebar-link <?php echo isActive('SupportTickets.php'); ?>">
             <i class="fas fa-headset"></i>
             Support Tickets
@@ -106,7 +98,9 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             <span class="sidebar-link-badge"><?php echo $openTickets; ?></span>
             <?php endif; ?>
         </a>
+        <?php endif; ?>
 
+        <?php if(canAccess('claims')): ?>
         <a href="ListingClaims.php" class="sidebar-link <?php echo isActive('ListingClaims.php'); ?>">
             <i class="fas fa-handshake"></i>
             Listing Claims
@@ -118,6 +112,7 @@ if($prResult && $row = $prResult->fetch_assoc()) {
             <span class="sidebar-link-badge"><?php echo $pendingClaims; ?></span>
             <?php endif; ?>
         </a>
+        <?php endif; ?>
 
         <?php if(isAdmin()): ?>
         <a href="Users.php" class="sidebar-link <?php echo isActive('Users.php'); ?>">
@@ -181,20 +176,26 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         </a>
         <?php endif; ?>
 
+        <?php if(canAccess('banners')): ?>
         <a href="Banners.php" class="sidebar-link <?php echo isActive('Banners.php'); ?>">
             <i class="fas fa-images"></i>
             Banners
         </a>
+        <?php endif; ?>
 
+        <?php if(canAccess('website_banners')): ?>
         <a href="WebsiteBanners.php" class="sidebar-link <?php echo isActive('WebsiteBanners.php'); ?>">
             <i class="fas fa-globe"></i>
             Website Banners
         </a>
+        <?php endif; ?>
 
+        <?php if(canAccess('popups')): ?>
         <a href="Popups.php" class="sidebar-link <?php echo isActive('Popups.php'); ?>">
             <i class="fas fa-window-restore"></i>
             Popups
         </a>
+        <?php endif; ?>
 
         <?php /* Enquiries hidden from sidebar
         if(canAccess('enquiry')): ?>
@@ -204,10 +205,12 @@ if($prResult && $row = $prResult->fetch_assoc()) {
         </a>
         <?php endif; */ ?>
 
+        <?php if(canAccess('medications')): ?>
         <a href="Medications.php" class="sidebar-link <?php echo isActive('Medications.php'); ?>">
             <i class="fas fa-pills"></i>
             Medications
         </a>
+        <?php endif; ?>
 
         <?php if(isAdmin()): ?>
         <div class="sidebar-section-label">Insights</div>

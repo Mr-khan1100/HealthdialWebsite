@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('documents');
 
 // Delete document
 if (isset($_GET['delete']) && $_GET['delete'] > 0) {

@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('popups');
 require_once __DIR__ . '/../includes/popups.php';
 
 hd_popups_ensure_schema($conn);

@@ -88,4 +88,40 @@ function requireAdmin()
         exit();
     }
 }
+
+/*
+|--------------------------------------------------------------------------
+| Per-staff section permissions
+|--------------------------------------------------------------------------
+| Section keys are defined once in admin_sections.php. A staff member's
+| granted keys are loaded into $_SESSION['permissions'] at login (index.php).
+*/
+require_once __DIR__ . '/admin_sections.php';
+
+// Can the logged-in admin/staff access a given sidebar section key?
+// Full admins can access everything; staff are limited to their granted keys.
+function canAccess($key)
+{
+    if (($_SESSION['admin_role'] ?? '') === 'admin') {
+        return true;
+    }
+    $perms = $_SESSION['permissions'] ?? [];
+    if (!is_array($perms)) {
+        $perms = explode(',', (string)$perms);
+    }
+    $perms = array_map('trim', $perms);
+    return in_array('all', $perms, true) || in_array($key, $perms, true);
+}
+
+// Gate a staff-assignable page to admins + staff who hold the section key.
+// Others are bounced to the Dashboard (which is always reachable, so no loop).
+function requireAccess($key)
+{
+    requireLogin();
+    if (!canAccess($key)) {
+        $_SESSION['error'] = 'You do not have permission to access that section.';
+        header("Location: Dashboard.php");
+        exit();
+    }
+}
 ?>

@@ -1,6 +1,7 @@
 <?php
 require_once 'connection.inc.php';
 requireLogin();
+requireAccess('claims');
 
 // Self-heal the claims table so this page works before the migration is run.
 $conn->query("CREATE TABLE IF NOT EXISTS listing_claims (
