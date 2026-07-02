@@ -102,7 +102,7 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
 
     $reviews = [];
     $reviewStmt = $conn->prepare("
-        SELECT r.rating, r.review, r.created_at, COALESCE(u.name, r.guest_name, 'Anonymous') AS reviewer_name
+        SELECT r.id, r.rating, r.review, r.created_at, COALESCE(u.name, r.guest_name, 'Anonymous') AS reviewer_name
         FROM reviews r
         LEFT JOIN users u ON u.id = r.user_id AND r.user_id > 0
         WHERE r.listing_id = ? AND r.status = 'approved'
@@ -116,6 +116,7 @@ function hd_fetch_listing_detail_from_db($conn, $listingId)
         $reviewResult = $reviewStmt->get_result();
         while ($review = $reviewResult->fetch_assoc()) {
             $reviews[] = [
+                'id' => (int) $review['id'],
                 'user_name' => $review['reviewer_name'] ?: 'Anonymous',
                 'rating' => $review['rating'],
                 'comment' => $review['review'],

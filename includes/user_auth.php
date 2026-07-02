@@ -53,6 +53,26 @@ function hd_user_id(): int
 }
 
 /**
+ * Per-session CSRF token for website POST actions. Echo hd_csrf_token() into a
+ * hidden form field and verify it on submit with hd_verify_csrf($_POST['csrf']).
+ */
+function hd_csrf_token(): string
+{
+    hd_session_start();
+    if (empty($_SESSION['hd_csrf'])) {
+        $_SESSION['hd_csrf'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['hd_csrf'];
+}
+
+function hd_verify_csrf(?string $token): bool
+{
+    hd_session_start();
+    return !empty($_SESSION['hd_csrf']) && is_string($token)
+        && hash_equals($_SESSION['hd_csrf'], $token);
+}
+
+/**
  * Store the user in the session after a verified sign-in. Accepts a full DB row
  * and keeps only the fields the website needs.
  */

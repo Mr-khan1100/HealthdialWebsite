@@ -206,6 +206,7 @@ if ($hdClaimState === 'unclaimed') {
 
 // Owner edit button — only the listing's owner sees it.
 $isOwner = ($hdUser && !empty($listing['user_id']) && (int) $listing['user_id'] === (int) $hdUser['id']);
+$hdCsrf  = hd_csrf_token(); // token for the owner's per-review delete form
 $hdEditButtonHtml = '';
 if ($isOwner) {
     $hdEditButtonHtml = '<a href="edit-listing.php?id=' . (int) $listing['id'] . '" class="btn detail-btn-edit" style="' . $claimBtnStyle . '"><i class="fas fa-pen"></i> Edit listing</a>';
@@ -887,6 +888,9 @@ if (!$listing): ?>
                 <!-- Reviews -->
                 <div class="detail-reviews dm-reviews" id="reviews">
                     <h3>Reviews (<?= $reviewCount ?>)</h3>
+                    <?php if (!empty($_SESSION['hd_review_flash'])): ?>
+                    <div class="review-flash"><?= htmlspecialchars($_SESSION['hd_review_flash']) ?></div>
+                    <?php unset($_SESSION['hd_review_flash']); endif; ?>
                     <?php if (!empty($reviews)): ?>
                     <div class="reviews-list">
                         <?php foreach ($reviews as $rev): ?>
@@ -900,6 +904,19 @@ if (!$listing): ?>
                                     <div class="review-date"><?= date('M d, Y', strtotime($rev['created_at'])) ?></div>
                                 </div>
                                 <div class="review-rating-badge">⭐ <?= $rev['rating'] ?></div>
+                                <?php if ($isOwner && !empty($rev['id'])): ?>
+                                <form method="post" action="delete_review.php"
+                                    onsubmit="return confirm('Delete this review? This cannot be undone.');"
+                                    style="margin:0 0 0 8px;">
+                                    <input type="hidden" name="csrf" value="<?= htmlspecialchars($hdCsrf) ?>">
+                                    <input type="hidden" name="review_id" value="<?= (int) $rev['id'] ?>">
+                                    <input type="hidden" name="listing_id" value="<?= (int) $listing['id'] ?>">
+                                    <button type="submit" class="review-delete-btn" title="Delete this review"
+                                        aria-label="Delete this review">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                <?php endif; ?>
                             </div>
                             <?php if ($rev['comment']): ?>
                             <p class="review-comment"><?= htmlspecialchars($rev['comment']) ?></p>

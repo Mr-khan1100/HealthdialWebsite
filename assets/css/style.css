@@ -5591,6 +5591,39 @@ button {
     white-space: nowrap;
 }
 
+/* Owner-only "delete review" button (shown on the owner's own listing) */
+.review-delete-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text-muted);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.review-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.4);
+    color: #ef4444;
+}
+
+.review-flash {
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #059669;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 14px;
+}
+
 .review-comment {
     font-size: 14px;
     line-height: 1.6;
@@ -5774,6 +5807,16 @@ button {
 
 [data-theme="dark"] .star-icon {
     color: #4b5563;
+}
+
+/* Keep selected/hovered stars lit in dark theme — the dark rule above has the
+   same specificity as .star-icon.active and would otherwise win by source order. */
+[data-theme="dark"] .star-icon.active {
+    color: #f59e0b;
+}
+
+[data-theme="dark"] .star-icon:hover {
+    color: #fbbf24;
 }
 
 @media (max-width: 600px) {
